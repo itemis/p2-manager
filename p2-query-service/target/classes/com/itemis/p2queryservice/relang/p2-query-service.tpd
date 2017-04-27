@@ -1,0 +1,40 @@
+target "p2-service" with source
+environment cocoa win32 x86_64
+
+location "http://download.eclipse.org/releases/neon/201703231000" {
+	org.eclipse.jetty.server
+	org.eclipse.jetty.http
+	org.eclipse.jetty.servlet
+	org.eclipse.jetty.security
+	org.eclipse.jetty.util
+	org.eclipse.jetty.io
+	org.eclipse.jetty.continuation
+	org.eclipse.equinox.app
+}
+location "http://download.eclipse.org/eclipse/updates/4.6" {
+	org.eclipse.core.runtime.feature.feature.group
+	org.eclipse.equinox.executable.feature.group
+	org.eclipse.core.jobs
+}
+location "http://download.eclipse.org/tools/orbit/R-builds/R20170307180635/repository" {
+	javax.ws.rs
+	javax.servlet
+	javax.inject
+	javax.xml
+	javax.annotation
+}
+location "http://hstaudacher.github.io/osgi-jax-rs-connector" {
+	org.glassfish.jersey.containers.jersey-container-servlet-core
+	org.glassfish.jersey.containers.jersey-container-servlet
+	org.glassfish.hk2.external.aopalliance-repackaged
+	org.glassfish.jersey.core.jersey-client
+	org.glassfish.jersey.core.jersey-server
+	org.glassfish.jersey.core.jersey-common
+	org.glassfish.hk2.osgi-resource-locator
+	org.glassfish.hk2.api
+	org.glassfish.hk2.utils
+	org.glassfish.hk2.locator
+	org.glassfish.jersey.bundles.repackaged.jersey-guava
+	javassist
+	javax.validation.api
+}
