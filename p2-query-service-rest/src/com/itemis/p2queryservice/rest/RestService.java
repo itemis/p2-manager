@@ -1,12 +1,8 @@
 package com.itemis.p2queryservice.rest;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.logging.Logger;
 
 import javax.ws.rs.FormParam;
@@ -15,6 +11,13 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
+import com.itemis.p2.service.P2ResourcesFinder;
+import com.itemis.p2queryservice.server.P2RestActivator;
 
 @Path("/p2/repository")
 public class RestService{
@@ -31,75 +34,55 @@ public class RestService{
     public String getHelloWorld() {
         return "Hello World";
     }
-
-    @GET
-    @Produces("text/plain")
-	@Path("/end")
-    public String stopService() {
-//    	JettyApplication.getDefault().stopRun();
-        return "Service is stopped";
-    }
 	
 	@POST
-    @Produces("text/plain")
-	public String addRepo(@FormParam("uri") String uri) throws IOException{
+//  @Produces("text/plain")
+	public Response addRepo(@Context UriInfo uriInfo, @FormParam("uri") String uri) throws IOException{
 		if (uri == null)
-			throw new IllegalArgumentException("no repository");
-		File f = new File("P2RepoId.txt");
-		int lineNumber = 0;
-		try{
-			FileReader fr = new FileReader(f);
-			BufferedReader br = new BufferedReader(fr);
-			String line = "";
-			while((line = br.readLine()) != null){
-				lineNumber++;
-				if(uri.equals(line)){
-					br.close();
-					return "id=" + lineNumber +"\n"; //Maybe an Exception, because the Repository is already existing
-				}
-			}
-			br.close();
-			fr.close();
-		} catch (FileNotFoundException e) {
-			logger.info("File does not Exist");
-		}		
-		FileWriter fw = new FileWriter(f, true);
-		BufferedWriter bw = new BufferedWriter(fw);
-		bw.append(uri + "\n");
-		lineNumber++;
-		bw.close();
-		fw.close();
-		return "id=" + lineNumber +"\n";
+			return Response.status(Response.Status.NOT_FOUND).build();
+		URI location;
+		int index = P2RestActivator.getDeafault().uriAlreadyExists(uri);
+		if(index >= 0){
+			location = uriInfo.getRequestUriBuilder().path(index+"/").build();
+			logger.info("IF: " + location.toString());
+			return Response.status(Response.Status.CONFLICT).header(HttpHeaders.LOCATION, location).entity("Repository already exists").build();
+		}
+		else{
+			index = P2RestActivator.getDeafault().addUri(uri);
+			location = uriInfo.getRequestUriBuilder().path(index+"/").build();
+			logger.info("ELSE: " + location.toString());
+			return Response.created(location).build();
+		}
 	}
 	
 	@GET
-	@Produces("text/plain")
+//	@Produces("text/plain")
 	@Path("{id}")
-	public String getRepo(@PathParam("id") String id){
+	public Response getRepo(@PathParam("id") String id){
 		int repoId = 0;
 		try{
 			repoId = Integer.parseInt(id);
 		} catch(NumberFormatException nfe){
-			throw new IllegalArgumentException("The repository ID have to be a number");
+			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
-		File f = new File("P2RepoId.txt");
-		try{
-			FileReader fr = new FileReader(f);
-			BufferedReader br = new BufferedReader(fr);
-			String line = "";
-			for (int i=0; i<repoId; i++){
-				line = br.readLine();
-				if (line == null){
-					br.close();
-					fr.close();					
-					throw new IllegalArgumentException("There is no Repository with this Id");
+		String repo = P2RestActivator.getDeafault().getUri(repoId);
+		if (repo == null){
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		else{
+			P2ResourcesFinder finder = new P2ResourcesFinder();
+			try {
+				String resource = finder.find(new URI(repo));
+				if(resource == null){
+					return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 				}
+				else {
+					return Response.ok(repo).build();
+				}
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 			}
-			br.close();
-			fr.close();
-			return line;
-		} catch (IOException e) {
-			throw new IllegalArgumentException("There is no Repository with this Id");
 		}
 	}
 }
