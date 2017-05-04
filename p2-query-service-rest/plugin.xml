@@ -9,7 +9,7 @@
             thread="main"
             visible="true">
          <run
-               class="com.itemis.p2queryservice.server.JettyApplication">
+               class="com.itemis.p2queryservice.server.P2RestApplication">
          </run>
       </application>
    </extension>

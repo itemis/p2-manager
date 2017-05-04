@@ -11,15 +11,19 @@ import org.glassfish.jersey.servlet.ServletContainer;
 
 import com.itemis.p2queryservice.rest.RestService;
 
-public class JettyApplication implements IApplication{
+public class P2RestApplication implements IApplication{
 	
-    private static final Logger logger = Logger.getLogger(JettyApplication.class.getName());
+    private static final Logger logger = Logger.getLogger(P2RestApplication.class.getName());
+    
+    private boolean runner = true;
+    private static P2RestApplication application;
     
     Server s;
     
     @Override
 	public Object start(IApplicationContext appContext) throws Exception {
     	logger.info("START");
+    	application = this;
     	
     	ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
     	context.setClassLoader(this.getClass().getClassLoader());
@@ -28,7 +32,7 @@ public class JettyApplication implements IApplication{
     	s = new Server(8080);
     	s.setHandler(context);
     	
-		ServletHolder jerseyServlet = context.addServlet(ServletContainer.class, "/*");//ServletContainer.class, "/*");
+		ServletHolder jerseyServlet = context.addServlet(ServletContainer.class, "/*");
 		jerseyServlet.setInitOrder(0);
 		jerseyServlet.setInitParameter("jersey.config.server.provider.classnames", RestService.class.getCanonicalName());
 		try {
@@ -45,16 +49,27 @@ public class JettyApplication implements IApplication{
 	public void stop() {
     	logger.info("STOP");
 		s.destroy();
+		application = null;
 	}
 	
 	public Object run(Object o){
-		while(true){ //TODO: Stop?
+		while(runner){ //TODO: Stop?
 			try{
-				Thread.sleep(10);
+				this.wait(10);
 			}
 			catch(Exception e){
 				e.printStackTrace();
 			}
 		}
+		return EXIT_OK;
+	}
+	
+	public void stopRun(){
+		this.runner = false;
+		this.notify();
+	}
+	
+	public static P2RestApplication getDefault(){
+		return application;
 	}
 }

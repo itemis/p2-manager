@@ -31,6 +31,14 @@ public class RestService{
     public String getHelloWorld() {
         return "Hello World";
     }
+
+    @GET
+    @Produces("text/plain")
+	@Path("/end")
+    public String stopService() {
+//    	JettyApplication.getDefault().stopRun();
+        return "Service is stopped";
+    }
 	
 	@POST
     @Produces("text/plain")

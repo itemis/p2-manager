@@ -10,6 +10,7 @@ location "http://download.eclipse.org/releases/neon/201703231000" {
 	org.eclipse.jetty.io
 	org.eclipse.jetty.continuation
 	org.eclipse.equinox.app
+	org.eclipse.equinox.p2.core.feature.feature.group
 }
 location "http://download.eclipse.org/eclipse/updates/4.6" {
 	org.eclipse.core.runtime.feature.feature.group
@@ -22,6 +23,7 @@ location "http://download.eclipse.org/tools/orbit/R-builds/R20170307180635/repos
 	javax.inject
 	javax.xml
 	javax.annotation
+	org.json
 }
 location "http://hstaudacher.github.io/osgi-jax-rs-connector" {
 	org.glassfish.jersey.containers.jersey-container-servlet-core
@@ -37,4 +39,5 @@ location "http://hstaudacher.github.io/osgi-jax-rs-connector" {
 	org.glassfish.jersey.bundles.repackaged.jersey-guava
 	javassist
 	javax.validation.api
+	com.eclipsesource.jaxrs.swagger-all
 }
