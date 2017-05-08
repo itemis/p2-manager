@@ -57,7 +57,8 @@ public class QueryableArray extends IndexProvider<IInstallableUnit> {
 		if (InstallableUnit.MEMBER_TRANSLATED_PROPERTIES.equals(memberName)) {
 			if (translationSupport == null)
 				translationSupport = new TranslationSupport(this);
-			return key instanceof KeyWithLocale ? translationSupport.getIUProperty(iu, (KeyWithLocale) key) : translationSupport.getIUProperty(iu, key.toString());
+			return key instanceof KeyWithLocale ? translationSupport.getIUProperty(iu, (KeyWithLocale) key)
+					: translationSupport.getIUProperty(iu, key.toString());
 		}
 		return null;
 	}

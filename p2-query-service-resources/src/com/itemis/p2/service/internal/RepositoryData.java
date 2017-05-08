@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 
-import com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
+import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
 public class RepositoryData {
 	/**

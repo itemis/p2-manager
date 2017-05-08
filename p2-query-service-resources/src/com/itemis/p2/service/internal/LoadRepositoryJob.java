@@ -15,12 +15,13 @@ import org.eclipse.equinox.p2.core.ProvisionException;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
 
-import com.ifedorenko.p2browser.director.InstallableUnitDAG;
-import com.ifedorenko.p2browser.model.IncludedInstallableUnits;
-import com.ifedorenko.p2browser.model.InstallableUnitDependencyTree;
-import com.ifedorenko.p2browser.model.UngroupedInstallableUnits;
-import com.ifedorenko.p2browser.model.match.IInstallableUnitMatcher;
 import com.itemis.p2.service.P2ResourcesActivator;
+
+import copied.com.ifedorenko.p2browser.director.InstallableUnitDAG;
+import copied.com.ifedorenko.p2browser.model.IncludedInstallableUnits;
+import copied.com.ifedorenko.p2browser.model.InstallableUnitDependencyTree;
+import copied.com.ifedorenko.p2browser.model.UngroupedInstallableUnits;
+import copied.com.ifedorenko.p2browser.model.match.IInstallableUnitMatcher;
 
 @SuppressWarnings("restriction")
 public class LoadRepositoryJob extends Job {

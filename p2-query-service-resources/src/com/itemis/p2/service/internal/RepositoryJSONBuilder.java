@@ -14,7 +14,7 @@ import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 import org.eclipse.equinox.internal.p2.metadata.repository.CompositeMetadataRepository;
 import org.json.*;
 
-import com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
+import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
 @SuppressWarnings("restriction")
 public class RepositoryJSONBuilder {

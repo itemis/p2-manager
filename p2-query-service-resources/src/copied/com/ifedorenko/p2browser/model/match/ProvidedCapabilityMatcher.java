@@ -9,33 +9,24 @@
  *      Igor Fedorenko - initial API and implementation
  *******************************************************************************/
 
-package com.ifedorenko.p2browser.model.match;
+package copied.com.ifedorenko.p2browser.model.match;
 
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 import org.eclipse.equinox.p2.metadata.IProvidedCapability;
 
+public class ProvidedCapabilityMatcher extends AbstractPatternMatcher implements IInstallableUnitMatcher {
+	public ProvidedCapabilityMatcher(IMatchStrategy strategy, String pattern) {
+		super(strategy, pattern);
+	}
 
-
-public class ProvidedCapabilityMatcher
-    extends AbstractPatternMatcher
-    implements IInstallableUnitMatcher
-{
-    public ProvidedCapabilityMatcher( IMatchStrategy strategy, String pattern )
-    {
-        super( strategy, pattern );
-    }
-
-    @Override
-    public boolean match( IInstallableUnit unit )
-    {
-        for ( IProvidedCapability cap : unit.getProvidedCapabilities() )
-        {
-            if ( match( cap.getName() ) )
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+	@Override
+	public boolean match(IInstallableUnit unit) {
+		for (IProvidedCapability cap : unit.getProvidedCapabilities()) {
+			if (match(cap.getName())) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 }

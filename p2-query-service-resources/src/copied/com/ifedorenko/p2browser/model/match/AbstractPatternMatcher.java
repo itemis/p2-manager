@@ -9,11 +9,20 @@
  *      Igor Fedorenko - initial API and implementation
  *******************************************************************************/
 
-package com.ifedorenko.p2browser.model.match;
+package copied.com.ifedorenko.p2browser.model.match;
 
-import org.eclipse.equinox.p2.metadata.IInstallableUnit;
+abstract class AbstractPatternMatcher implements IInstallableUnitMatcher {
 
-public interface IInstallableUnitMatcher
-{
-    public boolean match( IInstallableUnit unit );
+	private final IMatchStrategy strategy;
+
+	private final String pattern;
+
+	protected AbstractPatternMatcher(IMatchStrategy strategy, String pattern) {
+		this.strategy = strategy;
+		this.pattern = pattern;
+	}
+
+	protected boolean match(String string) {
+		return strategy.match(string, pattern);
+	}
 }

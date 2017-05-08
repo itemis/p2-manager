@@ -50,7 +50,7 @@ public class P2RestActivator implements BundleActivator{
     	activator = null;
     }
     
-    public static P2RestActivator getDeafault(){
+    public static P2RestActivator getDefault(){
     	return activator;
     }
     

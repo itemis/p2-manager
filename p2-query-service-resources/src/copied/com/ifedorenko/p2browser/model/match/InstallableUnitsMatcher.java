@@ -9,7 +9,7 @@
  *      Igor Fedorenko - initial API and implementation
  *******************************************************************************/
 
-package com.ifedorenko.p2browser.model.match;
+package copied.com.ifedorenko.p2browser.model.match;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -17,20 +17,16 @@ import java.util.Set;
 
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 
-public class InstallableUnitsMatcher
-    implements IInstallableUnitMatcher
-{
-    private final Set<IInstallableUnit> units;
+public class InstallableUnitsMatcher implements IInstallableUnitMatcher {
+	private final Set<IInstallableUnit> units;
 
-    public InstallableUnitsMatcher( Collection<IInstallableUnit> units )
-    {
-        this.units = new HashSet<IInstallableUnit>( units );
-    }
+	public InstallableUnitsMatcher(Collection<IInstallableUnit> units) {
+		this.units = new HashSet<IInstallableUnit>(units);
+	}
 
-    @Override
-    public boolean match( IInstallableUnit unit )
-    {
-        return units.contains( unit );
-    }
+	@Override
+	public boolean match(IInstallableUnit unit) {
+		return units.contains(unit);
+	}
 
 }

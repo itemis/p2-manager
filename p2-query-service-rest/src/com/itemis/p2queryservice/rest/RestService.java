@@ -41,14 +41,14 @@ public class RestService{
 		if (uri == null)
 			return Response.status(Response.Status.NOT_FOUND).build();
 		URI location;
-		int index = P2RestActivator.getDeafault().uriAlreadyExists(uri);
+		int index = P2RestActivator.getDefault().uriAlreadyExists(uri);
 		if(index >= 0){
 			location = uriInfo.getRequestUriBuilder().path(index+"/").build();
 			logger.info("IF: " + location.toString());
 			return Response.status(Response.Status.CONFLICT).header(HttpHeaders.LOCATION, location).entity("Repository already exists").build();
 		}
 		else{
-			index = P2RestActivator.getDeafault().addUri(uri);
+			index = P2RestActivator.getDefault().addUri(uri);
 			location = uriInfo.getRequestUriBuilder().path(index+"/").build();
 			logger.info("ELSE: " + location.toString());
 			return Response.created(location).build();
@@ -65,7 +65,7 @@ public class RestService{
 		} catch(NumberFormatException nfe){
 			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
-		String repo = P2RestActivator.getDeafault().getUri(repoId);
+		String repo = P2RestActivator.getDefault().getUri(repoId);
 		if (repo == null){
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
@@ -77,7 +77,7 @@ public class RestService{
 					return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 				}
 				else {
-					return Response.ok(repo).build();
+					return Response.ok(resource).build();
 				}
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
