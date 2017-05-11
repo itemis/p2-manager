@@ -6,77 +6,84 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
-import org.osgi.framework.BundleActivator;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
 
 import com.google.common.io.CharStreams;
 
-public class P2RestActivator implements BundleActivator {
+public class P2RestActivator extends Plugin {
+	private static final String REPO_DAT_FILE = "repositories.dat";
 
-	private static final Logger logger = Logger.getLogger(P2RestActivator.class.getName());
+	private static P2RestActivator instance;
 
-	public static P2RestActivator activator;
-	public BundleContext instance;
+	private final List<String> uris = new ArrayList<>();
 
-	// TODO: File is empty after restart
-	private File txtFile;
-	private FileReader reader;
-	private FileWriter writer;
-
-	List<String> uris;
+	public static P2RestActivator getDefault() {
+		return instance;
+	}
 
 	@Override
 	public synchronized void start(BundleContext bundleContext) throws Exception {
-		logger.info("START");
-		this.instance = bundleContext;
-		activator = this;
-		txtFile = new File("P2RepoId.txt");
-		reader = new FileReader(txtFile);
-		writer = new FileWriter(txtFile);
-		uris = new ArrayList<>();
+		instance = this;
+		info("START");
 		readUriFile();
 	}
 
 	@Override
 	public synchronized void stop(BundleContext bundleContext) throws Exception {
-		logger.info("STOP");
+		info("STOP");
 		uris.clear();
-		writer.close();
-		reader.close();
-		txtFile = null;
-		this.instance = null;
-		activator = null;
+		instance = null;
 	}
 
-	public static P2RestActivator getDefault() {
-		return activator;
+	public static CoreException createCoreException(String message, Throwable cause) {
+		Status status = new Status(IStatus.ERROR, instance.getBundle().getSymbolicName(), message, cause);
+		return new CoreException(status);
 	}
 
-	private void readUriFile() {
-		uris.clear();
-		try {
-			uris.addAll(CharStreams.readLines(reader));
-		} catch (IOException e) {
-			// TODO ExceptionHandling
-			e.printStackTrace();
+	public static void info(String message) {
+		Status status = new Status(IStatus.INFO, instance.getBundle().getSymbolicName(), message);
+		instance.getLog().log(status);
+	}
+
+	private void readUriFile() throws CoreException {
+		File repositoriesDataFile = getRepositoriesDataFile();
+		if (!repositoriesDataFile.exists()) {
+			try {
+				repositoriesDataFile.createNewFile();
+			} catch (IOException e) {
+				throw createCoreException("Could not create " + REPO_DAT_FILE, e);
+			}
 		}
+		try (FileReader reader = new FileReader(repositoriesDataFile)) {
+			List<String> content = CharStreams.readLines(reader);
+			uris.clear();
+			uris.addAll(content);
+		} catch (IOException e) {
+			throw createCoreException("Could not read " + REPO_DAT_FILE, e);
+		}
+	}
+
+	public int addUri(String uri) throws CoreException {
+		uris.add(uri);
+		try (FileWriter writer = new FileWriter(getRepositoriesDataFile())) {
+			CharStreams.asWriter(writer).append(uri);
+		} catch (IOException e) {
+			throw createCoreException("Could not read " + REPO_DAT_FILE, e);
+		}
+		return uris.size() - 1;
+	}
+
+	private File getRepositoriesDataFile() {
+		return getStateLocation().append(REPO_DAT_FILE).toFile();
 	}
 
 	public int uriAlreadyExists(String uri) {
 		return uris.indexOf(uri);
-	}
-
-	public int addUri(String uri) {
-		uris.add(uri);
-		try {
-			CharStreams.asWriter(writer).append(uri);
-		} catch (IOException e) {
-			// TODO ExceptionHandling
-			e.printStackTrace();
-		}
-		return uris.size() - 1;
 	}
 
 	public String getUri(int index) {

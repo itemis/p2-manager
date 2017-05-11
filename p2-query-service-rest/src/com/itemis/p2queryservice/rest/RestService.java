@@ -16,6 +16,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.eclipse.core.runtime.CoreException;
+
 import com.itemis.p2.service.P2ResourcesFinder;
 import com.itemis.p2queryservice.server.P2RestActivator;
 
@@ -37,7 +39,7 @@ public class RestService {
 
 	@POST
 	// @Produces("text/plain")
-	public Response addRepo(@Context UriInfo uriInfo, @FormParam("uri") String uri) throws IOException {
+	public Response addRepo(@Context UriInfo uriInfo, @FormParam("uri") String uri) {
 		if (uri == null)
 			return Response.status(Response.Status.NOT_FOUND).build();
 		URI location;
@@ -48,7 +50,11 @@ public class RestService {
 			return Response.status(Response.Status.CONFLICT).header(HttpHeaders.LOCATION, location)
 					.entity("Repository already exists").build();
 		} else {
-			index = P2RestActivator.getDefault().addUri(uri);
+			try {
+				index = P2RestActivator.getDefault().addUri(uri);
+			} catch (CoreException e) {
+				return Response.serverError().build();
+			}
 			location = uriInfo.getRequestUriBuilder().path(index + "/").build();
 			logger.info("ELSE: " + location.toString());
 			return Response.created(location).build();
