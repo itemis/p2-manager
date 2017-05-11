@@ -59,8 +59,7 @@ public class P2ResourcesActivator extends Plugin {
 	public static IMetadataRepositoryManager getRepositoryManager() {
 		IProvisioningAgent agent = getDefault().getProvisioningAgent();
 		
-		String serviceName = IMetadataRepositoryManager.SERVICE_NAME;
-		Object service = agent.getService(serviceName);
+		Object service = agent.getService(IMetadataRepositoryManager.SERVICE_NAME);
 		IMetadataRepositoryManager repoMgr = (IMetadataRepositoryManager) service;
 
 		if (repoMgr == null) {
