@@ -20,63 +20,61 @@ import com.itemis.p2.service.P2ResourcesFinder;
 import com.itemis.p2queryservice.server.P2RestActivator;
 
 @Path("/p2/repository")
-public class RestService{
+public class RestService {
 
-    private static final Logger logger = Logger.getLogger(RestService.class.getName());
-	
+	private static final Logger logger = Logger.getLogger(RestService.class.getName());
+
 	public RestService() {
 		logger.info("Construct TestRestService");
 	}
 
-    @GET
-    @Produces("text/plain")
+	@GET
+	@Produces("text/plain")
 	@Path("/hello/world")
-    public String getHelloWorld() {
-        return "Hello World";
-    }
-	
+	public String getHelloWorld() {
+		return "Hello World";
+	}
+
 	@POST
-//  @Produces("text/plain")
-	public Response addRepo(@Context UriInfo uriInfo, @FormParam("uri") String uri) throws IOException{
+	// @Produces("text/plain")
+	public Response addRepo(@Context UriInfo uriInfo, @FormParam("uri") String uri) throws IOException {
 		if (uri == null)
 			return Response.status(Response.Status.NOT_FOUND).build();
 		URI location;
 		int index = P2RestActivator.getDefault().uriAlreadyExists(uri);
-		if(index >= 0){
-			location = uriInfo.getRequestUriBuilder().path(index+"/").build();
+		if (index >= 0) {
+			location = uriInfo.getRequestUriBuilder().path(index + "/").build();
 			logger.info("IF: " + location.toString());
-			return Response.status(Response.Status.CONFLICT).header(HttpHeaders.LOCATION, location).entity("Repository already exists").build();
-		}
-		else{
+			return Response.status(Response.Status.CONFLICT).header(HttpHeaders.LOCATION, location)
+					.entity("Repository already exists").build();
+		} else {
 			index = P2RestActivator.getDefault().addUri(uri);
-			location = uriInfo.getRequestUriBuilder().path(index+"/").build();
+			location = uriInfo.getRequestUriBuilder().path(index + "/").build();
 			logger.info("ELSE: " + location.toString());
 			return Response.created(location).build();
 		}
 	}
-	
+
 	@GET
-//	@Produces("text/plain")
+	// @Produces("text/plain")
 	@Path("{id}")
-	public Response getRepo(@PathParam("id") String id){
+	public Response getRepo(@PathParam("id") String id) {
 		int repoId = 0;
-		try{
+		try {
 			repoId = Integer.parseInt(id);
-		} catch(NumberFormatException nfe){
+		} catch (NumberFormatException nfe) {
 			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
 		String repo = P2RestActivator.getDefault().getUri(repoId);
-		if (repo == null){
+		if (repo == null) {
 			return Response.status(Response.Status.NOT_FOUND).build();
-		}
-		else{
+		} else {
 			P2ResourcesFinder finder = new P2ResourcesFinder();
 			try {
 				String resource = finder.find(new URI(repo));
-				if(resource == null){
+				if (resource == null) {
 					return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-				}
-				else {
+				} else {
 					return Response.ok(resource).build();
 				}
 			} catch (URISyntaxException e) {
