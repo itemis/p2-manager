@@ -15,6 +15,7 @@ import org.eclipse.equinox.p2.core.ProvisionException;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
 
+import com.itemis.p2.service.IRepositoryData;
 import com.itemis.p2.service.P2ResourcesActivator;
 
 import copied.com.ifedorenko.p2browser.director.InstallableUnitDAG;
@@ -28,16 +29,16 @@ public class LoadRepositoryJob extends Job {
 	public static final String FAMILY = "LoadRepositoryJob";
 
 	private URI location;
-	private RepositoryData data;
+	private IRepositoryData data;
     private boolean revealCompositeRepositories = true;
     private boolean groupIncludedIUs = false;
     private IInstallableUnitMatcher unitMatcher;
 
 
-	public LoadRepositoryJob(URI location, RepositoryData data) {
+	public LoadRepositoryJob(URI location, IRepositoryData data) {
 		this (location, data, true, false);
 	}
-	public LoadRepositoryJob(URI location, RepositoryData data, boolean revealCompositeRepositories, boolean groupIncludedIUs) {
+	public LoadRepositoryJob(URI location, IRepositoryData data, boolean revealCompositeRepositories, boolean groupIncludedIUs) {
 		super("Load repository metadata "+location);
 		this.location = location;
 		setUser(true);
@@ -57,7 +58,6 @@ public class LoadRepositoryJob extends Job {
 
 		try {
 			IMetadataRepositoryManager repoMgr = P2ResourcesActivator.getRepositoryManager();
-			data.addLocation(location);
 			loadRepository(repoMgr, location, errors, monitor);
 			loadRepositoryContent(location, monitor);
 		}

@@ -14,19 +14,21 @@ import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 import org.eclipse.equinox.internal.p2.metadata.repository.CompositeMetadataRepository;
 import org.json.*;
 
+import com.itemis.p2.service.IRepositoryData;
+
 import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
 @SuppressWarnings("restriction")
 public class RepositoryJSONBuilder {
 	
-	RepositoryData repositoryData;
+	IRepositoryData repositoryData;
 	
 	public RepositoryJSONBuilder() {
 	}
 	
-	public JSONArray buildJSON(RepositoryData repositoryData) throws JSONException {
+	public JSONArray buildJSON(IRepositoryData repositoryData) throws JSONException {
 		this.repositoryData = repositoryData;
-		return addRepositories(new ArrayList<URI>(repositoryData.getRepositories()));
+		return addRepositories(new ArrayList<URI>(repositoryData.getAllLocations()));
 	}
 	
 	private JSONArray addRepositories(List<URI> repoUris) throws JSONException {
@@ -42,7 +44,7 @@ public class RepositoryJSONBuilder {
 	}
 	
 	private void addRepositoryDataToJSON(JSONObject jObject, URI uri) throws JSONException {
-		IMetadataRepository metadata = repositoryData.getAllrepositories().get(uri);
+		IMetadataRepository metadata = repositoryData.getRepository(uri);
 		jObject.put("Name", metadata.getName());
 		jObject.put("Version",metadata.getVersion());
 		jObject.put("Timestamp", metadata.getProperty("p2.timestamp"));

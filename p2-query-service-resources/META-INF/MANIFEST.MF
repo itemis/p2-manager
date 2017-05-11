@@ -11,7 +11,8 @@ Require-Bundle: org.eclipse.osgi,
  org.eclipse.equinox.p2.engine,
  org.eclipse.equinox.p2.repository,
  org.eclipse.equinox.p2.metadata.repository,
- org.eclipse.equinox.p2.director
+ org.eclipse.equinox.p2.director,
+ com.google.guava;bundle-version="18.0.0"
 Bundle-Activator: com.itemis.p2.service.P2ResourcesActivator
 Import-Package: org.eclipse.equinox.internal.provisional.configurator,
  org.json

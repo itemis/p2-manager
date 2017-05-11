@@ -1,10 +1,15 @@
 package com.itemis.p2.service;
 
+import java.io.File;
 import java.net.URI;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.p2.core.IProvisioningAgent;
+import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -16,18 +21,19 @@ import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
 public class P2ResourcesActivator extends Plugin {
 	private IProvisioningAgent agent;
-	private static P2ResourcesActivator plugin;
+	private static P2ResourcesActivator instance;
 
 	private ServiceReference<IProvisioningAgent> agentReference;
-	private RepositoryData repositoryData;
+	private IRepositoryData repositoryData;
 
 	public void start(BundleContext context) throws Exception {
-		plugin = this;
-		repositoryData = new RepositoryData();
+		instance = this;
+		File storage = getStateLocation().append("repositories.dat").toFile();
+		repositoryData = new RepositoryData(storage);
 	}
 
 	public void stop() throws Exception {
-		plugin = null;
+		instance = null;
 		repositoryData = null;
 		if (agentReference != null) {
 			getBundle().getBundleContext().ungetService(agentReference);
@@ -35,8 +41,19 @@ public class P2ResourcesActivator extends Plugin {
 	}
 
 	public static P2ResourcesActivator getDefault() {
-		return plugin;
+		return instance;
 	}
+
+	public static CoreException createCoreException(String message, Throwable cause) {
+		Status status = new Status(IStatus.ERROR, instance.getBundle().getSymbolicName(), message, cause);
+		return new CoreException(status);
+	}
+
+	public static void info(String message) {
+		Status status = new Status(IStatus.INFO, instance.getBundle().getSymbolicName(), message);
+		instance.getLog().log(status);
+	}
+
 
 	public synchronized IProvisioningAgent getProvisioningAgent() {
 		if (agent == null) {
@@ -69,29 +86,8 @@ public class P2ResourcesActivator extends Plugin {
 		return repoMgr;
 	}
 
-	public RepositoryData getRepositoryData() {
+	public IRepositoryData getRepositoryData() {
 		return repositoryData;
 	}
 	
-	public void addRepository (URI uri) {
-		LoadRepositoryJob job = new LoadRepositoryJob(uri, repositoryData);
-		job.schedule();
-	}
-	
-	public IGroupedInstallableUnits getRepositoryContents (URI uri) {
-		if (!repositoryData.getRepositoryContent().containsKey(uri)) {
-			addRepository(uri);
-		}
-		for (Job job: Job.getJobManager().find(LoadRepositoryJob.FAMILY)) {
-			LoadRepositoryJob loadRepositoryJob = (LoadRepositoryJob) job;
-			if (loadRepositoryJob.getLocation().equals(uri)) {
-				try {
-					loadRepositoryJob.join();
-				} catch (InterruptedException e) {
-					; // nothing
-				}
-			}
-		}
-		return repositoryData.getRepositoryContent().get(uri);
-	}
 }

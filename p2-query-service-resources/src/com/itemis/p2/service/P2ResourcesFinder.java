@@ -5,7 +5,6 @@ import java.net.URI;
 import org.json.JSONArray;
 
 import com.itemis.p2.service.internal.LoadRepositoryJob;
-import com.itemis.p2.service.internal.RepositoryData;
 import com.itemis.p2.service.internal.RepositoryJSONBuilder;
 
 public class P2ResourcesFinder{
@@ -17,7 +16,7 @@ public class P2ResourcesFinder{
 	}
 
 	public String find(URI uri) {
-		RepositoryData repositoryData;
+		IRepositoryData repositoryData;
 		try {
 			repositoryData = P2ResourcesActivator.getDefault().getRepositoryData();
 			LoadRepositoryJob job = new LoadRepositoryJob(uri, repositoryData);
