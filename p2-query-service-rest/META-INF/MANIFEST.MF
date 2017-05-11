@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.jetty.server,
  org.glassfish.jersey.core.jersey-server,
  org.eclipse.core.runtime,
  p2-query-service-resources,
- com.google.guava;bundle-version="18.0.0"
+ com.google.guava;bundle-version="18.0.0",
+ com.eclipsesource.jaxrs.provider.gson;bundle-version="2.3.0"
 Import-Package: com.google.common.io,
  javax.servlet,
  javax.ws.rs,

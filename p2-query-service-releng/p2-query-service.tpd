@@ -33,6 +33,7 @@ location "http://hstaudacher.github.io/osgi-jax-rs-connector" {
 	org.glassfish.jersey.core.jersey-client
 	org.glassfish.jersey.core.jersey-server
 	org.glassfish.jersey.core.jersey-common
+	org.glassfish.jersey.media.jersey-media-multipart
 	org.glassfish.hk2.osgi-resource-locator
 	org.glassfish.hk2.api
 	org.glassfish.hk2.utils
@@ -40,5 +41,9 @@ location "http://hstaudacher.github.io/osgi-jax-rs-connector" {
 	org.glassfish.jersey.bundles.repackaged.jersey-guava
 	javassist
 	javax.validation.api
+	org.jvnet.mimepull
 	com.eclipsesource.jaxrs.swagger-all
+	com.eclipsesource.jaxrs.provider.swagger.feature.feature.group
+	com.eclipsesource.jaxrs.provider.gson
+	com.google.gson
 }

@@ -10,6 +10,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.servlet.ServletContainer;
 
+import com.eclipsesource.jaxrs.provider.gson.GsonProvider;
 import com.google.common.base.Joiner;
 import com.itemis.p2queryservice.rest.PingService;
 import com.itemis.p2queryservice.rest.RestService;
@@ -19,7 +20,8 @@ public class P2RestApplication implements IApplication {
 	
 	private static final Class<?>[] SERVICE_CLASSES= {
 		PingService.class,
-		RestService.class
+		RestService.class,
+		GsonProvider.class
 	};
 
 	@Override
@@ -37,6 +39,7 @@ public class P2RestApplication implements IApplication {
 		jerseyServlet.setInitOrder(0);
 		jerseyServlet.setInitParameter("jersey.config.server.provider.classnames",
 				Joiner.on(',').join(SERVICE_CLASSES));
+		jerseyServlet.setInitParameter("com.sun.jersey.api.json.POJOMappingFeature", "true");
 
 		try {
 			server.start();
