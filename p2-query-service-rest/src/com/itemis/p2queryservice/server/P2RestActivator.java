@@ -73,7 +73,7 @@ public class P2RestActivator extends Plugin {
 
 	public int addUri(String uri) throws CoreException {
 		uris.add(URI.create(uri));
-		try (FileWriter writer = new FileWriter(getRepositoriesDataFile())) {
+		try (FileWriter writer = new FileWriter(getRepositoriesDataFile(), true)) {
 			CharStreams.asWriter(writer).append(uri);
 		} catch (IOException e) {
 			throw createCoreException("Could not read " + REPO_DAT_FILE, e);
