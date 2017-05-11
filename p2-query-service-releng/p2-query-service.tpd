@@ -11,7 +11,12 @@ location "http://download.eclipse.org/releases/neon/201703231000" {
 	org.eclipse.jetty.continuation
 	org.eclipse.equinox.app
 	org.eclipse.equinox.p2.core.feature.feature.group
+	org.eclipse.core.net
 	com.google.guava
+	org.eclipse.ecf
+	org.eclipse.ecf.filetransfer
+	org.eclipse.ecf.provider.filetransfer
+	org.eclipse.ecf.identity
 }
 location "http://download.eclipse.org/eclipse/updates/4.6" {
 	org.eclipse.core.runtime.feature.feature.group
