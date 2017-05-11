@@ -1,35 +1,32 @@
 package com.itemis.p2.service;
 
+import java.net.URI;
+
 import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.p2.core.IProvisioningAgent;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
+import com.itemis.p2.service.internal.LoadRepositoryJob;
 import com.itemis.p2.service.internal.RepositoryData;
 
-public class P2ResourcesActivator extends Plugin {
-	public static final String ID = "com.itemis.p2.service"; //$NON-NLS-1$
-	private static BundleContext bundleContext;
+import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
+public class P2ResourcesActivator extends Plugin {
 	private IProvisioningAgent agent;
 	private static P2ResourcesActivator plugin;
 
 	private ServiceReference<IProvisioningAgent> agentReference;
 	private RepositoryData repositoryData;
 
-	public static BundleContext getContext() {
-		return bundleContext;
-	}
-
 	public void start(BundleContext context) throws Exception {
-		bundleContext = context;
 		plugin = this;
 		repositoryData = new RepositoryData();
 	}
 
 	public void stop() throws Exception {
-		bundleContext = null;
 		plugin = null;
 		repositoryData = null;
 		if (agentReference != null) {
@@ -75,5 +72,27 @@ public class P2ResourcesActivator extends Plugin {
 
 	public RepositoryData getRepositoryData() {
 		return repositoryData;
+	}
+	
+	public void addRepository (URI uri) {
+		LoadRepositoryJob job = new LoadRepositoryJob(uri, repositoryData);
+		job.schedule();
+	}
+	
+	public IGroupedInstallableUnits getRepositoryContents (URI uri) {
+		if (!repositoryData.getRepositoryContent().containsKey(uri)) {
+			addRepository(uri);
+		}
+		for (Job job: Job.getJobManager().find(LoadRepositoryJob.FAMILY)) {
+			LoadRepositoryJob loadRepositoryJob = (LoadRepositoryJob) job;
+			if (loadRepositoryJob.getLocation().equals(uri)) {
+				try {
+					loadRepositoryJob.join();
+				} catch (InterruptedException e) {
+					; // nothing
+				}
+			}
+		}
+		return repositoryData.getRepositoryContent().get(uri);
 	}
 }

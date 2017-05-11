@@ -16,9 +16,12 @@ import javax.ws.rs.core.UriInfo;
 
 import org.eclipse.core.runtime.CoreException;
 
+import com.itemis.p2.service.P2ResourcesActivator;
 import com.itemis.p2.service.P2ResourcesFinder;
 import com.itemis.p2queryservice.model.RepositoryInfo;
 import com.itemis.p2queryservice.server.P2RestActivator;
+
+import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
 @Path("/repositories")
 public class RestService {
@@ -43,6 +46,7 @@ public class RestService {
 		if (id < 0) {
 			try {
 				id = activator.addUri(uri);
+				P2ResourcesActivator.getDefault().addRepository(URI.create(uri));
 			} catch (CoreException e) {
 				return Response.serverError().build();
 			}
@@ -64,17 +68,17 @@ public class RestService {
 		} catch (NumberFormatException nfe) {
 			return Response.status(Response.Status.BAD_REQUEST).build();
 		}
+
 		URI repo = P2RestActivator.getDefault().getUri(repoId);
 		if (repo == null) {
 			return Response.status(Response.Status.NOT_FOUND).build();
+		} 
+
+		IGroupedInstallableUnits contents = P2ResourcesActivator.getDefault().getRepositoryContents(repo);
+		if (contents == null) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 		} else {
-			P2ResourcesFinder finder = new P2ResourcesFinder();
-			String resource = finder.find(repo);
-			if (resource == null) {
-				return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-			} else {
-				return Response.ok(resource).build();
-			}
+			return Response.ok(contents).build();
 		}
 	}
 }

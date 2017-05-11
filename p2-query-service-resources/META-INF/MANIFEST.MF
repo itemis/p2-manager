@@ -17,4 +17,5 @@ Import-Package: org.eclipse.equinox.internal.provisional.configurator,
  org.json
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Export-Package: com.itemis.p2.service
+Export-Package: com.itemis.p2.service,
+ copied.com.ifedorenko.p2browser.model

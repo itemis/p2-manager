@@ -25,6 +25,7 @@ import copied.com.ifedorenko.p2browser.model.match.IInstallableUnitMatcher;
 
 @SuppressWarnings("restriction")
 public class LoadRepositoryJob extends Job {
+	public static final String FAMILY = "LoadRepositoryJob";
 
 	private URI location;
 	private RepositoryData data;
@@ -37,12 +38,17 @@ public class LoadRepositoryJob extends Job {
 		this (location, data, true, false);
 	}
 	public LoadRepositoryJob(URI location, RepositoryData data, boolean revealCompositeRepositories, boolean groupIncludedIUs) {
-		super("Load repository metadata");
+		super("Load repository metadata "+location);
 		this.location = location;
 		setUser(true);
 		this.data = data;
 		this.revealCompositeRepositories = revealCompositeRepositories;
 		this.groupIncludedIUs = groupIncludedIUs;
+	}
+	
+	@Override
+	public boolean belongsTo(Object family) {
+		return FAMILY.equals(family);
 	}
 
 	@Override
@@ -126,9 +132,14 @@ public class LoadRepositoryJob extends Job {
 		} else if (errors.size() == 1) {
 			return errors.get(0);
 		} else {
-			MultiStatus status = new MultiStatus(P2ResourcesActivator.ID, -1, errors.toArray(new IStatus[errors.size()]),
+			MultiStatus status = new MultiStatus(P2ResourcesActivator.getDefault().getBundle().getSymbolicName(), -1, errors.toArray(new IStatus[errors.size()]),
 					"Problems loading repository", null);
 			return status;
 		}
 	}
+	
+	public URI getLocation() {
+		return location;
+	}
+	
 }
