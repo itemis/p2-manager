@@ -1,6 +1,7 @@
 package com.itemis.p2queryservice.server;
 
-import java.util.logging.Logger;
+import static com.itemis.p2queryservice.server.P2RestActivator.createCoreException;
+import static com.itemis.p2queryservice.server.P2RestActivator.info;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -9,47 +10,52 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.servlet.ServletContainer;
 
+import com.google.common.base.Joiner;
+import com.itemis.p2queryservice.rest.PingService;
 import com.itemis.p2queryservice.rest.RestService;
 
 public class P2RestApplication implements IApplication {
-
-	private static final Logger logger = Logger.getLogger(P2RestApplication.class.getName());
-
-	Server s;
+	private Server server;
+	
+	private static final Class<?>[] SERVICE_CLASSES= {
+		PingService.class,
+		RestService.class
+	};
 
 	@Override
 	public Object start(IApplicationContext appContext) throws Exception {
-		logger.info("START");
+		info("START p2-rest-service");
 
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 		context.setClassLoader(this.getClass().getClassLoader());
 		context.setContextPath("/");
-
-		s = new Server(8080);
-		s.setHandler(context);
+		
+		server = new Server(8080);
+		server.setHandler(context);
 
 		ServletHolder jerseyServlet = context.addServlet(ServletContainer.class, "/*");
 		jerseyServlet.setInitOrder(0);
 		jerseyServlet.setInitParameter("jersey.config.server.provider.classnames",
-				RestService.class.getCanonicalName());
+				Joiner.on(',').join(SERVICE_CLASSES));
+
 		try {
-			s.start();
-			s.join();
-			return run(null);
-		} catch (Exception e1) {
-			e1.printStackTrace();
-			return null;
+			server.start();
+			server.join();
+		} catch (Exception e) {
+			throw createCoreException("Could not start server", e);
 		}
+		run();
+		return IApplication.EXIT_OK;
 	}
 
 	@Override
 	public void stop() {
-		logger.info("STOP");
-		s.destroy();
+		info("STOP p2-rest-service");
+		server.destroy();
 	}
 
-	public Object run(Object o) {
-		while (true) { // TODO: Stop?
+	public void run() {
+		while (server.isRunning()) {
 			try {
 				this.wait(10);
 			} catch (Exception e) {
@@ -57,4 +63,6 @@ public class P2RestApplication implements IApplication {
 			}
 		}
 	}
+	
+	
 }

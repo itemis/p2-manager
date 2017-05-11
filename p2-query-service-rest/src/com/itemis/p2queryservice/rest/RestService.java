@@ -1,6 +1,5 @@
 package com.itemis.p2queryservice.rest;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Logger;
@@ -21,7 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import com.itemis.p2.service.P2ResourcesFinder;
 import com.itemis.p2queryservice.server.P2RestActivator;
 
-@Path("/p2/repository")
+@Path("/repositories")
 public class RestService {
 
 	private static final Logger logger = Logger.getLogger(RestService.class.getName());
@@ -30,12 +29,6 @@ public class RestService {
 		logger.info("Construct TestRestService");
 	}
 
-	@GET
-	@Produces("text/plain")
-	@Path("/hello/world")
-	public String getHelloWorld() {
-		return "Hello World";
-	}
 
 	@POST
 	// @Produces("text/plain")
