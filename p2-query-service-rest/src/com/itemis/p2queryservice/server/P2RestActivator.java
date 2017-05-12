@@ -15,7 +15,7 @@ import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
 
 import com.google.common.io.CharStreams;
-import com.itemis.p2queryservice.model.RepositoryInfo;
+import com.itemis.p2.service.model.RepositoryInfo;
 
 public class P2RestActivator extends Plugin {
 	private static P2RestActivator instance;

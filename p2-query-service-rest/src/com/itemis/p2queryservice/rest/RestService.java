@@ -17,12 +17,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.eclipse.equinox.internal.p2.metadata.repository.CompositeMetadataRepository;
+import org.eclipse.equinox.p2.repository.ICompositeRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 
 import com.itemis.p2.service.IRepositoryData;
 import com.itemis.p2.service.P2ResourcesActivator;
-import com.itemis.p2queryservice.model.RepositoryInfo;
+import com.itemis.p2.service.model.RepositoryInfo;
 
 @Path("/repositories")
 public class RestService {
@@ -33,21 +33,10 @@ public class RestService {
 		return P2ResourcesActivator.getDefault().getRepositoryData();
 	}
 	
-	private List<RepositoryInfo> toRepositoryInfos (Iterable<URI> uris) {
-		IRepositoryData data = getRepositoryData();
-		List<RepositoryInfo> result = new ArrayList<>();
-		for (URI uri: uris) {
-			int id = data.getRepositoryID(uri);
-			result.add(new RepositoryInfo(id,uri));
-		}
-		return result;
-	}
-	
-
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Iterable<RepositoryInfo> getAllRepositories () {
-		return toRepositoryInfos(getRepositoryData().getAllLocations());
+		return getRepositoryData().getAllRepositories();
 	}
 
 	@POST
@@ -56,30 +45,30 @@ public class RestService {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		IRepositoryData data = getRepositoryData();
 		
-		int id = data.getRepositoryID(uri);
+		Optional<RepositoryInfo> repo = data.getRepositoryByUri(uri);
 
-		if (id < 0) {
-			data.addLocation(uri);
-			id = data.getRepositoryID(uri);
-			URI location = uriInfo.getRequestUriBuilder().path(id + "/").build();
+		if (!repo.isPresent()) {
+			RepositoryInfo r = data.addLocation(uri);
+			URI location = uriInfo.getRequestUriBuilder().path(r.id + "/").build();
 			return Response.created(location).build();
 		} else {
-			URI location = uriInfo.getRequestUriBuilder().path(id + "/").build();
+			URI location = uriInfo.getRequestUriBuilder().path(repo.get() + "/").build();
 			return Response.status(Response.Status.CONFLICT).header(HttpHeaders.LOCATION, location)
 					.entity("Repository already exists").build();
 		}
+
 	}
 
 	@GET
 	@Path("{id}")
 	public Response getRepo(@PathParam("id") int repoId) {
 		IRepositoryData data = getRepositoryData();
-		Optional<URI> uri = data.getLocation(repoId);
-		if (!uri.isPresent()) {
+		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
+		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		} 
 
-		IMetadataRepository repository = data.getRepository(uri.get());
+		IMetadataRepository repository = data.getRepository(repo.get().uri);
 		return Response.ok(repository).build();
 	}
 
@@ -87,17 +76,19 @@ public class RestService {
 	@Path("{id}/children")
 	public Response getChildRepositories (@PathParam("id") int repoId) {
 		IRepositoryData data = getRepositoryData();
-		Optional<URI> uri = data.getLocation(repoId);
-		if (!uri.isPresent()) {
+		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
+		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
 		
-		IMetadataRepository repository = data.getRepository(uri.get());
+		IMetadataRepository repository = data.getRepository(repo.get().uri);
 		List<RepositoryInfo> result = new ArrayList<>();
-		if (repository instanceof CompositeMetadataRepository) {
-			for (URI childRepoUri: ((CompositeMetadataRepository)repository).getChildren()) {
-				int id = data.getRepositoryID(childRepoUri);
-				result.add(new RepositoryInfo(id, childRepoUri));
+		if (repository instanceof ICompositeRepository<?>) {
+			for (URI childRepoUri: ((ICompositeRepository<?>)repository).getChildren()) {
+				data.getRepositoryByUri(childRepoUri)
+					.ifPresent(r -> {
+						result.add(r);
+					});
 			}
 		}
 		

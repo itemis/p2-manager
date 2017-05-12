@@ -1,14 +1,11 @@
 package com.itemis.p2.service.internal;
 
-import static com.itemis.p2.service.P2ResourcesActivator.createCoreException;
-
-import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,6 +18,8 @@ import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 
 import com.google.common.io.CharStreams;
 import com.itemis.p2.service.IRepositoryData;
+import com.itemis.p2.service.P2ResourcesActivator;
+import com.itemis.p2.service.model.RepositoryInfo;
 
 import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
@@ -28,62 +27,61 @@ public class RepositoryData implements IRepositoryData {
 	/**
 	 * Root repository URIs explicitly added by the user
 	 */
-	private final List<URI> repositories = Collections.synchronizedList(new ArrayList<URI>());
+	private final List<RepositoryInfo> repositories = Collections.synchronizedList(new ArrayList<RepositoryInfo>());
 	/**
 	 * All repositories, including children of composite repositories
 	 */
-	private final Map<URI, IMetadataRepository> allMetadataRepositories = Collections
+	private final transient Map<URI, IMetadataRepository> allMetadataRepositories = Collections
 			.synchronizedMap(new LinkedHashMap<URI, IMetadataRepository>());
 
-	private final Map<URI, IGroupedInstallableUnits> repositoryContent = Collections
+	private final transient Map<URI, IGroupedInstallableUnits> repositoryContent = Collections
 			.synchronizedMap(new HashMap<URI, IGroupedInstallableUnits>());
 	
-	private final File storage;
+	private transient int idCounter = -1;
 	
-	public RepositoryData (File stateFile) throws CoreException {
-		this.storage = stateFile;
-		readUriFile();
+	public RepositoryData () throws CoreException {
 	}
 
-	private void readUriFile() throws CoreException {
-		if (!storage.exists()) {
-			try {
-				storage.createNewFile();
-			} catch (IOException e) {
-				throw createCoreException("Could not create " + storage.getAbsolutePath(), e);
-			}
-		}
-		try (FileReader reader = new FileReader(storage)) {
-			repositories.clear();
-			for (String line: CharStreams.readLines(reader)) {
-				repositories.add(URI.create(line));
-			}
-		} catch (IOException e) {
-			throw createCoreException("Could not read " + storage.getAbsolutePath(), e);
-		}
-	}
 
 	/* (non-Javadoc)
 	 * @see com.itemis.p2.service.internal.IRepositoryData#getRepositoryID(java.net.URI)
 	 */
 	@Override
-	public int getRepositoryID (URI uri) {
-		return repositories.indexOf(uri);
+	public Optional<RepositoryInfo> getRepositoryByUri (URI uri) {
+		return repositories.stream().filter(r -> r.uri.equals(uri)).findFirst();
 	}
 
 	@Override
-	public Optional<URI> getLocation(int repositoryId) {
-		if (repositoryId<0 || repositoryId>=repositories.size()) {
-			return Optional.empty();
-		}
-		return Optional.of(repositories.get(repositoryId));
+	public Optional<RepositoryInfo> getRepositoryById (int repositoryId) {
+		return repositories.stream().filter(r -> r.id==repositoryId).findFirst();
 	}
 	
+	@Override
+	public RepositoryInfo addLocation (URI location) {
+		RepositoryInfo repository = createRepositoryInfo(location);
+		repositories.add(repository);
+		LoadRepositoryJob job = new LoadRepositoryJob(location, this);
+		job.schedule();
+		P2ResourcesActivator.getDefault().saveRepositoryData();
+		return repository;
+	}
+	
+	private synchronized RepositoryInfo createRepositoryInfo (URI uri) {
+		if (idCounter < 0) {
+			idCounter = repositories.stream()
+					.map(r->r.id)
+					.max((id1,id2) -> id2-id1)
+					.orElse(0);
+		}
+		idCounter++;
+		return new RepositoryInfo(idCounter, uri);
+	}
+
 	/* (non-Javadoc)
 	 * @see com.itemis.p2.service.internal.IRepositoryData#getUris()
 	 */
 	@Override
-	public List<URI> getAllLocations() {
+	public List<RepositoryInfo> getAllRepositories() {
 		return repositories;
 	}
 	
@@ -95,19 +93,6 @@ public class RepositoryData implements IRepositoryData {
 		return repositoryContent;
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.itemis.p2.service.internal.IRepositoryData#addLocation(java.net.URI)
-	 */
-	@Override
-	public void addLocation (URI location) {
-		repositories.add(location);
-		try (FileWriter writer = new FileWriter(storage, true)) {
-			CharStreams.asWriter(writer).append("\n"+location);
-		} catch (IOException e) {
-			throw new RuntimeException("Could not read " + storage.getAbsolutePath(), e);
-		}
-		assureLoaded(location);
-	}
 	
 	/* (non-Javadoc)
 	 * @see com.itemis.p2.service.internal.IRepositoryData#removeLocation(java.net.URI)

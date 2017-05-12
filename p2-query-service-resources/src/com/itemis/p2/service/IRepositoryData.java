@@ -7,16 +7,18 @@ import java.util.Optional;
 
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 
+import com.itemis.p2.service.model.RepositoryInfo;
+
 import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
 public interface IRepositoryData {
 
-	int getRepositoryID(URI uri);
-	Optional<URI> getLocation (int repositoryId);
+	Optional<RepositoryInfo> getRepositoryByUri (URI uri);
+	Optional<RepositoryInfo> getRepositoryById (int repositoryId);
 
 	Map<URI, IGroupedInstallableUnits> getRepositoryContent();
 
-	void addLocation(URI location);
+	RepositoryInfo addLocation(URI location);
 
 	void removeLocation(URI location);
 
@@ -28,6 +30,6 @@ public interface IRepositoryData {
 
 	void addRepositoryContents(URI location, IGroupedInstallableUnits content);
 
-	List<URI> getAllLocations();
+	List<RepositoryInfo> getAllRepositories();
 
 }
