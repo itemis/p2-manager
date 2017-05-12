@@ -17,12 +17,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 import org.eclipse.equinox.p2.repository.ICompositeRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 
 import com.itemis.p2.service.IRepositoryData;
 import com.itemis.p2.service.P2ResourcesActivator;
+import com.itemis.p2.service.model.IUMasterInfo;
 import com.itemis.p2.service.model.RepositoryInfo;
+
+import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
 @Path("/repositories")
 public class RestService {
@@ -48,7 +52,7 @@ public class RestService {
 		Optional<RepositoryInfo> repo = data.getRepositoryByUri(uri);
 
 		if (!repo.isPresent()) {
-			RepositoryInfo r = data.addLocation(uri);
+			RepositoryInfo r = data.addLocation(uri, true);
 			URI location = uriInfo.getRequestUriBuilder().path(r.id + "/").build();
 			return Response.created(location).build();
 		} else {
@@ -69,7 +73,7 @@ public class RestService {
 		} 
 
 		IMetadataRepository repository = data.getRepository(repo.get().uri);
-		return Response.ok(repository).build();
+		return Response.ok(repo.get()).build();
 	}
 
 	@GET
@@ -89,6 +93,27 @@ public class RestService {
 					.ifPresent(r -> {
 						result.add(r);
 					});
+			}
+		}
+		
+		return Response.ok(result).build();
+	}
+
+	@GET
+	@Path("{id}/units")
+	public Response getUnits (@PathParam("id") int repoId) {
+		IRepositoryData data = getRepositoryData();
+		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
+		if (!repo.isPresent()) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		
+		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().uri);
+		
+		List<IUMasterInfo> result = new ArrayList<>();
+		if (groupedIUs != null) {
+			for (IInstallableUnit unit : groupedIUs.getRootIncludedInstallableUnits()) {
+				result.add(new IUMasterInfo(unit));
 			}
 		}
 		

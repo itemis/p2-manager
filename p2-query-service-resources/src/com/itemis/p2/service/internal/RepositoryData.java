@@ -57,11 +57,13 @@ public class RepositoryData implements IRepositoryData {
 	}
 	
 	@Override
-	public RepositoryInfo addLocation (URI location) {
+	public RepositoryInfo addLocation (URI location, boolean loadOnDemand) {
 		RepositoryInfo repository = createRepositoryInfo(location);
 		repositories.add(repository);
-		LoadRepositoryJob job = new LoadRepositoryJob(location, this);
-		job.schedule();
+		if (loadOnDemand) {
+			LoadRepositoryJob job = new LoadRepositoryJob(location, this);
+			job.schedule();
+		}
 		P2ResourcesActivator.getDefault().saveRepositoryData();
 		return repository;
 	}
@@ -89,8 +91,9 @@ public class RepositoryData implements IRepositoryData {
 	 * @see com.itemis.p2.service.internal.IRepositoryData#getRepositoryContent()
 	 */
 	@Override
-	public Map<URI, IGroupedInstallableUnits> getRepositoryContent(){
-		return repositoryContent;
+	public IGroupedInstallableUnits getRepositoryContent(URI uri){
+		assureLoaded(uri);
+		return repositoryContent.get(uri);
 	}
 	
 	

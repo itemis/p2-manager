@@ -88,6 +88,7 @@ public class LoadRepositoryJob extends Job {
 						// repositories. do not re-refresh children
 						// here
 						loadRepository(repoMgr, childUri, errors, monitor);
+						data.addLocation(childUri, false);
 					}
 				}
 			} catch (ProvisionException e) {
