@@ -1,11 +1,8 @@
 package com.itemis.p2.service.internal;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,7 +13,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 
-import com.google.common.io.CharStreams;
 import com.itemis.p2.service.IRepositoryData;
 import com.itemis.p2.service.P2ResourcesActivator;
 import com.itemis.p2.service.model.RepositoryInfo;
@@ -72,7 +68,7 @@ public class RepositoryData implements IRepositoryData {
 		if (idCounter < 0) {
 			idCounter = repositories.stream()
 					.map(r->r.id)
-					.max((id1,id2) -> id2-id1)
+					.max((id1,id2) -> id1-id2)
 					.orElse(0);
 		}
 		idCounter++;

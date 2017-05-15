@@ -72,7 +72,7 @@ public class RestService {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		} 
 
-		IMetadataRepository repository = data.getRepository(repo.get().uri);
+//		IMetadataRepository repository = data.getRepository(repo.get().uri); TODO: never Used?
 		return Response.ok(repo.get()).build();
 	}
 

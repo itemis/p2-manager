@@ -2,7 +2,6 @@ package com.itemis.p2.service;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
