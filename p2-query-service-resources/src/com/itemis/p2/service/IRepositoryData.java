@@ -17,7 +17,7 @@ public interface IRepositoryData {
 
 	IGroupedInstallableUnits getRepositoryContent(URI uri);
 
-	RepositoryInfo addLocation(URI location, boolean loadOnDemand);
+	RepositoryInfo addLocation(URI location, boolean loadOnDemand, boolean isChild);
 
 	void removeLocation(URI location);
 

@@ -52,7 +52,7 @@ public class RestService {
 		Optional<RepositoryInfo> repo = data.getRepositoryByUri(uri);
 
 		if (!repo.isPresent()) {
-			RepositoryInfo r = data.addLocation(uri, true);
+			RepositoryInfo r = data.addLocation(uri, true, false);
 			URI location = uriInfo.getRequestUriBuilder().path(r.id + "/").build();
 			return Response.created(location).build();
 		} else {
