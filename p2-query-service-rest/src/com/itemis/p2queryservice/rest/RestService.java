@@ -24,6 +24,7 @@ import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 import com.itemis.p2.service.IRepositoryData;
 import com.itemis.p2.service.P2ResourcesActivator;
 import com.itemis.p2.service.model.IUMasterInfo;
+import com.itemis.p2.service.model.IUMetaInfo;
 import com.itemis.p2.service.model.RepositoryInfo;
 
 import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
@@ -88,12 +89,12 @@ public class RestService {
 		IMetadataRepository repository = data.getRepository(repo.get().uri);
 		List<RepositoryInfo> result = new ArrayList<>();
 		if (repository instanceof ICompositeRepository<?>) {
-			for (URI childRepoUri: ((ICompositeRepository<?>)repository).getChildren()) {
+			((ICompositeRepository<?>)repository).getChildren().forEach(childRepoUri -> {
 				data.getRepositoryByUri(childRepoUri)
-					.ifPresent(r -> {
-						result.add(r);
-					});
-			}
+				.ifPresent(r -> {
+					result.add(r);
+				});
+			});
 		}
 		
 		return Response.ok(result).build();
@@ -112,11 +113,32 @@ public class RestService {
 		
 		List<IUMasterInfo> result = new ArrayList<>();
 		if (groupedIUs != null) {
-			for (IInstallableUnit unit : groupedIUs.getRootIncludedInstallableUnits()) {
-				result.add(new IUMasterInfo(unit));
-			}
+			groupedIUs.getRootIncludedInstallableUnits().forEach(unit -> result.add(new IUMasterInfo(unit)));
 		}
 		
 		return Response.ok(result).build();
+	}
+
+	@GET
+	@Path("{id}/units/{unitname}")
+	public Response getUnitMetadata (@PathParam("id") int repoId, @PathParam("unitname") String unitname) {
+		if (unitname == null)
+			return Response.status(Response.Status.NOT_FOUND).build();
+		IRepositoryData data = getRepositoryData();
+		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
+		if (!repo.isPresent()) {
+			return Response.status(Response.Status.NOT_FOUND).entity("Repoitory not found").entity("Unit not found").build();
+		}
+		
+		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().uri);
+
+		Optional<IInstallableUnit> iUnit = groupedIUs.getRootIncludedInstallableUnits().parallelStream().filter(unit -> unit.getId().equals(unitname)).findFirst();
+		
+		if(iUnit.isPresent()){
+			return Response.ok(new IUMetaInfo(iUnit.get())).build();
+		}
+		else{
+			return Response.status(Response.Status.NOT_FOUND).entity("Unit not found").build();
+		}
 	}
 }

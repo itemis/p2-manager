@@ -1,21 +1,10 @@
 package com.itemis.p2queryservice.server;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
-
-import com.google.common.io.CharStreams;
-import com.itemis.p2.service.model.RepositoryInfo;
 
 public class P2RestActivator extends Plugin {
 	private static P2RestActivator instance;

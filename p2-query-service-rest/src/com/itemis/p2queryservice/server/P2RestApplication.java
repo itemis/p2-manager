@@ -12,6 +12,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 
 import com.eclipsesource.jaxrs.provider.gson.GsonProvider;
 import com.google.common.base.Joiner;
+import com.itemis.p2queryservice.rest.FunService;
 import com.itemis.p2queryservice.rest.PingService;
 import com.itemis.p2queryservice.rest.RestService;
 
@@ -21,6 +22,7 @@ public class P2RestApplication implements IApplication {
 	private static final Class<?>[] SERVICE_CLASSES= {
 		PingService.class,
 		RestService.class,
+		FunService.class,
 		GsonProvider.class
 	};
 
