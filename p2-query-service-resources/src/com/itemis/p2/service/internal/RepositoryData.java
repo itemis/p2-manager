@@ -53,9 +53,18 @@ public class RepositoryData implements IRepositoryData {
 	}
 	
 	@Override
-	public RepositoryInfo addLocation (URI location, boolean loadOnDemand) {
+	public RepositoryInfo addLocation (URI location, boolean loadOnDemand, boolean isChild) {
 		RepositoryInfo repository = createRepositoryInfo(location);
-		repositories.add(repository);
+		// TODO: Filter child´s, which already exist if ()
+		if(!isChild){
+			isChild = true;
+			repositories.add(repository);
+		}
+		else if(!repositories.contains(repository)){
+			repositories.add(repository);
+		}
+		else
+			idCounter--;
 		if (loadOnDemand) {
 			LoadRepositoryJob job = new LoadRepositoryJob(location, this);
 			job.schedule();
