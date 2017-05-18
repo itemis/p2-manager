@@ -31,4 +31,5 @@ public interface IRepositoryData {
 
 	List<RepositoryInfo> getAllRepositories();
 
+	int getIdCounter();
 }

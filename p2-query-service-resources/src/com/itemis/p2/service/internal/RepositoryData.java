@@ -84,6 +84,17 @@ public class RepositoryData implements IRepositoryData {
 		return new RepositoryInfo(idCounter, uri);
 	}
 
+	@Override
+	public synchronized int getIdCounter(){
+		if (idCounter < 0) {
+			idCounter = repositories.stream()
+					.map(r->r.id)
+					.max((id1,id2) -> id1-id2)
+					.orElse(0);
+		}
+		return idCounter;
+	}
+
 	/* (non-Javadoc)
 	 * @see com.itemis.p2.service.internal.IRepositoryData#getUris()
 	 */
