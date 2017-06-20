@@ -17,6 +17,7 @@ import com.itemis.p2queryservice.rest.PingService;
 import com.itemis.p2queryservice.rest.RepositoryService;
 
 public class P2RestApplication implements IApplication {
+	public static final String PORT = "http.port";
 	private Server server;
 	
 	private static final Class<?>[] SERVICE_CLASSES= {
@@ -34,7 +35,8 @@ public class P2RestApplication implements IApplication {
 		context.setClassLoader(this.getClass().getClassLoader());
 		context.setContextPath("/");
 		
-		server = new Server(8080);
+		server = new Server(getPort());
+		
 		server.setHandler(context);
 
 		ServletHolder jerseyServlet = context.addServlet(ServletContainer.class, "/*");
@@ -51,6 +53,15 @@ public class P2RestApplication implements IApplication {
 		}
 		run();
 		return IApplication.EXIT_OK;
+	}
+
+	private Integer getPort() {
+		String port = System.getProperty(PORT);
+		if (port==null) {
+			P2RestActivator.info("Using default port 8080. To change set system property 'http.port'.");
+			return 8080;
+		}
+		return Integer.valueOf(port);
 	}
 
 	@Override
