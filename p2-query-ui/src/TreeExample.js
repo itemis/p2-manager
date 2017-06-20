@@ -28,10 +28,25 @@ class TreeExample extends React.Component {
       })
   }
   onToggle(node, toggled) {
-    if (this.state.cursor) { this.state.cursor.active = false; }
-    node.active = true;
-    if (node.children) { node.toggled = toggled; }
-    this.setState({ cursor: node });
+    node.loading = true;
+    fetch(`http://localhost:8080/repositories/${node.id}/units`)
+      .then(response => response.json())
+      .then(json => {
+        let newChildren = json.map(unit => {
+          return {
+            name: `${unit.id} - ${unit.version}`
+          }
+        })
+
+        node.children = newChildren;
+        node.loading = false;
+
+        if (this.state.cursor) { this.state.cursor.active = false; }
+        node.active = true;
+        if (node.children) { node.toggled = toggled; }
+        this.setState({ cursor: node });
+      });
+
   }
   render() {
     return (
