@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -74,10 +75,21 @@ public class RepositoryService {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		} 
 
-//		IMetadataRepository repository = data.getRepository(repo.get().uri); TODO: never Used?
 		return Response.ok(repo.get()).build();
 	}
 
+	@DELETE
+	@Path("{id}")
+	public Response removeRepo(@PathParam("id") int repoId) {
+		IRepositoryData data = getRepositoryData();
+		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
+		if (!repo.isPresent()) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		data.removeLocation(repo.get().uri);
+		return Response.ok().build();
+	}
+	
 	@GET
 	@Path("{id}/children")
 	public Response getChildRepositories (@PathParam("id") int repoId) {
