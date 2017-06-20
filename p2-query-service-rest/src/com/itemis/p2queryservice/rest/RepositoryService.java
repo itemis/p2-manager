@@ -11,6 +11,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -102,14 +103,14 @@ public class RepositoryService {
 
 	@GET
 	@Path("{id}/units")
-	public Response getUnits (@PathParam("id") int repoId) {
+	public Response getUnits (@PathParam("id") int repoId, @QueryParam("reload") boolean reload) {
 		IRepositoryData data = getRepositoryData();
 		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
 		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
 		
-		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().uri);
+		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().uri, reload);
 		
 		List<IUMasterInfo> result = new ArrayList<>();
 		if (groupedIUs != null) {
@@ -130,7 +131,7 @@ public class RepositoryService {
 			return Response.status(Response.Status.NOT_FOUND).entity("Repoitory not found").entity("Unit not found").build();
 		}
 		
-		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().uri);
+		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().uri, false);
 
 		Optional<IInstallableUnit> iUnit = groupedIUs.getRootIncludedInstallableUnits().parallelStream().filter(unit -> unit.getId().equals(unitname)).findFirst();
 		

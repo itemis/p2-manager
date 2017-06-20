@@ -107,8 +107,8 @@ public class RepositoryData implements IRepositoryData {
 	 * @see com.itemis.p2.service.internal.IRepositoryData#getRepositoryContent()
 	 */
 	@Override
-	public IGroupedInstallableUnits getRepositoryContent(URI uri){
-		assureLoaded(uri);
+	public IGroupedInstallableUnits getRepositoryContent(URI uri, boolean reload) {
+		assureLoaded(uri, reload);
 		return repositoryContent.get(uri);
 	}
 	
@@ -154,8 +154,8 @@ public class RepositoryData implements IRepositoryData {
 	}
 
 
-	private void assureLoaded(URI uri) {
-		if (getRepository(uri)==null) {
+	private void assureLoaded(URI uri, boolean reload) {
+		if (getRepository(uri)==null || reload) {
 			LoadRepositoryJob job = new LoadRepositoryJob(uri, this);
 			job.schedule();
 		}

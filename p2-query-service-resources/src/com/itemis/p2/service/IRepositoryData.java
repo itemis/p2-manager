@@ -15,7 +15,7 @@ public interface IRepositoryData {
 	Optional<RepositoryInfo> getRepositoryByUri (URI uri);
 	Optional<RepositoryInfo> getRepositoryById (int repositoryId);
 
-	IGroupedInstallableUnits getRepositoryContent(URI uri);
+	IGroupedInstallableUnits getRepositoryContent(URI uri, boolean reload);
 
 	RepositoryInfo addLocation(URI location, boolean loadOnDemand, boolean isChild);
 
