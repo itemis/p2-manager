@@ -10,7 +10,9 @@ class App extends Component {
         <div className="App-header">
           <h2>P2 Viewer</h2>
         </div>
-        <TreeExample />
+        <div className="MyTree">
+          <TreeExample />
+        </div>
       </div>
 
     );
