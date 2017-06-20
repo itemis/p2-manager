@@ -5,26 +5,26 @@ import { Treebeard } from 'react-treebeard';
 class TreeExample extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
-    this.data = [
-      {
+    this.state = {
+      data: [{
         "id": 1,
         "name": "loading..."
-      }
-    ]
+      }]
+    };
     this.onToggle = this.onToggle.bind(this)
     fetch(`http://localhost:8080/repositories`)
       .then(response => response.json())
       .then(json => {
-        let x = json.map(element => {
+        let newData = json.map(element => {
           return {
             name: element.uri,
             id: element.id,
             children: []
           }
         });
-        console.log(x);
-        this.data = x;
+        this.setState({
+          data: newData
+        });
       })
   }
   onToggle(node, toggled) {
@@ -36,7 +36,7 @@ class TreeExample extends React.Component {
   render() {
     return (
       <Treebeard
-        data={this.data}
+        data={this.state.data}
         onToggle={this.onToggle}
       />
     );
