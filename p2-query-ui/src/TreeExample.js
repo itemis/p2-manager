@@ -1,6 +1,6 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { Treebeard } from 'react-treebeard';
+import * as filters from './filter';
 
 class TreeExample extends React.Component {
   constructor(props) {
@@ -23,9 +23,19 @@ class TreeExample extends React.Component {
           }
         });
         this.setState({
-          data: newData
+          data: newData,
+          unfiltered: newData
         });
       })
+  }
+  onFilterMouseUp(e) {
+    const filter = e.target.value.trim();
+    if (!filter) {
+      return this.setState({ data: this.state.unfiltered });
+    }
+    const filtered = filters.filterTree(this.state.data, filter);
+    const expanded = filters.expandFilteredNodesRoot(filtered, filter);
+    this.setState({ data: expanded });
   }
   onToggle(node, toggled) {
     node.loading = true;
@@ -50,10 +60,24 @@ class TreeExample extends React.Component {
   }
   render() {
     return (
-      <Treebeard
-        data={this.state.data}
-        onToggle={this.onToggle}
-      />
+      <div>
+        <div>
+          <div className="input-group">
+            <span className="input-group-addon">
+              <i className="fa fa-search"></i>
+            </span>
+            <input type="text"
+              className="form-control"
+              placeholder="Search the tree..."
+              onKeyUp={this.onFilterMouseUp.bind(this)}
+            />
+          </div>
+        </div>
+        <Treebeard
+          data={this.state.data}
+          onToggle={this.onToggle}
+        />
+      </div>
     );
   }
 }
