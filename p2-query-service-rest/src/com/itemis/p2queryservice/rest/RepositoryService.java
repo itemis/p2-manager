@@ -30,8 +30,8 @@ import com.itemis.p2.service.model.RepositoryInfo;
 import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
 @Path("/repositories")
-public class RestService {
-	public RestService() {
+public class RepositoryService {
+	public RepositoryService() {
 	}
 	
 	private IRepositoryData getRepositoryData() {
