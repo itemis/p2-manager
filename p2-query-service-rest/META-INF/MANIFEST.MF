@@ -14,7 +14,6 @@ Require-Bundle: org.eclipse.jetty.server,
  p2-query-service-resources,
  com.google.guava;bundle-version="18.0.0",
  com.eclipsesource.jaxrs.provider.gson;bundle-version="2.3.0",
- org.eclipse.equinox.ds;bundle-version="1.4.0",
  org.eclipse.equinox.p2.transport.ecf;bundle-version="1.1.0",
  org.eclipse.ecf.filetransfer;bundle-version="5.0.0"
 Import-Package: com.google.common.io,
