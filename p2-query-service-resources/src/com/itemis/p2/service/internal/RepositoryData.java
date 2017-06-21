@@ -112,13 +112,13 @@ public class RepositoryData implements IRepositoryData {
 		return repositoryContent.get(uri);
 	}
 	
-	
 	/* (non-Javadoc)
 	 * @see com.itemis.p2.service.internal.IRepositoryData#removeLocation(java.net.URI)
 	 */
 	@Override
 	public void removeLocation (URI location) {
 		repositories.remove(location);
+		repositoryContent.remove(location);
 	}
 
 	/* (non-Javadoc)
