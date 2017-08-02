@@ -1,0 +1,185 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Neo4J",
+		"_postman_id": "3fc05d52-f26f-27e1-ea09-ce068429e1fb",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "[neo4j] Get service root",
+			"request": {
+				"url": "http://localhost:7474/db/data/ ",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get Repository List",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"username": "p2manager",
+						"password": "p2manager",
+						"saveHelperData": true,
+						"showPassword": false
+					}
+				},
+				"url": "http://localhost:7474/db/data/cypher",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Authorization",
+						"value": "Basic cDJtYW5hZ2VyOnAybWFuYWdlcg==",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"query\" : \"MATCH (n:Repository) RETURN n\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Create Repository",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"username": "p2manager",
+						"password": "p2manager",
+						"saveHelperData": true,
+						"showPassword": false
+					}
+				},
+				"url": "http://localhost:7474/db/data/cypher",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Authorization",
+						"value": "Basic cDJtYW5hZ2VyOnAybWFuYWdlcg==",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"query\" : \"CREATE (r:Repository { id : {id}, url : {url} }) RETURN r\",\n  \"params\" : {\n    \"id\" : \"2\",\n    \"url\" : \"http://www.genuitec.com/updates/webclipse/ci\"\n  }\n}\n"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Create IU",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"username": "p2manager",
+						"password": "p2manager",
+						"saveHelperData": true,
+						"showPassword": false
+					}
+				},
+				"url": "http://localhost:7474/db/data/cypher",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Authorization",
+						"value": "Basic cDJtYW5hZ2VyOnAybWFuYWdlcg==",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"query\" : \"MATCH (r:Repository) WHERE r.id=1 MERGE (iu1:IU { id: 'com.test.A'}) MERGE (iu2:IU { id: 'com.test.B'}) MERGE (r)-[p1:PROVIDES { version: '2.0.0'}]->(iu1) MERGE (r)-[p2:PROVIDES { version: '1.0.0'}]->(iu2) RETURN r.url,iu1.id,p1.version,iu2.id,p2.version\",\n  \"params\" : {\n  }\n}\n"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get Units for Repository",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"username": "p2manager",
+						"password": "p2manager",
+						"saveHelperData": true,
+						"showPassword": false
+					}
+				},
+				"url": "http://localhost:7474/db/data/cypher",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Authorization",
+						"value": "Basic cDJtYW5hZ2VyOnAybWFuYWdlcg==",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"query\" : \"MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE r.url IN {url} RETURN iu.id,p.version\",\n  \"params\" : {\n    \"url\" : [\n    \t\"http://www.genuitec.com/updates/webclipse/ci\",\"http://www.genuitec.com/updates/webclipse/ci\"\n    \t]\n  }\n}\n"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "[backend] add Repository",
+			"request": {
+				"url": "localhost:9080/repositories",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "uri",
+							"value": "http://www.genuitec.com/updates/webclipse/ci",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
