@@ -17,6 +17,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
@@ -57,7 +58,7 @@ public class RepositoryService {
 		if (!repo.isPresent()) {
 			RepositoryInfo r = data.addLocation(uri, true, false);
 			URI location = uriInfo.getRequestUriBuilder().path(r.id + "/").build();
-			return Response.created(location).build();
+			return Response.status(Status.SEE_OTHER).location(location).build();//created(location).build();
 		} else {
 			URI location = uriInfo.getRequestUriBuilder().path(repo.get() + "/").build();
 			return Response.status(Response.Status.CONFLICT).header(HttpHeaders.LOCATION, location)

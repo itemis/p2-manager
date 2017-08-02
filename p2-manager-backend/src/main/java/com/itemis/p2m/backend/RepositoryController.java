@@ -3,6 +3,7 @@ package com.itemis.p2m.backend;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,12 @@ public class RepositoryController {
 	@Value("${neo4j.password}")
 	private String neo4jPassword;
 	
+	private Methods methods;
+	
+	public RepositoryController() {
+		this.methods = new Methods();
+	}
+	
 	@RequestMapping("/repositories")
 	@ResponseBody
 	List<Repository> listRepositories() throws Exception {
@@ -51,8 +58,8 @@ public class RepositoryController {
 		dataNode.forEach((d) -> {
 			ArrayNode node = (ArrayNode) d;
 			Repository r = new Repository();
-			r.id = node.get(0).asInt();
-			r.url = node.get(1).asText();
+			r.setId(node.get(0).asInt());
+			r.setUri(node.get(1).asText());
 			result.add(r);
 		});
 		return result;
@@ -61,36 +68,13 @@ public class RepositoryController {
 	@RequestMapping(method=RequestMethod.POST, value="/repositories")
 	@ResponseBody
 	URI addRepository(@RequestParam URI uri) throws Exception {
-		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getInterceptors().add(
-				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		
-		RestTemplate restTemplateQueryService = new RestTemplate();
-		HttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
-		HttpMessageConverter stringHttpMessageConverternew = new StringHttpMessageConverter();
-		restTemplateQueryService.setMessageConverters(Lists.newArrayList(formHttpMessageConverter, stringHttpMessageConverternew));
-		
-		Repository r = new Repository();
-		r.url = uri.toString();
-		URI location = restTemplateQueryService.postForLocation(queryserviceUrl+"/repositories", "uri="+uri);
-
-		return location;
-		/*
-		List<Repository> result = new ArrayList<>();
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) RETURN r.id,r.url");
-		
-		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
-				
-		ArrayNode dataNode = (ArrayNode) _result.get("data");
-		dataNode.forEach((d) -> {
-			ArrayNode node = (ArrayNode) d;
-			Repository r = new Repository();
-			r.id = node.get(0).asInt();
-			r.url = node.get(1).asText();
-			result.add(r);
-		});
-		return result;
-		*/
+		//TODO: Check if Repository exists in DB
+		URI queryLocation = methods.postRepositoriesQueryService(uri, queryserviceUrl);
+		Repository repository = methods.getRepositoryQueryService(queryLocation);
+		int repoDBId = methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repository);
+		List<LinkedHashMap<String, String>> ius = methods.getUnitsQueryService(queryLocation);
+		methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, ius);
+		return new URI("http://localhost");
 	}
 
 	@RequestMapping("/repositories/{id}/units")
@@ -108,8 +92,8 @@ public class RepositoryController {
 		dataNode.forEach((d) -> {
 			ArrayNode node = (ArrayNode) d;
 			InstallableUnit iu = new InstallableUnit();
-			iu.id = node.get(0).asText();
-			iu.version = node.get(1).asText();
+			iu.setId(node.get(0).asText());
+			iu.setVersion(node.get(1).asText());
 			result.add(iu);
 		});
 		return result;
