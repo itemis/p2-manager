@@ -5,3 +5,4 @@ ENTRYPOINT ["/usr/share/p2-query-service/eclipse"]
 
 ADD target/products/p2-query-service/linux/gtk/x86_64 /usr/share/p2-query-service
 
+EXPOSE 8080
