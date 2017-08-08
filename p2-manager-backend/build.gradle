@@ -1,10 +1,22 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'se.transmode.gradle:gradle-docker:1.2'
+    }
+}
+
 plugins {
     id 'org.springframework.boot' version '1.5.4.RELEASE'
 }
 
 
+apply plugin: 'java'
 // Apply the java-library plugin to add support for Java Library
 apply plugin: 'java-library'
+apply plugin: 'docker'
 
 // In this section you declare where to find the dependencies of your project
 repositories {
@@ -26,5 +38,25 @@ dependencies {
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
+}
+
+group = "itemis"
+sourceCompatibility = 1.8
+version = '1.0-SNAPSHOT'
+
+docker {
+    baseImage "openjdk:8-jre"
+    maintainer 'Karsten Thoms <karsten.thoms@itemis.de>'
+}
+
+task docker(type: Docker) {
+    // The default image tag contains the applicationName
+    applicationName = 'p2-manager-backend'
+	entryPoint = ['java -jar /usr/share/p2m/p2-manager-backend.jar']
+	addFile {
+        from 'build/libs/p2-manager-backend-${version}.jar'
+        into '/usr/share/p2m/p2-manager-backend.jar'
+	}
+	exposePort 8080
 }
 
