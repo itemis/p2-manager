@@ -25,8 +25,8 @@ public class Methods {
 	
 	URI postRepositoriesQueryService(URI uri, String queryserviceUrl) {
 		RestTemplate restTemplate = new RestTemplate();
-		HttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
-		HttpMessageConverter stringHttpMessageConverternew = new StringHttpMessageConverter();
+		HttpMessageConverter<?> formHttpMessageConverter = new FormHttpMessageConverter();
+		HttpMessageConverter<?> stringHttpMessageConverternew = new StringHttpMessageConverter();
 		restTemplate.setMessageConverters(Lists.newArrayList(formHttpMessageConverter, stringHttpMessageConverternew));
 		MultiValueMap<String, String> formParams = new LinkedMultiValueMap<>();
 		formParams.add("uri", uri.toString());
