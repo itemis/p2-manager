@@ -9,9 +9,6 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.support.BasicAuthorizationInterceptor;
-import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +19,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
 
@@ -76,6 +72,8 @@ public class RepositoryController {
 		URI queryLocation = methods.postRepositoriesQueryService(uri, queryserviceUrl);
 		Repository repository = methods.getRepositoryQueryService(queryLocation);
 		int repoDBId = methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repository);
+		
+		// TODO Delay request to assure that repository is loaded
 		List<LinkedHashMap<String, String>> ius = methods.getUnitsQueryService(queryLocation);
 		methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, ius);
 		return new URI("http://localhost");
