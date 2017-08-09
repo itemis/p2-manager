@@ -64,7 +64,7 @@ public class FunService {
 			return null;
 		}
 		
-		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().uri, false);
+		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().getUri(), false);
 		if (groupedIUs == null)
 			return null;
 		

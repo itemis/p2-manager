@@ -27,6 +27,8 @@ public interface IRepositoryData {
 
 	IMetadataRepository getRepository(URI location);
 
+	IMetadataRepository getRepository(URI location, boolean reload);
+
 	void addRepositoryContents(URI location, IGroupedInstallableUnits content);
 
 	List<RepositoryInfo> getAllRepositories();

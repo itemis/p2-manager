@@ -1,25 +1,67 @@
 package com.itemis.p2.service.model;
 
+import com.itemis.p2queryservice.constants.RepositoryStatus;
 import java.net.URI;
 
+import javax.swing.text.rtf.RTFEditorKit;
+
 public class RepositoryInfo {
-	public int id;
-	public URI uri;
+	private int id;
+	private URI uri;
+	transient String status;
 	
-	public RepositoryInfo() {}
+	public RepositoryInfo() {
+		this.id = -1;
+		this.status = RepositoryStatus.PENDING;
+	}
 
 	public RepositoryInfo(int id, URI uri) {
 		super();
 		this.id = id;
 		this.uri = uri;
+		status = RepositoryStatus.ADDED;
 	}
 
 	public int getId() {
 		return id;
 	}
 
+	public void setId(int id) {
+		this.id = id;
+		if (uri != null)
+			status = RepositoryStatus.ADDED;
+	}
+
 	public URI getUri() {
 		return uri;
+	}
+
+	public void setUri(URI uri) {
+		this.uri = uri;
+		if (id > 0)
+			status = RepositoryStatus.ADDED;
+	}
+	
+	public void childrenAreLoaded() {
+		if (status.equals(RepositoryStatus.UNIT)) {
+			status = RepositoryStatus.LOADED;
+		}
+		else {
+			status = RepositoryStatus.CHILD;
+		}
+	}
+	
+	public void unitsAreLoaded() {
+		if (status.equals(RepositoryStatus.CHILD)) {
+			status = RepositoryStatus.LOADED;
+		}
+		else {
+			status = RepositoryStatus.UNIT;
+		}
+	}
+	
+	public String getStatus() {
+		return this.status;
 	}
 
 	@Override

@@ -44,12 +44,12 @@ public class RepositoryData implements IRepositoryData {
 	 */
 	@Override
 	public Optional<RepositoryInfo> getRepositoryByUri (URI uri) {
-		return repositories.stream().filter(r -> r.uri.equals(uri)).findFirst();
+		return repositories.stream().filter(r -> r.getUri().equals(uri)).findFirst();
 	}
 
 	@Override
 	public Optional<RepositoryInfo> getRepositoryById (int repositoryId) {
-		return repositories.stream().filter(r -> r.id==repositoryId).findFirst();
+		return repositories.stream().filter(r -> r.getId()==repositoryId).findFirst();
 	}
 	
 	@Override
@@ -57,7 +57,7 @@ public class RepositoryData implements IRepositoryData {
 		RepositoryInfo repository = createRepositoryInfo(location);
 		// TODO: Filter child´s, which already exist if ()
 		if(!isChild){
-			isChild = true;
+			isChild = true; //TODO: Why?
 			repositories.add(repository);
 		}
 		else if(!repositories.contains(repository)){
@@ -76,7 +76,7 @@ public class RepositoryData implements IRepositoryData {
 	private synchronized RepositoryInfo createRepositoryInfo (URI uri) {
 		if (idCounter < 0) {
 			idCounter = repositories.stream()
-					.map(r->r.id)
+					.map(r->r.getId())
 					.max((id1,id2) -> id1-id2)
 					.orElse(0);
 		}
@@ -88,7 +88,7 @@ public class RepositoryData implements IRepositoryData {
 	public synchronized int getIdCounter(){
 		if (idCounter < 0) {
 			idCounter = repositories.stream()
-					.map(r->r.id)
+					.map(r->r.getId())
 					.max((id1,id2) -> id1-id2)
 					.orElse(0);
 		}
@@ -142,6 +142,15 @@ public class RepositoryData implements IRepositoryData {
 	 */
 	@Override
 	public IMetadataRepository getRepository (URI location) {
+		return allMetadataRepositories.get(location);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.itemis.p2.service.internal.IRepositoryData#getRepository(java.net.URI)
+	 */
+	@Override
+	public IMetadataRepository getRepository (URI location, boolean reload) {
+		assureLoaded(location, reload);
 		return allMetadataRepositories.get(location);
 	}
 	

@@ -15,10 +15,12 @@ Require-Bundle: org.eclipse.osgi,
  com.google.guava;bundle-version="18.0.0",
  com.google.gson;bundle-version="2.5.0"
 Bundle-Activator: com.itemis.p2.service.P2ResourcesActivator
-Import-Package: org.eclipse.equinox.internal.provisional.configurator,
+Import-Package: com.itemis.p2queryservice.constants,
+ org.eclipse.equinox.internal.provisional.configurator,
  org.json
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.itemis.p2.service,
  com.itemis.p2.service.model,
+ com.itemis.p2queryservice.constants,
  copied.com.ifedorenko.p2browser.model

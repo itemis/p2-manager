@@ -3,6 +3,8 @@ package com.itemis.p2.service.internal;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -17,6 +19,7 @@ import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
 
 import com.itemis.p2.service.IRepositoryData;
 import com.itemis.p2.service.P2ResourcesActivator;
+import com.itemis.p2.service.model.RepositoryInfo;
 
 import copied.com.ifedorenko.p2browser.director.InstallableUnitDAG;
 import copied.com.ifedorenko.p2browser.model.IncludedInstallableUnits;
@@ -78,9 +81,9 @@ public class LoadRepositoryJob extends Job {
 			throws ProvisionException, OperationCanceledException {
 		if (!data.containsRepository(location)) {
 			try {
-				IMetadataRepository repository;
-				repository = repoMgr.loadRepository(location, monitor);
+				IMetadataRepository repository = repoMgr.loadRepository(location, monitor);
 				data.addRepository(location, repository);
+				
 
 				if (repository instanceof CompositeMetadataRepository) {
 					for (URI childUri : ((CompositeMetadataRepository) repository).getChildren()) {
@@ -90,9 +93,12 @@ public class LoadRepositoryJob extends Job {
 						loadRepository(repoMgr, childUri, errors, monitor);
 						data.addLocation(childUri, false, true);
 					}
+					data.getRepositoryByUri(location).get().childrenAreLoaded();
 				}
 			} catch (ProvisionException e) {
 				errors.add(e.getStatus());
+			} catch (NoSuchElementException e) {
+				// TODO: handle exception
 			}
 		}
 	}
@@ -124,6 +130,11 @@ public class LoadRepositoryJob extends Job {
 			dag = dag.sort(new InstallableUnitComparator());
 
 			data.addRepositoryContents(location, new InstallableUnitDependencyTree(dag));
+			try {
+				data.getRepositoryByUri(location).get().unitsAreLoaded();	
+			} catch (NoSuchElementException e) {
+				// TODO: handle exception
+			}
 		}
 	}
 

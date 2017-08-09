@@ -57,7 +57,7 @@ public class RepositoryService {
 
 		if (!repo.isPresent()) {
 			RepositoryInfo r = data.addLocation(uri, true, false);
-			URI location = uriInfo.getRequestUriBuilder().path(r.id + "/").build();
+			URI location = uriInfo.getRequestUriBuilder().path(r.getId() + "/").build();
 			return Response.status(Status.SEE_OTHER).location(location).build();//created(location).build();
 		} else {
 			URI location = uriInfo.getRequestUriBuilder().path(repo.get() + "/").build();
@@ -87,20 +87,20 @@ public class RepositoryService {
 		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
-		data.removeLocation(repo.get().uri);
+		data.removeLocation(repo.get().getUri());
 		return Response.ok().build();
 	}
 	
 	@GET
 	@Path("{id}/children")
-	public Response getChildRepositories (@PathParam("id") int repoId) {
+	public Response getChildRepositories (@PathParam("id") int repoId, @QueryParam("reload") boolean reload) {
 		IRepositoryData data = getRepositoryData();
 		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
 		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
 		
-		IMetadataRepository repository = data.getRepository(repo.get().uri);
+		IMetadataRepository repository = data.getRepository(repo.get().getUri(), reload); //getReository returns null
 		List<RepositoryInfo> result = new ArrayList<>();
 		if (repository instanceof ICompositeRepository<?>) {
 			((ICompositeRepository<?>)repository).getChildren().forEach(childRepoUri -> {
@@ -123,7 +123,7 @@ public class RepositoryService {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
 		
-		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().uri, reload);
+		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().getUri(), reload);
 		
 		List<IUMasterInfo> result = new ArrayList<>();
 		if (groupedIUs != null) {
@@ -144,7 +144,7 @@ public class RepositoryService {
 			return Response.status(Response.Status.NOT_FOUND).entity("Repoitory not found").entity("Unit not found").build();
 		}
 		
-		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().uri, false);
+		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().getUri(), false);
 
 		Optional<IInstallableUnit> iUnit = groupedIUs.getRootIncludedInstallableUnits().parallelStream().filter(unit -> unit.getId().equals(unitname)).findFirst();
 		
@@ -154,5 +154,16 @@ public class RepositoryService {
 		else{
 			return Response.status(Response.Status.NOT_FOUND).entity("Unit not found").build();
 		}
+	}
+	
+	@GET
+	@Path("{id}/status")
+	public Response getRepositoryStatus(@PathParam("id") int repoId) {
+		IRepositoryData data = getRepositoryData();
+		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
+		if (!repo.isPresent()) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		return Response.ok(repo.get().getStatus()).build();
 	}
 }

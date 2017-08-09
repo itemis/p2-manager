@@ -69,6 +69,10 @@ public class RepositoryController {
 	@ResponseBody
 	URI addRepository(@RequestParam URI uri) throws Exception {
 		//TODO: Check if Repository exists in DB
+		//TODO: Handle 409 from Queryservice
+		//TODO: ID-field of DB
+		//TODO: Completable Features
+		//TODO: Children parallel zu Units
 		URI queryLocation = methods.postRepositoriesQueryService(uri, queryserviceUrl);
 		Repository repository = methods.getRepositoryQueryService(queryLocation);
 		int repoDBId = methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repository);
