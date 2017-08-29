@@ -48,6 +48,7 @@ location "http://hstaudacher.github.io/osgi-jax-rs-connector" {
 	javax.validation.api
 	org.jvnet.mimepull
 	com.eclipsesource.jaxrs.swagger-all
+	
 	com.eclipsesource.jaxrs.provider.swagger.feature.feature.group
 	com.eclipsesource.jaxrs.provider.gson
 	com.google.gson

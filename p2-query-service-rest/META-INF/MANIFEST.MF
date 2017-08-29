@@ -28,4 +28,8 @@ Import-Package: com.google.common.io,
  org.eclipse.equinox.p2.repository.metadata,
  org.glassfish.jersey.servlet,
  org.json
-Bundle-ClassPath: .
+Bundle-ClassPath: .,
+ lib/jackson-core-2.9.0.jar,
+ lib/jackson-databind-2.9.0.jar,
+ lib/jackson-dataformat-csv-2.9.0.jar,
+ lib/jackson-annotations-2.9.0.jar

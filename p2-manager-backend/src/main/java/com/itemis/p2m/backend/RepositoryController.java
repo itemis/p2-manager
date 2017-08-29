@@ -6,8 +6,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -64,8 +69,6 @@ public class RepositoryController {
 	@RequestMapping(method=RequestMethod.POST, value="/repositories")
 	@ResponseBody
 	URI addRepository(@RequestParam URI uri) throws Exception {
-		//TODO: Check if Repository exists in DB
-		//TODO: Handle 409 from Queryservice
 		//TODO: ID-field of DB
 		//TODO: Completable Features
 		//TODO: Children parallel zu Units
@@ -75,7 +78,7 @@ public class RepositoryController {
 		
 		// TODO Delay request to assure that repository is loaded
 		List<LinkedHashMap<String, String>> ius = methods.getUnitsQueryService(queryLocation);
-		methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, ius);
+		methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, ius, uri);
 		return new URI("http://localhost");
 	}
 

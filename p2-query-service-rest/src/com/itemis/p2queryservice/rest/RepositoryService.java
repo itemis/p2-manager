@@ -117,6 +117,7 @@ public class RepositoryService {
 
 	@GET
 	@Path("{id}/units")
+//	@Produces("text/csv")
 	public Response getUnits (@PathParam("id") int repoId, @QueryParam("reload") boolean reload) {
 		IRepositoryData data = getRepositoryData();
 		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
@@ -131,7 +132,7 @@ public class RepositoryService {
 			groupedIUs.getRootIncludedInstallableUnits().forEach(unit -> result.add(new IUMasterInfo(unit)));
 		}
 		
-		return Response.ok(result).build();
+		return Response.ok(result).type("text/csv").build();
 	}
 
 	@GET
