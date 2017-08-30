@@ -80,6 +80,7 @@
 							<version>${project.version}</version>
 						</artifact>
 					</target>
+					<pomDependencies>consider</pomDependencies>
 					<environments>
 						<environment>
 							<os>macosx</os>
