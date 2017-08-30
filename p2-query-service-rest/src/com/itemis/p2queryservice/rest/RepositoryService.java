@@ -11,13 +11,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
@@ -42,9 +40,13 @@ public class RepositoryService {
 	}
 	
 	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public Iterable<RepositoryInfo> getAllRepositories () {
-		return getRepositoryData().getAllRepositories();
+	public Response getAllRepositories (@QueryParam("csv") boolean csv) {
+		ResponseBuilder response = Response.ok(getRepositoryData().getAllRepositories());
+		if (csv) {
+			// TODO: Check if other format is requested by header and react with error
+			response = response.type("text/csv");
+		}
+		return response.build();
 	}
 
 	@POST
@@ -94,7 +96,7 @@ public class RepositoryService {
 	
 	@GET
 	@Path("{id}/children")
-	public Response getChildRepositories (@PathParam("id") int repoId, @QueryParam("reload") boolean reload) {
+	public Response getChildRepositories (@PathParam("id") int repoId, @QueryParam("reload") boolean reload, @QueryParam("csv") boolean csv) {
 		IRepositoryData data = getRepositoryData();
 		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
 		if (!repo.isPresent()) {
@@ -112,13 +114,24 @@ public class RepositoryService {
 			});
 		}
 		
-		return Response.ok(result).build();
+		ResponseBuilder response = Response.ok(result);
+		if (csv) {
+			// TODO: Check if other format is requested by header and react with error
+			response = response.type("text/csv");
+		}
+		return response.build();
 	}
 
+	/**
+	 * 
+	 * @param repoId Repository id
+	 * @param reload Forces a reload when <code>true</code>
+	 * @param csv When <code>true</code> result will be in CSV format
+	 * @return
+	 */
 	@GET
 	@Path("{id}/units")
-//	@Produces("text/csv")
-	public Response getUnits (@PathParam("id") int repoId, @QueryParam("reload") boolean reload) {
+	public Response getUnits (@PathParam("id") int repoId, @QueryParam("reload") boolean reload, @QueryParam("csv") boolean csv) {
 		IRepositoryData data = getRepositoryData();
 		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
 		if (!repo.isPresent()) {
@@ -132,7 +145,12 @@ public class RepositoryService {
 			groupedIUs.getRootIncludedInstallableUnits().forEach(unit -> result.add(new IUMasterInfo(unit)));
 		}
 		
-		return Response.ok(result).type("text/csv").build();
+		ResponseBuilder response = Response.ok(result);
+		if (csv) {
+			// TODO: Check if other format is requested by header and react with error
+			response = response.type("text/csv");
+		}
+		return response.build();
 	}
 
 	@GET
