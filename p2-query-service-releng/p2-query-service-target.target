@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde?>
 <!-- generated with https://github.com/mbarbero/fr.obeo.releng.targetplatform -->
-<target name="p2-service" sequenceNumber="1494538446">
+<target name="p2-service" sequenceNumber="1504077530">
   <locations>
     <location includeMode="slicer" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
-      <unit id="org.eclipse.jetty.server" version="9.3.9.v20160517"/>
-      <unit id="org.eclipse.jetty.http" version="9.3.9.v20160517"/>
-      <unit id="org.eclipse.jetty.servlet" version="9.3.9.v20160517"/>
-      <unit id="org.eclipse.jetty.security" version="9.3.9.v20160517"/>
-      <unit id="org.eclipse.jetty.util" version="9.3.9.v20160517"/>
-      <unit id="org.eclipse.jetty.io" version="9.3.9.v20160517"/>
-      <unit id="org.eclipse.jetty.continuation" version="9.3.9.v20160517"/>
+      <unit id="org.eclipse.jetty.server" version="9.4.5.v20170502"/>
+      <unit id="org.eclipse.jetty.http" version="9.4.5.v20170502"/>
+      <unit id="org.eclipse.jetty.servlet" version="9.4.5.v20170502"/>
+      <unit id="org.eclipse.jetty.security" version="9.4.5.v20170502"/>
+      <unit id="org.eclipse.jetty.util" version="9.4.5.v20170502"/>
+      <unit id="org.eclipse.jetty.io" version="9.4.5.v20170502"/>
+      <unit id="org.eclipse.jetty.continuation" version="9.4.5.v20170502"/>
       <unit id="org.eclipse.equinox.app" version="1.3.400.v20150715-1528"/>
-      <unit id="org.eclipse.equinox.p2.core.feature.feature.group" version="1.3.203.v20170131-1444"/>
-      <unit id="org.eclipse.core.net" version="1.3.0.v20160418-1534"/>
-      <unit id="com.google.guava" version="18.0.0.v20161115-1643"/>
-      <unit id="org.eclipse.ecf" version="3.8.0.v20160823-2221"/>
-      <unit id="org.eclipse.ecf.filetransfer" version="5.0.0.v20160823-2221"/>
-      <unit id="org.eclipse.ecf.provider.filetransfer" version="3.2.200.v20160823-2221"/>
-      <unit id="org.eclipse.ecf.identity" version="3.7.0.v20160823-2221"/>
-      <repository location="http://download.eclipse.org/releases/neon/201703231000"/>
+      <unit id="org.eclipse.equinox.p2.core.feature.feature.group" version="1.4.0.v20170524-1345"/>
+      <unit id="org.eclipse.core.net" version="1.3.100.v20170516-0820"/>
+      <unit id="com.google.guava" version="21.0.0.v20170206-1425"/>
+      <unit id="org.eclipse.ecf" version="3.8.0.v20170104-0657"/>
+      <unit id="org.eclipse.ecf.filetransfer" version="5.0.0.v20160817-1024"/>
+      <unit id="org.eclipse.ecf.provider.filetransfer" version="3.2.300.v20161203-1840"/>
+      <unit id="org.eclipse.ecf.identity" version="3.8.0.v20161203-2153"/>
+      <repository location="http://download.eclipse.org/releases/oxygen/201706281000"/>
     </location>
     <location includeMode="slicer" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
       <unit id="org.eclipse.core.runtime.feature.feature.group" version="1.1.203.v20170209-1843"/>

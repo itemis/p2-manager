@@ -1,7 +1,7 @@
 target "p2-service" with source
 environment cocoa win32 x86_64
 
-location "http://download.eclipse.org/releases/neon/201703231000" {
+location "http://download.eclipse.org/releases/oxygen/201706281000" {
 	org.eclipse.jetty.server
 	org.eclipse.jetty.http
 	org.eclipse.jetty.servlet
