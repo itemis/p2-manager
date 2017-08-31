@@ -60,17 +60,20 @@ public class Methods {
 		return result;
 	}
 	
-	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, Repository repository) {
+	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, /*Repository repository*/URI queryLocation) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		Map<String,Object> body = new LinkedHashMap<>(2);
-		body.put("query", "MERGE (r:Repository {serviceId : {id}, uri : {uri}}) RETURN r");
-		body.put("params", repository);
+		StringBuilder queryBuilder = new StringBuilder("LOAD CSV FROM '").append(queryLocation.toString()).append("?csv=true' AS line ");
+		queryBuilder.append("MERGE (r:Repository {serviceId : line[0], uri : line[2]}) RETURN ID(r)");
+		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
+//		body.put("query", "MERGE (r:Repository {serviceId : {id}, uri : {uri}}) RETURN r");
+//		body.put("params", repository);
 		
 		ObjectNode jsonResult = restTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) jsonResult.get("data");
-		ObjectNode metadateNode = ((ObjectNode)((ObjectNode)((ArrayNode)dataNode.get(0)).get(0)).get("metadata"));
-		return metadateNode.get("id").asInt();
+//		ObjectNode metadateNode = ((ObjectNode)((ObjectNode)((ArrayNode)dataNode.get(0)).get(0)).get("metadata"));
+//		return metadateNode.get("id").asInt();
+		return dataNode.get(1).get(0).asInt();
 	}
 
 	public List<LinkedHashMap<String, String>> getUnitsQueryService(URI repoLocation) {
@@ -86,6 +89,21 @@ public class Methods {
 	 * MERGE (iu:IU { id: line[0]})
 	 * MERGE (r)-[p:PROVIDES { version: line[1]}]->(iu)
 	 */
+
+	Integer postUnitsNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, int repoId, URI queryLocation){
+		Date startTimeOfThisMethod = new Date();
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
+		StringBuilder queryBuilder = new StringBuilder("LOAD CSV FROM '").append(queryLocation.toString()).append("/units?csv=true' AS line ");
+		queryBuilder.append("MATCH (r:Repository) WHERE ID(r)=").append(repoId).append(" ");
+		queryBuilder.append("MERGE (iu:IU { id: line[0]}) ");
+		queryBuilder.append("MERGE (r)-[p:PROVIDES { version: line[1]}]->(iu)");
+		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
+		ObjectNode jsonResult = restTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
+		System.out.println("needed Time for Units: " + ((new Date()).getTime() - startTimeOfThisMethod.getTime()));
+		
+		return 0;
+	}
 	
 	Integer postUnitsNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, int repoId, List<LinkedHashMap<String, String>> ius, URI uri){
 		String repouri = uri.toString().toUpperCase();

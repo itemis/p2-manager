@@ -73,12 +73,12 @@ public class RepositoryController {
 		//TODO: Completable Features
 		//TODO: Children parallel zu Units
 		URI queryLocation = methods.postRepositoriesQueryService(uri, queryserviceUrl);
-		Repository repository = methods.getRepositoryQueryService(queryLocation);
-		int repoDBId = methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repository);
+		//Repository repository = methods.getRepositoryQueryService(queryLocation); TODO: Maybe useless
+		int repoDBId = methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, queryLocation);//repository);
 		
 		// TODO Delay request to assure that repository is loaded
-		List<LinkedHashMap<String, String>> ius = methods.getUnitsQueryService(queryLocation);
-		methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, ius, uri);
+		//List<LinkedHashMap<String, String>> ius = methods.getUnitsQueryService(queryLocation);
+		methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, queryLocation);//ius, uri);
 		return new URI("http://localhost");
 	}
 

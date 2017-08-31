@@ -2,10 +2,12 @@ package com.itemis.p2queryservice.rest;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -40,7 +42,7 @@ public class RepositoryService {
 	}
 	
 	@GET
-	public Response getAllRepositories (@QueryParam("csv") boolean csv) {
+	public Response getAllRepositories (@DefaultValue("false") @QueryParam("csv") boolean csv) {
 		ResponseBuilder response = Response.ok(getRepositoryData().getAllRepositories());
 		if (csv) {
 			// TODO: Check if other format is requested by header and react with error
@@ -63,7 +65,7 @@ public class RepositoryService {
 			return Response.accepted().location(location).build(); // We have to use accepted, because the repository will be created asynch
 					//status(Status.SEE_OTHER).location(location).build();//created(location).build();
 		} else {
-			URI location = uriInfo.getRequestUriBuilder().path(repo.get() + "/").build();
+			URI location = uriInfo.getRequestUriBuilder().path(repo.get().getId() + "/").build();
 			return Response.status(Response.Status.CONFLICT).header(HttpHeaders.LOCATION, location)
 					.entity("Repository already exists").build();
 		}
@@ -72,14 +74,22 @@ public class RepositoryService {
 
 	@GET
 	@Path("{id}")
-	public Response getRepo(@PathParam("id") int repoId) {
+	public Response getRepo(@PathParam("id") int repoId, @DefaultValue("false") @QueryParam("csv") boolean csv) {
 		IRepositoryData data = getRepositoryData();
 		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
 		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		} 
-
-		return Response.ok(repo.get()).build();
+		
+		ResponseBuilder response = null;
+		if (csv) {
+			// TODO: Check if other format is requested by header and react with error
+			response = Response.ok(Collections.singletonList(repo.get())).type("text/csv");
+		}
+		else {
+			response = Response.ok(repo.get());
+		}
+		return response.build();
 	}
 
 	@DELETE
@@ -96,7 +106,7 @@ public class RepositoryService {
 	
 	@GET
 	@Path("{id}/children")
-	public Response getChildRepositories (@PathParam("id") int repoId, @QueryParam("reload") boolean reload, @QueryParam("csv") boolean csv) {
+	public Response getChildRepositories (@PathParam("id") int repoId, @QueryParam("reload") boolean reload, @DefaultValue("false") @QueryParam("csv") boolean csv) {
 		IRepositoryData data = getRepositoryData();
 		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
 		if (!repo.isPresent()) {
@@ -131,7 +141,7 @@ public class RepositoryService {
 	 */
 	@GET
 	@Path("{id}/units")
-	public Response getUnits (@PathParam("id") int repoId, @QueryParam("reload") boolean reload, @QueryParam("csv") boolean csv) {
+	public Response getUnits (@PathParam("id") int repoId, @QueryParam("reload") boolean reload, @DefaultValue("false") @QueryParam("csv") boolean csv) {
 		IRepositoryData data = getRepositoryData();
 		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
 		if (!repo.isPresent()) {
