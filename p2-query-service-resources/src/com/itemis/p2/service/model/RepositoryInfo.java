@@ -8,7 +8,8 @@ import javax.swing.text.rtf.RTFEditorKit;
 public class RepositoryInfo {
 	private int id;
 	private URI uri;
-	transient String status;
+	private transient String status;
+	private transient long modificationStamp = -1;
 	
 	public RepositoryInfo() {
 		this.id = -1;
@@ -72,6 +73,14 @@ public class RepositoryInfo {
 	
 	public String getStatus() {
 		return this.status;
+	}
+	
+	public void touch () {
+		modificationStamp = System.currentTimeMillis();
+	}
+	
+	public long getModificationStamp() {
+		return modificationStamp;
 	}
 
 	@Override

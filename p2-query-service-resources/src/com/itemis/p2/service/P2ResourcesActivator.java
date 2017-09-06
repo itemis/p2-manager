@@ -1,5 +1,7 @@
 package com.itemis.p2.service;
 
+import static com.itemis.p2.service.internal.Log.error;
+import static com.itemis.p2.service.internal.Log.info;
 
 import java.io.File;
 import java.io.FileReader;
@@ -17,6 +19,8 @@ import org.osgi.framework.ServiceReference;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.itemis.p2.service.internal.Log;
+import com.itemis.p2.service.internal.RepositoryCleanupJob;
 import com.itemis.p2.service.internal.RepositoryData;
 
 public class P2ResourcesActivator extends Plugin {
@@ -26,28 +30,33 @@ public class P2ResourcesActivator extends Plugin {
 	private ServiceReference<IProvisioningAgent> agentReference;
 	private IRepositoryData repositoryData;
 	private Gson gson;
+	private RepositoryCleanupJob cleanupJob;
 
 	public void start(BundleContext context) throws Exception {
 		instance = this;
+		Log.bundle = context.getBundle();
 		gson = new GsonBuilder().setPrettyPrinting().create();
-		
+
 		repositoryData = readStorage();
-		
+		cleanupJob = new RepositoryCleanupJob(repositoryData);
+		cleanupJob.schedule();
 	}
 
 	public void stop() throws Exception {
 		instance = null;
 		gson = null;
 		repositoryData = null;
+		cleanupJob.cancel();
+		cleanupJob = null;
 		if (agentReference != null) {
 			getBundle().getBundleContext().ungetService(agentReference);
 		}
+		Log.bundle = null;
 	}
 
 	public static P2ResourcesActivator getDefault() {
 		return instance;
 	}
-
 
 	private IRepositoryData readStorage() throws CoreException {
 		File storage = getStateLocation().append("repositories.dat").toFile();
@@ -63,9 +72,10 @@ public class P2ResourcesActivator extends Plugin {
 			return new RepositoryData();
 		}
 	}
-	
-	public void saveRepositoryData () {
+
+	public void saveRepositoryData() {
 		File storage = getStateLocation().append("repositories.dat").toFile();
+		info("Storing repositories metadata to "+storage.getPath());
 		if (!storage.exists()) {
 			try {
 				storage.createNewFile();
@@ -78,7 +88,7 @@ public class P2ResourcesActivator extends Plugin {
 		} catch (IOException e) {
 			throw new RuntimeException("Could not write " + storage.getAbsolutePath(), e);
 		}
-		
+
 	}
 
 	public static CoreException createCoreException(String message, Throwable cause) {
@@ -86,17 +96,7 @@ public class P2ResourcesActivator extends Plugin {
 		return new CoreException(status);
 	}
 
-	public static void info(String message) {
-		Status status = new Status(IStatus.INFO, instance.getBundle().getSymbolicName(), message);
-		instance.getLog().log(status);
-	}
-
-	public static void error(String message, Exception cause) {
-		Status status = new Status(IStatus.ERROR, instance.getBundle().getSymbolicName(), message, cause);
-		instance.getLog().log(status);
-	}
-
-	public static Gson getGSON () {
+	public static Gson getGSON() {
 		return instance.gson;
 	}
 
@@ -120,7 +120,7 @@ public class P2ResourcesActivator extends Plugin {
 
 	public static IMetadataRepositoryManager getRepositoryManager() {
 		IProvisioningAgent agent = getDefault().getProvisioningAgent();
-		
+
 		Object service = agent.getService(IMetadataRepositoryManager.SERVICE_NAME);
 		IMetadataRepositoryManager repoMgr = (IMetadataRepositoryManager) service;
 
@@ -134,5 +134,5 @@ public class P2ResourcesActivator extends Plugin {
 	public IRepositoryData getRepositoryData() {
 		return repositoryData;
 	}
-	
+
 }

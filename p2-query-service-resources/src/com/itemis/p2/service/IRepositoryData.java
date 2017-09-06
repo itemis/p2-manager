@@ -20,6 +20,13 @@ public interface IRepositoryData {
 	RepositoryInfo addLocation(URI location, boolean loadOnDemand, boolean isChild);
 
 	void removeLocation(URI location);
+	
+	/**
+	 * Disposes the loaded metadata of a repository, but does not delete the repository.
+	 * 
+	 * @param location repository URI
+	 */
+	void dispose (URI location);
 
 	boolean containsRepository(URI location);
 

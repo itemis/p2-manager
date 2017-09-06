@@ -18,6 +18,7 @@ import com.itemis.p2.service.P2ResourcesActivator;
 import com.itemis.p2.service.model.RepositoryInfo;
 
 import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
+import static com.itemis.p2.service.internal.Log.*;
 
 public class RepositoryData implements IRepositoryData {
 	/**
@@ -117,8 +118,20 @@ public class RepositoryData implements IRepositoryData {
 	 */
 	@Override
 	public void removeLocation (URI location) {
-		repositories.remove(location);
+		dispose(location);
+		Optional<RepositoryInfo> repository = getRepositoryByUri(location);
+		if (repository.isPresent()) {
+			repositories.remove(repository.get());
+		}
 		repositoryContent.remove(location);
+		info("Repository "+location+": Removed.");
+	}
+	
+	@Override
+	public void dispose(URI location) {
+		info("Repository "+location+": Unloaded content.");
+		repositoryContent.remove(location);
+		allMetadataRepositories.remove(location);
 	}
 
 	/* (non-Javadoc)
@@ -160,6 +173,7 @@ public class RepositoryData implements IRepositoryData {
 	@Override
 	public void addRepositoryContents (URI location, IGroupedInstallableUnits content) {
 		repositoryContent.put(location, content);
+		info("Repository "+location+": Stored "+content.getRootIncludedInstallableUnits().size()+" IUs.");
 	}
 
 
@@ -172,6 +186,7 @@ public class RepositoryData implements IRepositoryData {
 			LoadRepositoryJob loadRepositoryJob = (LoadRepositoryJob) job;
 			if (loadRepositoryJob.getLocation().equals(uri)) {
 				try {
+					info("Repository "+uri+": Load job is currently in progress. Waiting...");
 					loadRepositoryJob.join();
 				} catch (InterruptedException e) {
 					; // nothing
