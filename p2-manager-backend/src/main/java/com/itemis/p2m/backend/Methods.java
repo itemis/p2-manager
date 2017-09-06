@@ -1,6 +1,7 @@
 package com.itemis.p2m.backend;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -26,15 +27,13 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import com.itemis.p2m.backend.constants.RepositoryStatus;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
 
 public class Methods {
 	
-	private int openCalls = 0;
-
 	URI postRepositoriesQueryService(URI uri, String queryserviceUrl) {
-		openCalls ++;
 		RestTemplate restTemplate = new RestTemplate();
 		HttpMessageConverter<?> formHttpMessageConverter = new FormHttpMessageConverter();
 		HttpMessageConverter<?> stringHttpMessageConverternew = new StringHttpMessageConverter();
@@ -54,33 +53,30 @@ public class Methods {
 		return location;
 	}
 	
-	Repository getRepositoryQueryService(URI location) {
-		RestTemplate restTemplate = new RestTemplate();
-		Repository result = restTemplate.getForObject(location, Repository.class);
-		return result;
-	}
-	
-	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, /*Repository repository*/URI queryLocation) {
+	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI queryLocation) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
 		StringBuilder queryBuilder = new StringBuilder("LOAD CSV FROM '").append(queryLocation.toString()).append("?csv=true' AS line ");
 		queryBuilder.append("MERGE (r:Repository {serviceId : line[0], uri : line[2]}) RETURN ID(r)");
 		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
-//		body.put("query", "MERGE (r:Repository {serviceId : {id}, uri : {uri}}) RETURN r");
-//		body.put("params", repository);
 		
 		ObjectNode jsonResult = restTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) jsonResult.get("data");
-//		ObjectNode metadateNode = ((ObjectNode)((ObjectNode)((ArrayNode)dataNode.get(0)).get(0)).get("metadata"));
-//		return metadateNode.get("id").asInt();
 		return dataNode.get(1).get(0).asInt();
 	}
-
-	public List<LinkedHashMap<String, String>> getUnitsQueryService(URI repoLocation) {
+	
+	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI queryLocation, int parentId) {
 		RestTemplate restTemplate = new RestTemplate();
-		List<LinkedHashMap<String, String>> ius = new ArrayList<>();
-		ius = restTemplate.getForObject(repoLocation+"/units", ius.getClass());
-		return ius;
+		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
+		StringBuilder queryBuilder = new StringBuilder("LOAD CSV FROM '").append(queryLocation.toString()).append("?csv=true' AS line ");
+		queryBuilder.append("MATCH (p:Repository) WHERE ID(r)=").append(parentId).append(" ");
+		queryBuilder.append("MERGE (r:Repository {serviceId : line[0], uri : line[2]}) ");
+		queryBuilder.append("MERGE (p)-[po:PARENT_OF]->(r) RETURN ID(r)");
+		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
+		
+		ObjectNode jsonResult = restTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
+		ArrayNode dataNode = (ArrayNode) jsonResult.get("data");
+		return dataNode.get(1).get(0).asInt();
 	}
 	
 	/*
@@ -105,64 +101,38 @@ public class Methods {
 		return 0;
 	}
 	
-	Integer postUnitsNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, int repoId, List<LinkedHashMap<String, String>> ius, URI uri){
-		String repouri = uri.toString().toUpperCase();
-		Date startTimeOfThisMethod = new Date();
+	void addChildRepositories(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI childLocation, int parentId) {
+		int repoDBId = postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, childLocation, parentId);
+		//TODO: create relationship to Parent
+		//Wait
+		postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, childLocation);		
+	}
+	
+	boolean getRepositoryStatusQueryService(URI location, String wantedStatus) {
 		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		StringBuilder buildMergeIU = new StringBuilder();
-		StringBuilder buildProvides = new StringBuilder();
-		StringBuilder buildReturn = new StringBuilder("RETURN r.url");
-		int iuid = 0;
-		ExecutorService executor = Executors.newFixedThreadPool(1);
-		for (LinkedHashMap<String, String> iuMap : ius) {
-			InstallableUnit iu = new InstallableUnit(iuMap.get("id"), iuMap.get("version"));
-			buildMergeIU.append("MERGE (iu" + iuid + ":IU { id: '" + iu.getId() + "'}) ");
-			buildProvides.append("MERGE (r)-[p" + iuid + ":PROVIDES { version: '" + iu.getVersion() + "'}]->(iu" + iuid + ") ");
-			buildReturn.append(",iu" + iuid + ".id,p" + iuid + ".version");
-			iuid++;
-			if (iuid%50==0) {
-				String mergeIU = buildMergeIU.toString();
-				String provides = buildProvides.toString();
-				String returnQuery = buildReturn.toString();
-				final int printID = iuid;
-				executor.execute(()->sendPostUnitsNeoDB(restTemplate, repoId, mergeIU, provides, returnQuery, neo4jUrl, repouri, printID));
-				buildMergeIU = new StringBuilder();
-				buildProvides = new StringBuilder();
-				buildReturn = new StringBuilder("RETURN r.url");
+		String status = restTemplate.getForObject(location+"/status", String.class);
+		return (RepositoryStatus.LOADED.equals(status) || wantedStatus.equals(status));
+	}
+	
+	List<URI> getChildrenQueryService(URI parentLocation) {
+		String queryService = parentLocation.toString().substring(0, parentLocation.toString().lastIndexOf("/"));
+		RestTemplate restTemplate = new RestTemplate();
+		ArrayNode arrayNode = restTemplate.getForObject(parentLocation+"/children?csv=false", ArrayNode.class);
+		List<URI> children = new ArrayList<>();
+		arrayNode.forEach(jsonNode -> {
+			try {
+				children.add(new URI(queryService + ((ObjectNode)jsonNode).get("id").asText()));
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
 			}
-		}
-		String mergeIU = buildMergeIU.toString();
-		String provides = buildProvides.toString();
-		String returnQuery = buildReturn.toString();
-		executor.execute(()->sendPostUnitsNeoDB(restTemplate, repoId, mergeIU, provides, returnQuery, neo4jUrl, repouri));
-		Future<Integer> future = executor.submit(()->{
-			System.out.println("[" + repouri + "]: needed Time: " + (new Date().getTime()-startTimeOfThisMethod.getTime()));
-			return --openCalls;
 		});
-		try {
-			return future.get();
-		} catch (Exception e) {
-			return -1;
-		}
+		return children;
 	}
-	
-	private void sendPostUnitsNeoDB(RestTemplate restTemplate, int repoId, String mergeIU, String provides, String returnQuery, String neo4jUrl, String repouri, int id) {
-		Date startTimeOfThisMethod = new Date();
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) WHERE ID(r)=" + repoId + " " + mergeIU + provides + returnQuery);
-//		System.out.println("[" + repouri + "]: REQUEST");
-		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
-//		System.out.println("[" + repouri + "]: RESPONSE");
-		System.out.println("[" + repouri + "]: at id " + id + " needed Time: " + (new Date().getTime()-startTimeOfThisMethod.getTime()));
-	}
-	
-	private void sendPostUnitsNeoDB(RestTemplate restTemplate, int repoId, String mergeIU, String provides, String returnQuery, String neo4jUrl, String repouri) {
-		Date startTimeOfThisMethod = new Date();
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) WHERE ID(r)=" + repoId + " " + mergeIU + provides + returnQuery);
-//		System.out.println("[" + repouri + "]: REQUEST");
-		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
-//		System.out.println("[" + repouri + "]: RESPONSE");
-		System.out.println("[" + repouri + "]: at last id needed Time: " + (new Date().getTime()-startTimeOfThisMethod.getTime()));
+
+	int getUnitsCountQueryService(URI queryLocation) {
+		RestTemplate restTemplate = new RestTemplate();
+		int count = restTemplate.getForObject(queryLocation+"/units/count", Integer.class);
+		return count;
 	}
 
 }

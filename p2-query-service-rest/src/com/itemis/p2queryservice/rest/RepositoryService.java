@@ -16,6 +16,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -129,6 +130,9 @@ public class RepositoryService {
 			// TODO: Check if other format is requested by header and react with error
 			response = response.type("text/csv");
 		}
+		else {
+			response = response.type(MediaType.APPLICATION_JSON);
+		}
 		return response.build();
 	}
 
@@ -161,6 +165,31 @@ public class RepositoryService {
 			response = response.type("text/csv");
 		}
 		return response.build();
+	}
+
+	/**
+	 * 
+	 * @param repoId Repository id
+	 * @param reload Forces a reload when <code>true</code>
+	 * @return
+	 */
+	@GET
+	@Path("{id}/units/count")
+	public Response getNumberOfUnits (@PathParam("id") int repoId, @QueryParam("reload") boolean reload) {
+		IRepositoryData data = getRepositoryData();
+		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
+		if (!repo.isPresent()) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
+		
+		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().getUri(), reload);
+		
+		List<IUMasterInfo> result = new ArrayList<>();
+		if (groupedIUs != null) {
+			groupedIUs.getRootIncludedInstallableUnits().forEach(unit -> result.add(new IUMasterInfo(unit)));
+		}
+		
+		return Response.ok(result.size()).build();
 	}
 
 	@GET

@@ -93,8 +93,8 @@ public class LoadRepositoryJob extends Job {
 						loadRepository(repoMgr, childUri, errors, monitor);
 						data.addLocation(childUri, false, true);
 					}
-					data.getRepositoryByUri(location).get().childrenAreLoaded();
 				}
+				data.getRepositoryByUri(location).get().childrenAreLoaded();
 			} catch (ProvisionException e) {
 				errors.add(e.getStatus());
 			} catch (NoSuchElementException e) {
@@ -130,11 +130,11 @@ public class LoadRepositoryJob extends Job {
 			dag = dag.sort(new InstallableUnitComparator());
 
 			data.addRepositoryContents(location, new InstallableUnitDependencyTree(dag));
-			try {
-				data.getRepositoryByUri(location).get().unitsAreLoaded();	
-			} catch (NoSuchElementException e) {
-				// TODO: handle exception
-			}
+		}
+		try {
+			data.getRepositoryByUri(location).get().unitsAreLoaded();	
+		} catch (NoSuchElementException e) {
+			// TODO: handle exception
 		}
 	}
 

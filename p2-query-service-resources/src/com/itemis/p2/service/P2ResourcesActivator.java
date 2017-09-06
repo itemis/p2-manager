@@ -53,7 +53,9 @@ public class P2ResourcesActivator extends Plugin {
 		File storage = getStateLocation().append("repositories.dat").toFile();
 		if (storage.exists()) {
 			try (FileReader reader = new FileReader(storage)) {
-				return gson.fromJson(reader, RepositoryData.class);
+				RepositoryData repoData = gson.fromJson(reader, RepositoryData.class);
+				repoData.getAllRepositories().forEach(repo -> repo.addedToQueryService());
+				return repoData;
 			} catch (IOException e) {
 				return new RepositoryData();
 			}

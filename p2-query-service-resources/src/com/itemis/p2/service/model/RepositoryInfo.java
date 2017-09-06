@@ -42,8 +42,15 @@ public class RepositoryInfo {
 			status = RepositoryStatus.ADDED;
 	}
 	
+	public void addedToQueryService() {
+		status = RepositoryStatus.ADDED;
+	}
+	
 	public void childrenAreLoaded() {
-		if (status.equals(RepositoryStatus.UNIT)) {
+		if (status.equals(RepositoryStatus.LOADED)) {
+			return;
+		}
+		else if (status.equals(RepositoryStatus.UNIT)) {
 			status = RepositoryStatus.LOADED;
 		}
 		else {
@@ -52,7 +59,10 @@ public class RepositoryInfo {
 	}
 	
 	public void unitsAreLoaded() {
-		if (status.equals(RepositoryStatus.CHILD)) {
+		if (status.equals(RepositoryStatus.LOADED)) {
+			return;
+		}
+		else if (status.equals(RepositoryStatus.CHILD)) {
 			status = RepositoryStatus.LOADED;
 		}
 		else {

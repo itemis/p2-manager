@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.itemis.p2m.backend.constants.RepositoryStatus;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
 
@@ -69,17 +71,27 @@ public class RepositoryController {
 	@RequestMapping(method=RequestMethod.POST, value="/repositories")
 	@ResponseBody
 	URI addRepository(@RequestParam URI uri) throws Exception {
-		//TODO: ID-field of DB
-		//TODO: Completable Features
-		//TODO: Children parallel zu Units
 		URI queryLocation = methods.postRepositoriesQueryService(uri, queryserviceUrl);
-		//Repository repository = methods.getRepositoryQueryService(queryLocation); TODO: Maybe useless
-		int repoDBId = methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, queryLocation);//repository);
+		int repoDBId = methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, queryLocation);
+		ExecutorService executor = Executors.newFixedThreadPool(2);
 		
-		// TODO Delay request to assure that repository is loaded
-		//List<LinkedHashMap<String, String>> ius = methods.getUnitsQueryService(queryLocation);
-		methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, queryLocation);//ius, uri);
-		return new URI("http://localhost");
+		Future<List<URI>> waitForChildren = executor.submit(()->{
+			while (!methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.CHILD)) {
+				Thread.sleep(1000);
+			}
+			return methods.getChildrenQueryService(queryLocation);
+		});
+		waitForChildren.get().forEach(childLocation -> methods.addChildRepositories(neo4jUsername, neo4jPassword, neo4jUrl, childLocation, repoDBId));
+		
+		Future<Boolean> waitForUnits = executor.submit(()->{
+			while (!methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.UNIT)) {
+				Thread.sleep(1000);
+			}
+			return (methods.getUnitsCountQueryService(queryLocation)>0);
+		});
+		if(waitForUnits.get()) methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, queryLocation);
+		
+		return new URI("http://localhost"); //TODO: return statement
 	}
 
 	@RequestMapping("/repositories/{id}/units")
