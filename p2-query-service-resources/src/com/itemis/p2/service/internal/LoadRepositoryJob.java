@@ -1,10 +1,11 @@
 package com.itemis.p2.service.internal;
 
+import static com.itemis.p2.service.internal.Log.info;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -19,7 +20,6 @@ import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
 
 import com.itemis.p2.service.IRepositoryData;
 import com.itemis.p2.service.P2ResourcesActivator;
-import com.itemis.p2.service.model.RepositoryInfo;
 
 import copied.com.ifedorenko.p2browser.director.InstallableUnitDAG;
 import copied.com.ifedorenko.p2browser.model.IncludedInstallableUnits;
@@ -33,23 +33,24 @@ public class LoadRepositoryJob extends Job {
 
 	private URI location;
 	private IRepositoryData data;
-    private boolean revealCompositeRepositories = true;
-    private boolean groupIncludedIUs = false;
-    private IInstallableUnitMatcher unitMatcher;
-
+	private boolean revealCompositeRepositories = true;
+	private boolean groupIncludedIUs = false;
+	private IInstallableUnitMatcher unitMatcher;
 
 	public LoadRepositoryJob(URI location, IRepositoryData data) {
-		this (location, data, true, false);
+		this(location, data, true, false);
 	}
-	public LoadRepositoryJob(URI location, IRepositoryData data, boolean revealCompositeRepositories, boolean groupIncludedIUs) {
-		super("Load repository metadata "+location);
+
+	public LoadRepositoryJob(URI location, IRepositoryData data, boolean revealCompositeRepositories,
+			boolean groupIncludedIUs) {
+		super("Load repository metadata " + location);
 		this.location = location;
 		setUser(true);
 		this.data = data;
 		this.revealCompositeRepositories = revealCompositeRepositories;
 		this.groupIncludedIUs = groupIncludedIUs;
 	}
-	
+
 	@Override
 	public boolean belongsTo(Object family) {
 		return FAMILY.equals(family);
@@ -61,46 +62,43 @@ public class LoadRepositoryJob extends Job {
 
 		try {
 			IMetadataRepositoryManager repoMgr = P2ResourcesActivator.getRepositoryManager();
-			loadRepository(repoMgr, location, errors, monitor);
+			info("Repository " + location + ": Loading...");
+			loadRepository(repoMgr, location, monitor);
 			loadRepositoryContent(location, monitor);
-		}
-		catch (ProvisionException e) {
+			info("Repository " + location + ": Successfully loaded.");
+		} catch (ProvisionException e) {
 			errors.add(e.getStatus());
-		}
-		catch (OperationCanceledException e) {
+		} catch (OperationCanceledException e) {
 			data.removeLocation(location);
 			return Status.CANCEL_STATUS;
-		}
-		catch (Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return toStatus(errors);
 	}
-	
-	private void loadRepository(IMetadataRepositoryManager repoMgr, URI location, List<IStatus> errors, IProgressMonitor monitor)
-			throws ProvisionException, OperationCanceledException {
-		if (!data.containsRepository(location)) {
-			try {
-				IMetadataRepository repository = repoMgr.loadRepository(location, monitor);
-				data.addRepository(location, repository);
-				
 
-				if (repository instanceof CompositeMetadataRepository) {
-					for (URI childUri : ((CompositeMetadataRepository) repository).getChildren()) {
-						// composite repository refresh refreshes all child
-						// repositories. do not re-refresh children
-						// here
-						loadRepository(repoMgr, childUri, errors, monitor);
-						data.addLocation(childUri, false, true);
-					}
-				}
-				data.getRepositoryByUri(location).get().childrenAreLoaded();
-			} catch (ProvisionException e) {
-				errors.add(e.getStatus());
-			} catch (NoSuchElementException e) {
-				// TODO: handle exception
+	private void loadRepository(IMetadataRepositoryManager repoMgr, URI location, IProgressMonitor monitor)
+			throws ProvisionException, OperationCanceledException {
+		if (data.containsRepository(location)) {
+			return;
+		}
+		IMetadataRepository repository = repoMgr.loadRepository(location, monitor);
+		data.addRepository(location, repository);
+
+		if (repository instanceof CompositeMetadataRepository) {
+			CompositeMetadataRepository composite = (CompositeMetadataRepository) repository;
+			info("Repository " + location + ": is a composite with " + composite.getChildren().size()
+					+ " children:");
+			for (URI childUri : composite.getChildren()) {
+				// composite repository refresh refreshes all child
+				// repositories. do not re-refresh children
+				// here
+				info ("   - "+childUri);
+				new LoadRepositoryJob(childUri, data, revealCompositeRepositories, groupIncludedIUs).schedule();
 			}
 		}
+		data.getRepositoryByUri(location).get().childrenAreLoaded();
+
 	}
 
 	private void loadRepositoryContent(URI location, IProgressMonitor monitor) {
@@ -132,7 +130,7 @@ public class LoadRepositoryJob extends Job {
 			data.addRepositoryContents(location, new InstallableUnitDependencyTree(dag));
 		}
 		try {
-			data.getRepositoryByUri(location).get().unitsAreLoaded();	
+			data.getRepositoryByUri(location).get().unitsAreLoaded();
 		} catch (NoSuchElementException e) {
 			// TODO: handle exception
 		}
@@ -144,14 +142,14 @@ public class LoadRepositoryJob extends Job {
 		} else if (errors.size() == 1) {
 			return errors.get(0);
 		} else {
-			MultiStatus status = new MultiStatus(P2ResourcesActivator.getDefault().getBundle().getSymbolicName(), -1, errors.toArray(new IStatus[errors.size()]),
-					"Problems loading repository", null);
+			MultiStatus status = new MultiStatus(P2ResourcesActivator.getDefault().getBundle().getSymbolicName(), -1,
+					errors.toArray(new IStatus[errors.size()]), "Problems loading repository", null);
 			return status;
 		}
 	}
-	
+
 	public URI getLocation() {
 		return location;
 	}
-	
+
 }
