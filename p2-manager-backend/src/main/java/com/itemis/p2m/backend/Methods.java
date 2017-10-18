@@ -86,7 +86,7 @@ public class Methods {
 	 * MERGE (r)-[p:PROVIDES { version: line[1]}]->(iu)
 	 */
 
-	Integer postUnitsNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, int repoId, URI queryLocation){
+	void postUnitsNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, int repoId, URI queryLocation){
 		Date startTimeOfThisMethod = new Date();
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
@@ -97,21 +97,28 @@ public class Methods {
 		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
 		ObjectNode jsonResult = restTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
 		System.out.println("needed Time for Units: " + ((new Date()).getTime() - startTimeOfThisMethod.getTime()));
-		
-		return 0;
+		//TODO: maybe return number of new IUs?
+	//	return 1;
 	}
 	
-	void addChildRepositories(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI childLocation, int parentId) {
+	void addChildRepository(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI childLocation, int parentId) {
 		int repoDBId = postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, childLocation, parentId);
-		//TODO: create relationship to Parent
-		//Wait
+		//Wait for Units are Loaded
 		postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, childLocation);		
 	}
 	
-	boolean getRepositoryStatusQueryService(URI location, String wantedStatus) {
+	void addChildrenRepositories(String neo4jUsername, String neo4jPassword, String neo4jUrl, List<URI> childrenLocations, int parentId) {
+		childrenLocations.forEach(childLocation -> addChildRepository(neo4jUsername, neo4jPassword, neo4jUrl, childLocation, parentId));
+		//return childrenLocations.size();
+	}
+	
+	URI getRepositoryStatusQueryService(URI location, String wantedStatus) {
 		RestTemplate restTemplate = new RestTemplate();
 		String status = restTemplate.getForObject(location+"/status", String.class);
-		return (RepositoryStatus.LOADED.equals(status) || wantedStatus.equals(status));
+		if (RepositoryStatus.LOADED.equals(status) || wantedStatus.equals(status))
+			return location;
+		else
+			return null;
 	}
 	
 	List<URI> getChildrenQueryService(URI parentLocation) {

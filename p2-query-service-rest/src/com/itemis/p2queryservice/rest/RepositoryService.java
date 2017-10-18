@@ -33,6 +33,8 @@ import com.itemis.p2.service.model.RepositoryInfo;
 
 import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
+//TODO: Check Status of Repositories by start up
+
 @Path("/repositories")
 public class RepositoryService {
 	public RepositoryService() {
@@ -63,8 +65,7 @@ public class RepositoryService {
 		if (!repo.isPresent()) {
 			RepositoryInfo r = data.addLocation(uri, true, false);
 			URI location = uriInfo.getRequestUriBuilder().path(r.getId() + "/").build();
-			return Response.accepted().location(location).build(); // We have to use accepted, because the repository will be created asynch
-					//status(Status.SEE_OTHER).location(location).build();//created(location).build();
+			return Response.accepted().location(location).build(); 
 		} else {
 			URI location = uriInfo.getRequestUriBuilder().path(repo.get().getId() + "/").build();
 			return Response.status(Response.Status.CONFLICT).header(HttpHeaders.LOCATION, location)

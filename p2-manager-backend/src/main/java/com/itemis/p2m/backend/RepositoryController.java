@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -68,7 +70,7 @@ public class RepositoryController {
 		return result;
 	}
 	
-	@RequestMapping(method=RequestMethod.POST, value="/repositories")
+	/*@RequestMapping(method=RequestMethod.POST, value="/repositories")
 	@ResponseBody
 	URI addRepository(@RequestParam URI uri) throws Exception {
 		URI queryLocation = methods.postRepositoriesQueryService(uri, queryserviceUrl);
@@ -76,20 +78,39 @@ public class RepositoryController {
 		ExecutorService executor = Executors.newFixedThreadPool(2);
 		
 		Future<List<URI>> waitForChildren = executor.submit(()->{
-			while (!methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.CHILD)) {
+			while (methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.CHILD) == null) {
 				Thread.sleep(1000);
 			}
 			return methods.getChildrenQueryService(queryLocation);
 		});
-		waitForChildren.get().forEach(childLocation -> methods.addChildRepositories(neo4jUsername, neo4jPassword, neo4jUrl, childLocation, repoDBId));
+		waitForChildren.get().forEach(childLocation -> methods.addChildRepository(neo4jUsername, neo4jPassword, neo4jUrl, childLocation, repoDBId));
 		
 		Future<Boolean> waitForUnits = executor.submit(()->{
-			while (!methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.UNIT)) {
+			while (methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.UNIT) == null) {
 				Thread.sleep(1000);
 			}
 			return (methods.getUnitsCountQueryService(queryLocation)>0);
 		});
 		if(waitForUnits.get()) methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, queryLocation);
+		
+		return new URI("http://localhost"); //TODO: return statement
+	}*/
+	
+	@RequestMapping(method=RequestMethod.POST, value="/repositories")
+	@ResponseBody
+	URI addRepositoryWithCF(@RequestParam URI uri) throws Exception {
+		Executor executor = Executors.newCachedThreadPool();
+		
+		CompletableFuture<URI> createRepoQueryService = CompletableFuture.supplyAsync(() -> methods.postRepositoriesQueryService(uri, queryserviceUrl), executor);
+
+		CompletableFuture<Integer> createRepoNeo = createRepoQueryService.thenApplyAsync((queryLocation) -> methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, queryLocation), executor);
+		CompletableFuture<URI> iUsAreLoaded = createRepoQueryService.thenApplyAsync((queryLocation) -> methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.UNIT), executor); //TODO: retry if not find maybe HandleAsync
+		CompletableFuture<URI> childrenAreLoaded = createRepoQueryService.thenApplyAsync((queryLocation) -> methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.CHILD), executor); //TODO: retry if not find maybe HandleAsync
+		
+		CompletableFuture<List<URI>> selectChildrenQueryService = childrenAreLoaded.thenApplyAsync((queryLocation) -> methods.getChildrenQueryService(queryLocation), executor);
+		
+		iUsAreLoaded.thenAcceptBothAsync(createRepoNeo, (queryLocation, repoDBId) -> methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, queryLocation), executor).isDone();
+		selectChildrenQueryService.thenAcceptBothAsync(createRepoNeo, (childrenLocations, repoDBId) -> methods.addChildrenRepositories(neo4jUsername, neo4jPassword, neo4jUrl, childrenLocations, repoDBId), executor).isDone();
 		
 		return new URI("http://localhost"); //TODO: return statement
 	}
