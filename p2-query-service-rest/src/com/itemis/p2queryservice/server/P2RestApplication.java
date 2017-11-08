@@ -55,7 +55,6 @@ public class P2RestApplication implements IApplication {
 		} catch (Exception e) {
 			throw createCoreException("Could not start server", e);
 		}
-		run();
 		return IApplication.EXIT_OK;
 	}
 
@@ -72,17 +71,5 @@ public class P2RestApplication implements IApplication {
 	public void stop() {
 		info("STOP p2-rest-service");
 		server.destroy();
-	}
-
-	public void run() {
-		while (server.isRunning()) {
-			try {
-				this.wait(10);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	
+	}	
 }

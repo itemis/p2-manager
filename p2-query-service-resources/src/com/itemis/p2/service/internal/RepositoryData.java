@@ -57,11 +57,11 @@ public class RepositoryData implements IRepositoryData {
 	public RepositoryInfo addLocation (URI location, boolean loadOnDemand, boolean isChild) {
 		RepositoryInfo repository = createRepositoryInfo(location);
 		// TODO: Filter child´s, which already exist if ()
-		if(!isChild){
-			isChild = true; //TODO: Why?
+		/*if(!isChild){
+//			isChild = true; //TODO: Why?
 			repositories.add(repository);
 		}
-		else if(!repositories.contains(repository)){
+		else*/ if(!repositories.contains(repository)){
 			repositories.add(repository);
 		}
 		else
@@ -72,6 +72,13 @@ public class RepositoryData implements IRepositoryData {
 		}
 		P2ResourcesActivator.getDefault().saveRepositoryData();
 		return repository;
+	}
+	
+	@Override
+	public void loadLocation (URI location) {
+		LoadRepositoryJob job = new LoadRepositoryJob(location, this);
+		job.schedule();
+		P2ResourcesActivator.getDefault().saveRepositoryData();
 	}
 	
 	private synchronized RepositoryInfo createRepositoryInfo (URI uri) {

@@ -82,6 +82,18 @@ public class RepositoryInfo {
 	public long getModificationStamp() {
 		return modificationStamp;
 	}
+	
+	public boolean isLoaded() {
+		return this.status.equals(RepositoryStatus.LOADED);
+	}
+	
+	public boolean areChildrenLoaded() {
+		return this.status.equals(RepositoryStatus.CHILD) || isLoaded();
+	}
+	
+	public boolean areUnitsLoaded() {
+		return this.status.equals(RepositoryStatus.UNIT) || isLoaded();
+	}
 
 	@Override
 	public String toString() {

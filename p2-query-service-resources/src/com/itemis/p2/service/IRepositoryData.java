@@ -19,6 +19,8 @@ public interface IRepositoryData {
 
 	RepositoryInfo addLocation(URI location, boolean loadOnDemand, boolean isChild);
 
+	void loadLocation(URI location);
+
 	void removeLocation(URI location);
 	
 	/**
@@ -41,4 +43,5 @@ public interface IRepositoryData {
 	List<RepositoryInfo> getAllRepositories();
 
 	int getIdCounter();
+	
 }

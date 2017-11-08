@@ -75,6 +75,7 @@ public class RepositoryService {
 
 	}
 
+	//TODO: add status to response instead of No Content
 	@GET
 	@Path("{id}")
 	public Response getRepo(@PathParam("id") int repoId, @DefaultValue("false") @QueryParam("csv") boolean csv) {
@@ -83,14 +84,18 @@ public class RepositoryService {
 		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		} 
-		
-		ResponseBuilder response = null;
+		RepositoryInfo repoInfo = repo.get();
+		if (!repoInfo.isLoaded()) {
+			data.loadLocation(repoInfo.getUri());
+			return Response.noContent().build();
+		}
+		ResponseBuilder response = Response.ok(Collections.singletonList(repoInfo));
 		if (csv) {
 			// TODO: Check if other format is requested by header and react with error
-			response = Response.ok(Collections.singletonList(repo.get())).type("text/csv");
+			response = response.type("text/csv");
 		}
 		else {
-			response = Response.ok(repo.get()).type(MediaType.APPLICATION_JSON);
+			response = response.type(MediaType.APPLICATION_JSON);
 		}
 		return response.build();
 	}
@@ -114,19 +119,25 @@ public class RepositoryService {
 		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
 		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).build();
-		}
-		
-		IMetadataRepository repository = data.getRepository(repo.get().getUri(), reload); //getReository returns null
+		} 
+		RepositoryInfo repoInfo = repo.get();
+		if (!repoInfo.areChildrenLoaded()) {
+			data.loadLocation(repoInfo.getUri());
+			return Response.noContent().build();
+		}		
+		IMetadataRepository repository = data.getRepository(repoInfo.getUri(), reload); //getReository returns null
 		List<RepositoryInfo> result = new ArrayList<>();
 		if (repository instanceof ICompositeRepository<?>) {
-			((ICompositeRepository<?>)repository).getChildren().forEach(childRepoUri -> {
-				data.getRepositoryByUri(childRepoUri)
-				.ifPresent(r -> {
-					result.add(r);
-				});
+			List<URI> children = ((ICompositeRepository<?>)repository).getChildren();			
+			children.forEach(childRepoUri -> {
+				if(data.getRepositoryByUri(childRepoUri).isPresent())
+					result.add(data.getRepositoryByUri(childRepoUri).get());
+				else
+					data.addLocation(childRepoUri, true, true);
 			});
+			if (children.size() != result.size())
+				return Response.noContent().build();
 		}
-		
 		ResponseBuilder response = Response.ok(result);
 		if (csv) {
 			// TODO: Check if other format is requested by header and react with error
@@ -152,9 +163,13 @@ public class RepositoryService {
 		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
 		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).build();
-		}
-		
-		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().getUri(), reload);
+		} 
+		RepositoryInfo repoInfo = repo.get();
+		if (!repoInfo.areUnitsLoaded()) {
+			data.loadLocation(repoInfo.getUri());
+			return Response.noContent().build();
+		}			
+		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repoInfo.getUri(), reload);
 		
 		List<IUMasterInfo> result = new ArrayList<>();
 		if (groupedIUs != null) {
@@ -166,7 +181,10 @@ public class RepositoryService {
 			// TODO: Check if other format is requested by header and react with error
 			response = response.type("text/csv");
 		}
-		return response.type(MediaType.APPLICATION_JSON).build();
+		else {
+			response = response.type(MediaType.APPLICATION_JSON);
+		}
+		return response.build();
 	}
 
 	/**
@@ -183,7 +201,7 @@ public class RepositoryService {
 		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
-		
+		//TODO: Check loaded
 		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().getUri(), reload);
 		
 		List<IUMasterInfo> result = new ArrayList<>();
@@ -204,7 +222,7 @@ public class RepositoryService {
 		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).entity("Repoitory not found").entity("Unit not found").build();
 		}
-		
+		//TODO: Check loaded
 		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().getUri(), false);
 
 		Optional<IInstallableUnit> iUnit = groupedIUs.getRootIncludedInstallableUnits().parallelStream().filter(unit -> unit.getId().equals(unitname)).findFirst();

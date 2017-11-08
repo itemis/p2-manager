@@ -94,11 +94,11 @@ public class LoadRepositoryJob extends Job {
 				// repositories. do not re-refresh children
 				// here
 				info ("   - "+childUri);
+				data.addLocation(childUri, false, true);
 				new LoadRepositoryJob(childUri, data, revealCompositeRepositories, groupIncludedIUs).schedule();
 			}
 		}
-		data.getRepositoryByUri(location).get().childrenAreLoaded();
-
+		data.getRepositoryByUri(location).ifPresent(repo -> repo.childrenAreLoaded());
 	}
 
 	private void loadRepositoryContent(URI location, IProgressMonitor monitor) {
