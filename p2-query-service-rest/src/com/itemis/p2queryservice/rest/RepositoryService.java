@@ -51,6 +51,7 @@ public class RepositoryService {
 			// TODO: Check if other format is requested by header and react with error
 			response = response.type("text/csv");
 		}
+		response = response.type(MediaType.APPLICATION_JSON);
 		return response.build();
 	}
 
@@ -89,7 +90,7 @@ public class RepositoryService {
 			response = Response.ok(Collections.singletonList(repo.get())).type("text/csv");
 		}
 		else {
-			response = Response.ok(repo.get());
+			response = Response.ok(repo.get()).type(MediaType.APPLICATION_JSON);
 		}
 		return response.build();
 	}
@@ -165,7 +166,7 @@ public class RepositoryService {
 			// TODO: Check if other format is requested by header and react with error
 			response = response.type("text/csv");
 		}
-		return response.build();
+		return response.type(MediaType.APPLICATION_JSON).build();
 	}
 
 	/**
