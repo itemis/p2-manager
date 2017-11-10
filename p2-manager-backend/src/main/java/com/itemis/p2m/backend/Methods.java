@@ -5,22 +5,15 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,11 +21,16 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.itemis.p2m.backend.constants.RepositoryStatus;
-import com.itemis.p2m.backend.model.InstallableUnit;
-import com.itemis.p2m.backend.model.Repository;
 
 public class Methods {
 	
+	/**
+	 * Adds a repository to the p2 query service.
+	 * 
+	 * @param uri The URI of the repository to be added.
+	 * @param queryserviceUrl The URL under which the p2 query service can be reached.
+	 * @return The URI under which the repository has been added by the p2 query service.
+	 * */
 	URI postRepositoriesQueryService(URI uri, String queryserviceUrl) {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpMessageConverter<?> formHttpMessageConverter = new FormHttpMessageConverter();
@@ -53,11 +51,20 @@ public class Methods {
 		return location;
 	}
 	
+	/**
+	 * Adds a repository to the neo4j database.
+	 * 
+	 * @param neo4jUsername The username used as login for the neo4j database.
+	 * @param neo4jPassword The password used as login for the neo4j database.
+	 * @param neo4jUrl The URL under which the neo4j database can be reached.
+	 * @param queryLocation The URI of the repository under the p2 query service.
+	 * @return The id assigned to the repository by the neo4j database.
+	 */
 	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI queryLocation) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		StringBuilder queryBuilder = new StringBuilder("LOAD CSV FROM '").append(queryLocation.toString()).append("?csv=true' AS line ");
-		queryBuilder.append("MERGE (r:Repository {serviceId : line[0], uri : line[2]}) RETURN ID(r)");
+		StringBuilder queryBuilder = new StringBuilder("LOAD CSV WITH HEADERS FROM '").append(queryLocation.toString()).append("?csv=true' AS line ");
+		queryBuilder.append("MERGE (r:Repository {serviceId : line.id, uri : line.uri}) RETURN ID(r)"); //TODO first line of the .csv file containing column names must be skipped
 		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
 		
 		ObjectNode jsonResult = restTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
@@ -65,12 +72,17 @@ public class Methods {
 		return dataNode.get(1).get(0).asInt();
 	}
 	
+	/**
+	 * Adds a repository to the neo4j database as child of an existing repository.
+	 * 
+	 * @param parentId The id of the parent of the repository that is to be added.
+	 */
 	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI queryLocation, int parentId) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		StringBuilder queryBuilder = new StringBuilder("LOAD CSV FROM '").append(queryLocation.toString()).append("?csv=true' AS line ");
+		StringBuilder queryBuilder = new StringBuilder("LOAD CSV WITH HEADERS FROM '").append(queryLocation.toString()).append("?csv=true' AS line ");
 		queryBuilder.append("MATCH (p:Repository) WHERE ID(r)=").append(parentId).append(" ");
-		queryBuilder.append("MERGE (r:Repository {serviceId : line[0], uri : line[2]}) ");
+		queryBuilder.append("MERGE (r:Repository {serviceId : line.id, uri : line.uri}) ");
 		queryBuilder.append("MERGE (p)-[po:PARENT_OF]->(r) RETURN ID(r)");
 		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
 		
@@ -90,10 +102,10 @@ public class Methods {
 		Date startTimeOfThisMethod = new Date();
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		StringBuilder queryBuilder = new StringBuilder("LOAD CSV FROM '").append(queryLocation.toString()).append("/units?csv=true' AS line ");
+		StringBuilder queryBuilder = new StringBuilder("LOAD CSV WITH HEADERS FROM '").append(queryLocation.toString()).append("/units?csv=true' AS line ");
 		queryBuilder.append("MATCH (r:Repository) WHERE ID(r)=").append(repoId).append(" ");
-		queryBuilder.append("MERGE (iu:IU { id: line[0]}) ");
-		queryBuilder.append("MERGE (r)-[p:PROVIDES { version: line[1]}]->(iu)");
+		queryBuilder.append("MERGE (iu:IU { id: line.id}) ");
+		queryBuilder.append("MERGE (r)-[p:PROVIDES { version: line.version}]->(iu)");
 		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
 		ObjectNode jsonResult = restTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
 		System.out.println("needed Time for Units: " + ((new Date()).getTime() - startTimeOfThisMethod.getTime()));
