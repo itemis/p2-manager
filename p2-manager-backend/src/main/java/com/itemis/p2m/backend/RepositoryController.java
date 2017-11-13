@@ -43,7 +43,7 @@ public class RepositoryController {
 		this.methods = new Methods();
 	}
 
-	@RequestMapping
+	@RequestMapping(method=RequestMethod.GET)
 	List<Repository> listRepositories() {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(
@@ -106,7 +106,7 @@ public class RepositoryController {
 		}
 	}
 
-	@RequestMapping("/{id}/units")
+	@RequestMapping(method=RequestMethod.GET, value="/{id}/units")
 	List<InstallableUnit> listUnitsInRepository(@PathVariable Integer id) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(

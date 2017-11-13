@@ -89,6 +89,25 @@
 			"response": []
 		},
 		{
+			"name": "[backend] get Repositories for Unit Version",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "uri",
+							"value": "http://www.genuitec.com/updates/webclipse/ci",
+							"type": "text"
+						}
+					]
+				},
+				"url": "localhost:8080/units/org.eclipse.ant.core/"
+			},
+			"response": []
+		},
+		{
 			"name": "[neo4j] Get service root",
 			"request": {
 				"method": "GET",

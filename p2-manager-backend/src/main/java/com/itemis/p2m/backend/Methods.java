@@ -7,7 +7,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -118,7 +117,7 @@ public class Methods {
 	 * @param queryLocation The {@link URI} of the repository under the p2 query service.
 	 */
 	void postUnitsNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, int repoId, URI queryLocation){
-		Date startTimeOfThisMethod = new Date();
+		long startTimeOfThisMethod = System.currentTimeMillis();
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
 		StringBuilder queryBuilder = new StringBuilder("LOAD CSV WITH HEADERS FROM '").append(queryLocation.toString()).append("/units?csv=true' AS line ");
@@ -127,9 +126,8 @@ public class Methods {
 		queryBuilder.append("MERGE (r)-[p:PROVIDES { version: line.version}]->(iu)");
 		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
 		ObjectNode jsonResult = restTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
-		System.out.println("needed Time for Units: " + ((new Date()).getTime() - startTimeOfThisMethod.getTime()));
+		System.out.println("needed Time for Units: " + (System.currentTimeMillis() - startTimeOfThisMethod)+" ms");
 		//TODO: maybe return number of new IUs?
-	//	return 1;
 	}
 	
 	void addChildRepository(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI childLocation, int parentId) {
@@ -210,7 +208,8 @@ public class Methods {
 		iu.setVersion(unitData.get(1).asText());
 		
 		// HATEOAS links
-		iu.add(linkTo(methodOn(InstallableUnitController.class).listVersionsForInstallableUnit(iu.getUnitId(), false)).withRel("versions"));
+		//iu.add(linkTo(methodOn(InstallableUnitController.class).listVersionsForInstallableUnit(iu.getUnitId(), false)).withRel("versions"));
+		//TODO: add link where available repositories for this version are shown
 		
 		return iu;
 	}

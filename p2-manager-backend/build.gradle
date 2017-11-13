@@ -36,6 +36,8 @@ dependencies {
     compile("org.springframework.hateoas:spring-hateoas")
     compile("org.thymeleaf:thymeleaf-spring4")
     compile("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
+    compile("io.springfox:springfox-swagger2:2.7.0")
+    compile("io.springfox:springfox-swagger-ui:2.7.0")
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
