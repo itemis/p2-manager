@@ -1,13 +1,16 @@
 package com.itemis.p2m.backend.model;
 
-public class InstallableUnit {
-	private String id;
+import org.springframework.hateoas.ResourceSupport;
+
+public class InstallableUnit extends ResourceSupport {
+	
+	private String unitId;
 	private String version;
-	public String getId() {
-		return id;
+	public String getUnitId() {
+		return unitId;
 	}
-	public void setId(String id) {
-		this.id = id;
+	public void setUnitId(String unitId) {
+		this.unitId = unitId;
 	}
 	public String getVersion() {
 		return version;
@@ -18,8 +21,8 @@ public class InstallableUnit {
 	public InstallableUnit() {
 		
 	}
-	public InstallableUnit(String id, String version) {
-		this.id = id;
+	public InstallableUnit(String unitId, String version) {
+		this.unitId = unitId;
 		this.version = version;
 	}
 }

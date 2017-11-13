@@ -1,28 +1,22 @@
 package com.itemis.p2m.backend;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.client.support.BasicAuthorizationInterceptor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -31,7 +25,10 @@ import com.itemis.p2m.backend.constants.RepositoryStatus;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
 
-@Controller
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
+
+@RestController
+@RequestMapping("/repositories")
 public class RepositoryController {
 	@Value("${url.queryservice}")
 	private String queryserviceUrl;	
@@ -47,31 +44,23 @@ public class RepositoryController {
 	public RepositoryController() {
 		this.methods = new Methods();
 	}
-	
-	@RequestMapping("/repositories")
-	@ResponseBody
-	List<Repository> listRepositories() throws Exception {
+
+	@RequestMapping
+	List<Repository> listRepositories() {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(
 				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		List<Repository> result = new ArrayList<>();
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) RETURN r.id,r.url");
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) RETURN r.serviceId,r.uri");
 		
 		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
-				
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
-		dataNode.forEach((d) -> {
-			ArrayNode node = (ArrayNode) d;
-			Repository r = new Repository();
-			r.setId(node.get(0).asInt());
-			r.setUri(node.get(1).asText());
-			result.add(r);
-		});
+		
+		List<Repository> result = new ArrayList<>();
+		dataNode.forEach((d) -> result.add(toRepository((ArrayNode) d)));
 		return result;
 	}
 	
 	/*@RequestMapping(method=RequestMethod.POST, value="/repositories")
-	@ResponseBody
 	URI addRepository(@RequestParam URI uri) throws Exception {
 		URI queryLocation = methods.postRepositoriesQueryService(uri, queryserviceUrl);
 		int repoDBId = methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, queryLocation);
@@ -96,54 +85,60 @@ public class RepositoryController {
 		return new URI("http://localhost"); //TODO: return statement
 	}*/
 	
-	@RequestMapping(method=RequestMethod.POST, value="/repositories")
-	@ResponseBody
-	URI addRepositoryWithCF(@RequestParam URI uri) throws Exception {
+	@RequestMapping(method=RequestMethod.POST)
+	URI addRepositoryWithCF(@RequestParam URI uri) {
 		Executor executor = Executors.newCachedThreadPool();
 		
 		CompletableFuture<URI> createRepoQueryService = CompletableFuture.supplyAsync(() -> methods.postRepositoriesQueryService(uri, queryserviceUrl), executor);
-
+		
 		CompletableFuture<Integer> createRepoNeo = createRepoQueryService.thenApplyAsync((queryLocation) -> methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, queryLocation), executor);
 		CompletableFuture<URI> iUsAreLoaded = createRepoQueryService.thenApplyAsync((queryLocation) -> methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.UNIT), executor); //TODO: retry if not find maybe HandleAsync
 		CompletableFuture<URI> childrenAreLoaded = createRepoQueryService.thenApplyAsync((queryLocation) -> methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.CHILD), executor); //TODO: retry if not find maybe HandleAsync
 		
-		CompletableFuture<List<URI>> selectChildrenQueryService = childrenAreLoaded.thenApplyAsync((queryLocation) -> methods.getChildrenQueryService(queryLocation), executor);
+		CompletableFuture<List<URI>> selectChildrenQueryService = childrenAreLoaded.thenApplyAsync((queryLocation) -> methods.getChildrenQueryService(queryserviceUrl+"/repositories", queryLocation.toString()), executor);
 		
 		iUsAreLoaded.thenAcceptBothAsync(createRepoNeo, (queryLocation, repoDBId) -> methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, queryLocation), executor).isDone();
 		selectChildrenQueryService.thenAcceptBothAsync(createRepoNeo, (childrenLocations, repoDBId) -> methods.addChildrenRepositories(neo4jUsername, neo4jPassword, neo4jUrl, childrenLocations, repoDBId), executor).isDone();
 		
-		return new URI("http://localhost"); //TODO: return statement
+		try {
+			return new URI("http://localhost");
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
-	@RequestMapping("/repositories/{id}/units")
-	@ResponseBody
-	List<InstallableUnit> listUnitsInRepository(@PathVariable Integer id) throws Exception {
+	@RequestMapping("/{id}/units")
+	List<InstallableUnit> listUnitsInRepository(@PathVariable Integer id) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(
 				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
 		List<InstallableUnit> result = new ArrayList<>();
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE r.id = "+id+" RETURN iu.id,p.version");
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE r.serviceId = '"+id+"' RETURN iu.serviceId,p.version");
 		
 		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 				
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
-		dataNode.forEach((d) -> {
-			ArrayNode node = (ArrayNode) d;
-			InstallableUnit iu = new InstallableUnit();
-			iu.setId(node.get(0).asText());
-			iu.setVersion(node.get(1).asText());
-			result.add(iu);
-		});
+		dataNode.forEach((d) -> result.add(toUnit((ArrayNode)d)));
 		return result;
 	}
 
-//	@RequestMapping("/repositories")
-//	@ResponseBody
-//	List<Repository> repositories() {
-//		RestTemplate restTemplate = new RestTemplate();
-//		List<Repository> result = new ArrayList<>();
-//		result = restTemplate.getForObject(queryserviceUrl+"/repositories", result.getClass());
-//		return result;
-//	}
-
+	private Repository toRepository(ArrayNode repoData) {
+		Repository r = new Repository();
+		r.setRepoId(repoData.get(0).asInt());
+		r.setUri(repoData.get(1).asText());
+		
+		// HATEOAS links
+		r.add(linkTo(methodOn(RepositoryController.class).listUnitsInRepository(r.getRepoId())).withRel("installableUnits"));
+		
+		return r;
+	}
+	
+	private InstallableUnit toUnit(ArrayNode unitData) {
+		InstallableUnit iu = new InstallableUnit();
+		iu.setUnitId(unitData.get(0).asText());
+		iu.setVersion(unitData.get(1).asText());
+		
+		return iu;
+	}
 }

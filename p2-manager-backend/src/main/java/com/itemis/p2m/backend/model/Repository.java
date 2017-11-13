@@ -1,17 +1,19 @@
 package com.itemis.p2m.backend.model;
 
-public class Repository {
-	
-	private int id;
+import org.springframework.hateoas.ResourceSupport;
+
+public class Repository extends ResourceSupport {
+
+	private int repoId;
 	
 	private String uri;
 	
-	public int getId() {
-		return id;
+	public int getRepoId() {
+		return repoId;
 	}
 	
-	public void setId(int id) {
-		this.id = id;
+	public void setRepoId(int unitId) {
+		this.repoId = unitId;
 	}
 	
 	public String getUri() {

@@ -33,6 +33,7 @@ dependencies {
     implementation 'com.google.guava:guava:21.0'
 
     compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.hateoas:spring-hateoas")
     compile("org.thymeleaf:thymeleaf-spring4")
     compile("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
 
