@@ -17,7 +17,6 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.itemis.p2m.backend.model.InstallableUnit;
-import com.itemis.p2m.backend.model.Repository;
 
 @RestController
 @RequestMapping("/units")
@@ -53,7 +52,7 @@ public class InstallableUnitController {
 	}
 
 
-	@RequestMapping(method=RequestMethod.GET, value="/{id}") //TODO give IUs an integer ID so that they can be encoded in a URI.
+	@RequestMapping(method=RequestMethod.GET, value="/{id:.+}")
 	List<InstallableUnit> listVersionsForInstallableUnit(@PathVariable String id, @RequestParam(defaultValue = "false") boolean showRepositories) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(

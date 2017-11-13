@@ -25,8 +25,6 @@ import com.itemis.p2m.backend.constants.RepositoryStatus;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
-
 @RestController
 @RequestMapping("/repositories")
 public class RepositoryController {

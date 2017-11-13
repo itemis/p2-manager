@@ -1,5 +1,8 @@
 package com.itemis.p2m.backend;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -23,8 +26,6 @@ import com.google.common.collect.Lists;
 import com.itemis.p2m.backend.constants.RepositoryStatus;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
-
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 
 public class Methods {
 	
@@ -207,6 +208,9 @@ public class Methods {
 		InstallableUnit iu = new InstallableUnit();
 		iu.setUnitId(unitData.get(0).asText());
 		iu.setVersion(unitData.get(1).asText());
+		
+		// HATEOAS links
+		iu.add(linkTo(methodOn(InstallableUnitController.class).listVersionsForInstallableUnit(iu.getUnitId(), false)).withRel("versions"));
 		
 		return iu;
 	}
