@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.itemis.p2m.backend.model.InstallableUnit;
+import com.itemis.p2m.backend.model.Repository;
 
 @RestController
 @RequestMapping("/units")
@@ -41,7 +42,7 @@ public class InstallableUnitController {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(
 				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (iu:IU) RETURN iu.serviceId");
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH ()-[p:PROVIDES]->(iu:IU) RETURN iu.serviceId, p.version");
 		
 		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
@@ -66,6 +67,24 @@ public class InstallableUnitController {
 		dataNode.forEach((d) -> result.add(methods.toUnit((ArrayNode) d)));
 		return result;
 	}
+
+	@RequestMapping(method=RequestMethod.GET, value="/{id}/{version:.+}")
+	List<Repository> listRepositoriesForUnitVersion(@PathVariable String id, @PathVariable String version) {
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.getInterceptors().add(
+				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE iu.serviceId = '"+id+"' AND p.version = '"+version+"' RETURN r.serviceId, r.uri");
+		
+		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ArrayNode dataNode = (ArrayNode) _result.get("data");
+		
+		List<Repository> result = new ArrayList<>();
+		dataNode.forEach((d) -> result.add(methods.toRepository((ArrayNode) d)));
+		return result;
+	}
 	
+	//TODO: method to retrieve all repositories that have a unit in a version between a minimum and maximum
+	
+	//TODO: 
 
 }
