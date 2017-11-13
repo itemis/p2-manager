@@ -2,7 +2,7 @@
 	"variables": [],
 	"info": {
 		"name": "P2-Service",
-		"_postman_id": "050493cb-b5a9-a42c-c98b-b958943a369f",
+		"_postman_id": "488d9d29-4dec-3843-7153-036686611114",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
@@ -10,13 +10,11 @@
 		{
 			"name": "[backend] add Repository",
 			"request": {
-				"url": "localhost:8080/repositories",
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/x-www-form-urlencoded",
-						"description": ""
+						"value": "application/x-www-form-urlencoded"
 					}
 				],
 				"body": {
@@ -25,19 +23,17 @@
 						{
 							"key": "uri",
 							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
 							"type": "text"
 						}
 					]
 				},
-				"description": ""
+				"url": "localhost:8080/repositories"
 			},
 			"response": []
 		},
 		{
 			"name": "[backend] get all Repositories",
 			"request": {
-				"url": "localhost:8080/repositories",
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -46,19 +42,17 @@
 						{
 							"key": "uri",
 							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
 							"type": "text"
 						}
 					]
 				},
-				"description": ""
+				"url": "localhost:8080/repositories"
 			},
 			"response": []
 		},
 		{
-			"name": "[backend] get units of Repository",
+			"name": "[backend] get Units of Repository",
 			"request": {
-				"url": "localhost:8080/repositories/{id}/units",
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -67,26 +61,43 @@
 						{
 							"key": "uri",
 							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
 							"type": "text"
 						}
 					]
 				},
-				"description": ""
+				"url": "localhost:8080/repositories/{id}/units"
+			},
+			"response": []
+		},
+		{
+			"name": "[backend] get Versions of Unit",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "uri",
+							"value": "http://www.genuitec.com/updates/webclipse/ci",
+							"type": "text"
+						}
+					]
+				},
+				"url": "localhost:8080/repositories/{id}/units"
 			},
 			"response": []
 		},
 		{
 			"name": "[neo4j] Get service root",
 			"request": {
-				"url": "http://localhost:7474/db/data/ ",
 				"method": "GET",
 				"header": [],
 				"body": {
 					"mode": "raw",
 					"raw": ""
 				},
-				"description": ""
+				"url": "http://localhost:7474/db/data/"
 			},
 			"response": []
 		},
@@ -98,29 +109,25 @@
 					"basic": {
 						"username": "p2manager",
 						"password": "p2manager",
-						"saveHelperData": true,
 						"showPassword": false
 					}
 				},
-				"url": "http://localhost:7474/db/data/cypher",
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
+						"value": "application/x-www-form-urlencoded"
 					},
 					{
 						"key": "Authorization",
-						"value": "Basic cDJtYW5hZ2VyOnAybWFuYWdlcg==",
-						"description": ""
+						"value": "Basic cDJtYW5hZ2VyOnAybWFuYWdlcg=="
 					}
 				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"query\" : \"MATCH (n:Repository) RETURN n\"\n}"
 				},
-				"description": ""
+				"url": "http://localhost:7474/db/data/cypher"
 			},
 			"response": []
 		},
@@ -136,25 +143,22 @@
 						"showPassword": false
 					}
 				},
-				"url": "http://localhost:7474/db/data/cypher",
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
+						"value": "application/json"
 					},
 					{
 						"key": "Authorization",
-						"value": "Basic cDJtYW5hZ2VyOnAybWFuYWdlcg==",
-						"description": ""
+						"value": "Basic cDJtYW5hZ2VyOnAybWFuYWdlcg=="
 					}
 				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"query\" : \"CREATE (r:Repository { id : {id}, url : {url} }) RETURN r\",\n  \"params\" : {\n    \"id\" : \"2\",\n    \"url\" : \"http://www.genuitec.com/updates/webclipse/ci\"\n  }\n}\n"
 				},
-				"description": ""
+				"url": "http://localhost:7474/db/data/cypher"
 			},
 			"response": []
 		},
@@ -170,25 +174,22 @@
 						"showPassword": false
 					}
 				},
-				"url": "http://localhost:7474/db/data/cypher",
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
+						"value": "application/json"
 					},
 					{
 						"key": "Authorization",
-						"value": "Basic cDJtYW5hZ2VyOnAybWFuYWdlcg==",
-						"description": ""
+						"value": "Basic cDJtYW5hZ2VyOnAybWFuYWdlcg=="
 					}
 				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"query\" : \"MATCH (r:Repository) WHERE r.id=1 MERGE (iu1:IU { id: 'com.test.A'}) MERGE (iu2:IU { id: 'com.test.B'}) MERGE (r)-[p1:PROVIDES { version: '2.0.0'}]->(iu1) MERGE (r)-[p2:PROVIDES { version: '1.0.0'}]->(iu2) RETURN r.url,iu1.id,p1.version,iu2.id,p2.version\",\n  \"params\" : {\n  }\n}\n"
 				},
-				"description": ""
+				"url": "http://localhost:7474/db/data/cypher"
 			},
 			"response": []
 		},
@@ -200,28 +201,51 @@
 					"basic": {
 						"username": "p2manager",
 						"password": "p2manager",
-						"saveHelperData": true,
 						"showPassword": false
 					}
 				},
-				"url": "http://localhost:7474/db/data/cypher",
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
+						"value": "application/json"
 					},
 					{
 						"key": "Authorization",
-						"value": "Basic cDJtYW5hZ2VyOnAybWFuYWdlcg==",
-						"description": ""
+						"value": "Basic cDJtYW5hZ2VyOnAybWFuYWdlcg=="
 					}
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"query\" : \"MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE r.url IN {url} RETURN iu.id,p.version\",\n  \"params\" : {\n    \"url\" : [\n    \t\"http://www.genuitec.com/updates/webclipse/ci\",\"http://www.genuitec.com/updates/webclipse/ci\"\n    \t]\n  }\n}\n"
+					"raw": "{\n  \"query\" : \"MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE r.url IN {url} RETURN iu.serviceId,p.version\",\n  \"params\" : {\n    \"url\" : [\n    \t\"http://www.genuitec.com/updates/webclipse/ci\",\"http://www.genuitec.com/updates/webclipse/ci\"\n    \t]\n  }\n}\n"
 				},
+				"url": "http://localhost:7474/db/data/cypher"
+			},
+			"response": []
+		},
+		{
+			"name": "[neo4j] Get Versions of IU",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"username": "p2manager",
+						"password": "p2manager",
+						"showPassword": false
+					}
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"query\" : \"MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE iu.serviceId = 'org.eclipse.ant.core' RETURN iu.serviceId, p.version\"\n}"
+				},
+				"url": "http://localhost:7474/db/data/cypher",
 				"description": ""
 			},
 			"response": []
@@ -229,13 +253,11 @@
 		{
 			"name": "[Query-Service] add Repository",
 			"request": {
-				"url": "localhost:8888/repositories",
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
-						"value": "application/x-www-form-urlencoded",
-						"description": ""
+						"value": "application/x-www-form-urlencoded"
 					}
 				],
 				"body": {
@@ -244,19 +266,17 @@
 						{
 							"key": "uri",
 							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
 							"type": "text"
 						}
 					]
 				},
-				"description": ""
+				"url": "localhost:8888/repositories"
 			},
 			"response": []
 		},
 		{
 			"name": "[Query-Service] get all Repository",
 			"request": {
-				"url": "localhost:8888/repositories",
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -265,18 +285,29 @@
 						{
 							"key": "uri",
 							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
 							"type": "text"
 						}
 					]
 				},
-				"description": ""
+				"url": "localhost:8888/repositories"
 			},
 			"response": []
 		},
 		{
 			"name": "[Query-Service] get all Repository CSV",
 			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "uri",
+							"value": "http://www.genuitec.com/updates/webclipse/ci",
+							"type": "text"
+						}
+					]
+				},
 				"url": {
 					"raw": "localhost:8888/repositories?csv=true",
 					"host": [
@@ -290,33 +321,16 @@
 						{
 							"key": "csv",
 							"value": "true",
-							"equals": true,
-							"description": ""
-						}
-					],
-					"variable": []
-				},
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "uri",
-							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
-							"type": "text"
+							"equals": true
 						}
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
 		{
 			"name": "[Query-Service] get Repository",
 			"request": {
-				"url": "localhost:8888/repositories/{id}",
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -325,18 +339,29 @@
 						{
 							"key": "uri",
 							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
 							"type": "text"
 						}
 					]
 				},
-				"description": ""
+				"url": "localhost:8888/repositories/{id}"
 			},
 			"response": []
 		},
 		{
 			"name": "[Query-Service] get Repository CSV",
 			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "uri",
+							"value": "http://www.genuitec.com/updates/webclipse/ci",
+							"type": "text"
+						}
+					]
+				},
 				"url": {
 					"raw": "localhost:8888/repositories/{id}?csv=true",
 					"host": [
@@ -351,33 +376,16 @@
 						{
 							"key": "csv",
 							"value": "true",
-							"equals": true,
-							"description": ""
-						}
-					],
-					"variable": []
-				},
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "uri",
-							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
-							"type": "text"
+							"equals": true
 						}
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
 		{
 			"name": "[Query-Service] delete Repository",
 			"request": {
-				"url": "localhost:8888/repositories/{id}",
 				"method": "DELETE",
 				"header": [],
 				"body": {
@@ -386,19 +394,17 @@
 						{
 							"key": "uri",
 							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
 							"type": "text"
 						}
 					]
 				},
-				"description": ""
+				"url": "localhost:8888/repositories/{id}"
 			},
 			"response": []
 		},
 		{
 			"name": "[Query-Service] get Children of Repository",
 			"request": {
-				"url": "localhost:8888/repositories/{id}/children",
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -407,18 +413,29 @@
 						{
 							"key": "uri",
 							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
 							"type": "text"
 						}
 					]
 				},
-				"description": ""
+				"url": "localhost:8888/repositories/{id}/children"
 			},
 			"response": []
 		},
 		{
 			"name": "[Query-Service] get Children of Repository CSV",
 			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "uri",
+							"value": "http://www.genuitec.com/updates/webclipse/ci",
+							"type": "text"
+						}
+					]
+				},
 				"url": {
 					"raw": "localhost:8888/repositories/{id}/children?csv=true",
 					"host": [
@@ -434,33 +451,16 @@
 						{
 							"key": "csv",
 							"value": "true",
-							"equals": true,
-							"description": ""
-						}
-					],
-					"variable": []
-				},
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "uri",
-							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
-							"type": "text"
+							"equals": true
 						}
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
 		{
 			"name": "[Query-Service] get Units of Repository",
 			"request": {
-				"url": "localhost:8888/repositories/{id}/units",
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -469,18 +469,29 @@
 						{
 							"key": "uri",
 							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
 							"type": "text"
 						}
 					]
 				},
-				"description": ""
+				"url": "localhost:8888/repositories/{id}/units"
 			},
 			"response": []
 		},
 		{
 			"name": "[Query-Service] get Units of Repository CSV",
 			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "uri",
+							"value": "http://www.genuitec.com/updates/webclipse/ci",
+							"type": "text"
+						}
+					]
+				},
 				"url": {
 					"raw": "localhost:8888/repositories/{id}/units?csv=true",
 					"host": [
@@ -496,33 +507,16 @@
 						{
 							"key": "csv",
 							"value": "true",
-							"equals": true,
-							"description": ""
-						}
-					],
-					"variable": []
-				},
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "uri",
-							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
-							"type": "text"
+							"equals": true
 						}
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
 		{
 			"name": "[Query-Service] get Status of Repository",
 			"request": {
-				"url": "localhost:8888/repositories/{id}/status",
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -531,12 +525,11 @@
 						{
 							"key": "uri",
 							"value": "http://www.genuitec.com/updates/webclipse/ci",
-							"description": "",
 							"type": "text"
 						}
 					]
 				},
-				"description": ""
+				"url": "localhost:8888/repositories/{id}/status"
 			},
 			"response": []
 		}
