@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.itemis.p2m.backend.constants.RepositoryStatus;
+import com.itemis.p2m.backend.model.InstallableUnit;
+import com.itemis.p2m.backend.model.Repository;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 
@@ -188,6 +190,25 @@ public class Methods {
 		RestTemplate restTemplate = new RestTemplate();
 		int count = restTemplate.getForObject(queryLocation+"/units/count", Integer.class);
 		return count;
+	}
+
+	Repository toRepository(ArrayNode repoData) {
+		Repository r = new Repository();
+		r.setRepoId(repoData.get(0).asInt());
+		r.setUri(repoData.get(1).asText());
+		
+		// HATEOAS links
+		r.add(linkTo(methodOn(RepositoryController.class).listUnitsInRepository(r.getRepoId())).withRel("installableUnits"));
+		
+		return r;
+	}
+	
+	InstallableUnit toUnit(ArrayNode unitData) {
+		InstallableUnit iu = new InstallableUnit();
+		iu.setUnitId(unitData.get(0).asText());
+		iu.setVersion(unitData.get(1).asText());
+		
+		return iu;
 	}
 
 }

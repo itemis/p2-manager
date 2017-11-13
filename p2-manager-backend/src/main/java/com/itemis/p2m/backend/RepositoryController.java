@@ -56,7 +56,7 @@ public class RepositoryController {
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<Repository> result = new ArrayList<>();
-		dataNode.forEach((d) -> result.add(toRepository((ArrayNode) d)));
+		dataNode.forEach((d) -> result.add(methods.toRepository((ArrayNode) d)));
 		return result;
 	}
 	
@@ -119,26 +119,7 @@ public class RepositoryController {
 		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 				
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
-		dataNode.forEach((d) -> result.add(toUnit((ArrayNode)d)));
+		dataNode.forEach((d) -> result.add(methods.toUnit((ArrayNode)d)));
 		return result;
-	}
-
-	private Repository toRepository(ArrayNode repoData) {
-		Repository r = new Repository();
-		r.setRepoId(repoData.get(0).asInt());
-		r.setUri(repoData.get(1).asText());
-		
-		// HATEOAS links
-		r.add(linkTo(methodOn(RepositoryController.class).listUnitsInRepository(r.getRepoId())).withRel("installableUnits"));
-		
-		return r;
-	}
-	
-	private InstallableUnit toUnit(ArrayNode unitData) {
-		InstallableUnit iu = new InstallableUnit();
-		iu.setUnitId(unitData.get(0).asText());
-		iu.setVersion(unitData.get(1).asText());
-		
-		return iu;
 	}
 }
