@@ -7,10 +7,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 
@@ -30,7 +34,7 @@ public class FunService {
 
 	@GET
 	@Path("/{unitname}")
-	public Response getUnitMetadata (@PathParam("unitname") String unitname) {
+	public Response getUnitMetadata (@PathParam("unitname") String unitname, @DefaultValue("false") @QueryParam("csv") boolean csv) {
 		if (unitname == null)
 			return Response.status(Response.Status.NOT_FOUND).build();
 		ExecutorService executorService = Executors.newCachedThreadPool();
@@ -54,7 +58,17 @@ public class FunService {
 				e.printStackTrace();
 			}
 		}
-		return Response.ok(iUnits).build();
+		
+		ResponseBuilder response = Response.ok(iUnits);
+		
+		if (csv) {
+			//FIXME: CSVMapper cannot handle nested objects, e.g. IUsMetaInfo containing IUMetaInfo and RepositoryInfo
+			response = response.type("text/csv");
+		}
+		else {
+			response = response.type(MediaType.APPLICATION_JSON);
+		}
+		return response.build();
 	}
 	
 	private IUsMetaInfo getUnitMetadata (int repoId, String unitname) {
