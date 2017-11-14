@@ -25,6 +25,8 @@ import com.itemis.p2m.backend.constants.RepositoryStatus;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
 
+import io.swagger.annotations.ApiOperation;
+
 @RestController
 @RequestMapping("/repositories")
 public class RepositoryController {
@@ -43,6 +45,7 @@ public class RepositoryController {
 		this.methods = new Methods();
 	}
 
+	@ApiOperation(value = "List all repositories")
 	@RequestMapping(method=RequestMethod.GET)
 	List<Repository> listRepositories() {
 		RestTemplate restTemplate = new RestTemplate();
@@ -82,7 +85,8 @@ public class RepositoryController {
 		
 		return new URI("http://localhost"); //TODO: return statement
 	}*/
-	
+
+	@ApiOperation(value = "Add a new repository")
 	@RequestMapping(method=RequestMethod.POST)
 	URI addRepositoryWithCF(@RequestParam URI uri) {
 		Executor executor = Executors.newCachedThreadPool();
@@ -106,6 +110,7 @@ public class RepositoryController {
 		}
 	}
 
+	@ApiOperation(value = "List all installable units available in the repository")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/units")
 	List<InstallableUnit> listUnitsInRepository(@PathVariable Integer id) {
 		RestTemplate restTemplate = new RestTemplate();

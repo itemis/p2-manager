@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
 
+import io.swagger.annotations.ApiOperation;
+
 @RestController
 @RequestMapping("/units")
 public class InstallableUnitController {
@@ -37,6 +39,7 @@ public class InstallableUnitController {
 		this.methods = new Methods();
 	}
 
+	@ApiOperation(value = "List all installable units")
 	@RequestMapping(method=RequestMethod.GET)
 	List<InstallableUnit> listInstallableUnits() {
 		RestTemplate restTemplate = new RestTemplate();
@@ -53,6 +56,7 @@ public class InstallableUnitController {
 	}
 
 
+	@ApiOperation(value = "List all available versions of the installable unit")
 	@RequestMapping(method=RequestMethod.GET, value="/{id:.+}")
 	List<InstallableUnit> listVersionsForInstallableUnit(@PathVariable String id, @RequestParam(defaultValue = "false") boolean showRepositories) {
 		RestTemplate restTemplate = new RestTemplate();
@@ -68,6 +72,7 @@ public class InstallableUnitController {
 		return result;
 	}
 
+	@ApiOperation(value = "List all repositories that contain the installable unit in this version")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/{version:.+}")
 	List<Repository> listRepositoriesForUnitVersion(@PathVariable String id, @PathVariable String version) {
 		RestTemplate restTemplate = new RestTemplate();
