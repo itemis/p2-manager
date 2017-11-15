@@ -7,9 +7,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -19,6 +21,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
@@ -31,20 +35,20 @@ public class Methods {
 	/**
 	 * Adds a repository to the p2 query service.
 	 * 
-	 * @param uri The URI of the repository to be added.
-	 * @param queryserviceUrl The URL under which the p2 query service can be reached.
+	 * @param repositoryUri The URI of the repository to be added.
+	 * @param queryLocation The URL under which the p2 query service can be reached.
 	 * @return The URI under which the repository has been added by the p2 query service.
 	 * */
-	URI postRepositoriesQueryService(URI uri, String queryserviceUrl) {
+	URI postRepositoriesQueryService(URI repositoryUri, URI queryLocation) {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpMessageConverter<?> formHttpMessageConverter = new FormHttpMessageConverter();
 		HttpMessageConverter<?> stringHttpMessageConverternew = new StringHttpMessageConverter();
 		restTemplate.setMessageConverters(Lists.newArrayList(formHttpMessageConverter, stringHttpMessageConverternew));
 		MultiValueMap<String, String> formParams = new LinkedMultiValueMap<>();
-		formParams.add("uri", uri.toString());
+		formParams.add("uri", repositoryUri.toString());
 		URI location = null;
 		try {
-			location = restTemplate.postForLocation(queryserviceUrl+"/repositories", formParams);
+			location = restTemplate.postForLocation(queryLocation+"/repositories", formParams);
 		} catch (HttpClientErrorException hcee) {
 			if (hcee.getRawStatusCode() == 409) {
 				location = hcee.getResponseHeaders().getLocation();
@@ -61,13 +65,13 @@ public class Methods {
 	 * @param neo4jUsername The username used as login for the neo4j database.
 	 * @param neo4jPassword The password used as login for the neo4j database.
 	 * @param neo4jUrl The URL under which the neo4j database can be reached.
-	 * @param queryLocation The {@link URI} of the repository under the p2 query service.
+	 * @param repoQueryLocation The {@link URI} of the repository under the p2 query service.
 	 * @return The id assigned to the repository by the neo4j database.
 	 */
-	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI queryLocation) {
+	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI repoQueryLocation) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		StringBuilder queryBuilder = new StringBuilder("LOAD CSV WITH HEADERS FROM '").append(queryLocation.toString()).append("?csv=true' AS line ");
+		StringBuilder queryBuilder = new StringBuilder("LOAD CSV WITH HEADERS FROM '").append(repoQueryLocation.toString()).append("?csv=true' AS line ");
 		queryBuilder.append("MERGE (r:Repository {serviceId : line.id, uri : line.uri}) RETURN ID(r)");
 		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
 		
@@ -82,21 +86,22 @@ public class Methods {
 	 * @param neo4jUsername The username used as login for the neo4j database.
 	 * @param neo4jPassword The password used as login for the neo4j database.
 	 * @param neo4jUrl The URL under which the neo4j database can be reached.
-	 * @param queryLocation The {@link URI} of the repository under the p2 query service.
-	 * @param parentId The id of the parent of the repository that is to be added.
+	 * @param repoQueryLocation The {@link URI} of the repository under the p2 query service.
+	 * @param parentNeoId The id of the parent of the repository that is to be added.
 	 * @return The id assigned to the repository by the neo4j database.
 	 */
-	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI queryLocation, int parentId) {
+	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI repoQueryLocation, int parentNeoId) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		StringBuilder queryBuilder = new StringBuilder("LOAD CSV WITH HEADERS FROM '").append(queryLocation.toString()).append("?csv=true' AS line ");
-		queryBuilder.append("MATCH (p:Repository) WHERE ID(p)=").append(parentId).append(" ");
+		StringBuilder queryBuilder = new StringBuilder("LOAD CSV WITH HEADERS FROM '").append(repoQueryLocation.toString()).append("?csv=true' AS line ");
+		queryBuilder.append("MATCH (p:Repository) WHERE ID(p)=").append(parentNeoId).append(" ");
 		queryBuilder.append("MERGE (r:Repository {serviceId : line.id, uri : line.uri}) ");
 		queryBuilder.append("MERGE (p)-[po:PARENT_OF]->(r) RETURN ID(r)");
 		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
 		
 		ObjectNode jsonResult = restTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) jsonResult.get("data");
+		
 		return dataNode.get(0).get(0).asInt();
 	}
 	
@@ -113,69 +118,72 @@ public class Methods {
 	 * @param neo4jUsername The username used as login for the neo4j database.
 	 * @param neo4jPassword The password used as login for the neo4j database.
 	 * @param neo4jUrl The URL under which the neo4j database can be reached.
-	 * @param repoId The id of the repository in the neo4j database.
-	 * @param queryLocation The {@link URI} of the repository under the p2 query service.
+	 * @param neoId The id of the repository in the neo4j database.
+	 * @param repoQueryLocation The {@link URI} of the repository under the p2 query service.
 	 */
-	void postUnitsNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, int repoId, URI queryLocation){
-		long startTimeOfThisMethod = System.currentTimeMillis();
+	void postUnitsNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, int neoId, URI repoQueryLocation){
+		if (getUnitCountQueryService(repoQueryLocation) == 0) {
+			return;
+		}
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		StringBuilder queryBuilder = new StringBuilder("LOAD CSV WITH HEADERS FROM '").append(queryLocation.toString()).append("/units?csv=true' AS line ");
-		queryBuilder.append("MATCH (r:Repository) WHERE ID(r)=").append(repoId).append(" ");
+		StringBuilder queryBuilder = new StringBuilder("LOAD CSV WITH HEADERS FROM '").append(repoQueryLocation.toString()).append("/units?csv=true' AS line ");
+		queryBuilder.append("MATCH (r:Repository) WHERE ID(r)=").append(neoId).append(" ");
 		queryBuilder.append("MERGE (iu:IU { serviceId: line.id}) ");
 		queryBuilder.append("MERGE (r)-[p:PROVIDES { version: line.version}]->(iu)");
 		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
 		ObjectNode jsonResult = restTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
-		System.out.println("needed Time for Units: " + (System.currentTimeMillis() - startTimeOfThisMethod)+" ms");
-		//TODO: maybe return number of new IUs?
+		
 	}
 	
-	void addChildRepository(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI childLocation, int parentId) {
-		int repoDBId = postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, childLocation, parentId);
-		//Wait for Units are Loaded
-		postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, childLocation);		
+	//repo to neo: String neo4jUsername, String neo4jPassword, String neo4jUrl, URI repoQueryLocation, int parentNeoId
+	//units to neo: String neo4jUsername, String neo4jPassword, String neo4jUrl, int neoId, URI repoQueryLocation 
+	private void addChildRepository(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI childQueryLocation, int parentNeoId) {
+		int neoId = postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, childQueryLocation, parentNeoId);
+		postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, neoId, childQueryLocation);
+		addChildrenRepositories(neo4jUsername, neo4jPassword, neo4jUrl, getChildrenQueryService(childQueryLocation), neoId);
+		
 	}
 	
 	void addChildrenRepositories(String neo4jUsername, String neo4jPassword, String neo4jUrl, List<URI> childrenLocations, int parentId) {
-		childrenLocations.forEach(childLocation -> addChildRepository(neo4jUsername, neo4jPassword, neo4jUrl, childLocation, parentId));
-		//return childrenLocations.size();
-	}
-	
-	/**
-	 * Retrieves the current status of a resource from the p2 query service. 
-	 * 
-	 * @param location The {@link URI} of the resource under the p2 query service.
-	 * @param wantedStatus The desired {@link RepositoryStatus} of the resource.
-	 * @return The {@link URI} of the resource if it is already loaded or has the wantedStatus, null otherwise.
-	 */
-	URI getRepositoryStatusQueryService(URI location, String wantedStatus) {
-		RestTemplate restTemplate = new RestTemplate();
-		String status = restTemplate.getForObject(location+"/status", String.class);
-		if (RepositoryStatus.LOADED.equals(status) || wantedStatus.equals(status))
-			return location;
-		else
-			return null;
+		for (URI childLocation : childrenLocations) {
+			Date start = new Date();
+			addChildRepository(neo4jUsername, neo4jPassword, neo4jUrl, childLocation, parentId);
+//			System.out.println("Child: " + childLocation.toString() + "in " + ((new Date().getTime()-start.getTime())/1000) + " seconds loaded");
+		}
 	}
 	
 	/**
 	 * Retrieves all child repositories of a given repository from the p2 query service.
 	 * 
-	 * @param queryLocation The uri for accessing all repositories under the p2 query service.
-	 * @param parentLocation The uri of the parent repository under the p2 query service.
+	 * @param parentQueryLocation The uri of the parent repository under the p2 query service.
 	 * @return The URIs of all children of the repository.
 	 */
-	List<URI> getChildrenQueryService(String queryLocation, String parentLocation) {
-		System.out.println(queryLocation);
+	List<URI> getChildrenQueryService(URI parentQueryLocation) {
 		RestTemplate restTemplate = new RestTemplate();
-		ArrayNode arrayNode = restTemplate.getForObject(parentLocation+"/children?csv=false", ArrayNode.class);
+		ResponseEntity<ArrayNode> response = restTemplate.getForEntity(parentQueryLocation+"/children?csv=false", ArrayNode.class);
+		while (response.getStatusCodeValue() == 204) {
+			try {
+				Thread.sleep(1000);
+				response = restTemplate.getForEntity(parentQueryLocation+"/children?csv=false", ArrayNode.class);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				response = restTemplate.getForEntity(parentQueryLocation+"/children?csv=false", ArrayNode.class);
+			}
+		}
+		ArrayNode arrayNode = response.getBody();
 		List<URI> children = new ArrayList<>();
 		arrayNode.forEach(jsonNode -> {
-			try {
-				children.add(new URI(queryLocation + "/" + ((ObjectNode)jsonNode).get("id").asText()));
-			} catch (URISyntaxException e) {
-				e.printStackTrace();
+			if(jsonNode.isObject()) {
+				ObjectNode objectNode = (ObjectNode)jsonNode;
+				try {
+					String queryLocation =parentQueryLocation.toString().replaceFirst("(.*)(\\/\\d+\\/?)$", "$1/");
+					children.add(new URI(queryLocation /*+ "/"*/ + objectNode.get("id").asInt()));
+				} catch (URISyntaxException e) {
+				}
 			}
 		});
+		
 		return children;
 	}
 
@@ -185,9 +193,20 @@ public class Methods {
 	 * @param queryLocation The {@link URI} of the repository under the p2 query service.
 	 * @return The amount of installable units of the repository.
 	 */
-	int getUnitsCountQueryService(URI queryLocation) {
+	Integer getUnitCountQueryService(URI repoQueryLocation) {
 		RestTemplate restTemplate = new RestTemplate();
-		int count = restTemplate.getForObject(queryLocation+"/units/count", Integer.class);
+		ResponseEntity<Integer> response = restTemplate.getForEntity(repoQueryLocation+"/units/count", Integer.class);
+		while (response.getStatusCodeValue() == 204) {
+			try {
+				Thread.sleep(1000);
+				response = restTemplate.getForEntity(repoQueryLocation+"/units/count", Integer.class);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				response = restTemplate.getForEntity(repoQueryLocation+"/units/count", Integer.class);
+			}
+		}
+		Integer count = response.getBody();
+		
 		return count;
 	}
 
@@ -198,7 +217,6 @@ public class Methods {
 		
 		// HATEOAS links
 		r.add(linkTo(methodOn(RepositoryController.class).listUnitsInRepository(r.getRepoId())).withRel("installableUnits"));
-		
 		return r;
 	}
 	
@@ -210,7 +228,6 @@ public class Methods {
 		// HATEOAS links
 		//iu.add(linkTo(methodOn(InstallableUnitController.class).listVersionsForInstallableUnit(iu.getUnitId(), false)).withRel("versions"));
 		//TODO: add link where available repositories for this version are shown
-		
 		return iu;
 	}
 

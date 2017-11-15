@@ -34,8 +34,6 @@ import com.itemis.p2queryservice.rest.dto.RepositoryInfoDTO;
 
 import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
-//TODO: Check Status of Repositories by start up
-
 @Path("/repositories")
 public class RepositoryService {
 	
@@ -86,7 +84,10 @@ public class RepositoryService {
 		} 
 		RepositoryInfo repoInfo = repo.get();
 		if (!repoInfo.isLoaded()) {
-			data.loadLocation(repoInfo.getUri());
+			if (!repoInfo.isLoading()) {
+				repoInfo.startLoading();
+				data.loadLocation(repoInfo.getUri());
+			}
 		}
 		ResponseBuilder response = Response.ok(Collections.singletonList(new RepositoryInfoDTO(repoInfo)));
 		if (csv) {
@@ -120,7 +121,10 @@ public class RepositoryService {
 		} 
 		RepositoryInfo repoInfo = repo.get();
 		if (!repoInfo.areChildrenLoaded()) {
-			data.loadLocation(repoInfo.getUri());
+			if (!repoInfo.isLoading()) {
+				repoInfo.startLoading();
+				data.loadLocation(repoInfo.getUri());
+			}
 			return Response.noContent().build();
 		}		
 		IMetadataRepository repository = data.getRepository(repoInfo.getUri(), reload); //getReository returns null
@@ -163,7 +167,10 @@ public class RepositoryService {
 		} 
 		RepositoryInfo repoInfo = repo.get();
 		if (!repoInfo.areUnitsLoaded()) {
-			data.loadLocation(repoInfo.getUri());
+			if (!repoInfo.isLoading()) {
+				repoInfo.startLoading();
+				data.loadLocation(repoInfo.getUri());
+			}
 			return Response.noContent().build();
 		}			
 		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repoInfo.getUri(), reload);
@@ -175,7 +182,6 @@ public class RepositoryService {
 		
 		ResponseBuilder response = Response.ok(result);
 		if (csv) {
-			// TODO: Check if other format is requested by header and react with error
 			response = response.type("text/csv");
 		}
 		else {
@@ -200,7 +206,10 @@ public class RepositoryService {
 		}
 		RepositoryInfo repoInfo = repo.get();
 		if (!repoInfo.areUnitsLoaded()) {
-			data.loadLocation(repoInfo.getUri());
+			if (!repoInfo.isLoading()) {
+				repoInfo.startLoading();
+				data.loadLocation(repoInfo.getUri());
+			}
 			return Response.noContent().build();
 		}	
 		
@@ -226,7 +235,10 @@ public class RepositoryService {
 		}
 		RepositoryInfo repoInfo = repo.get();
 		if (!repoInfo.areUnitsLoaded()) {
-			data.loadLocation(repoInfo.getUri());
+			if (!repoInfo.isLoading()) {
+				data.loadLocation(repoInfo.getUri());
+				repoInfo.startLoading();
+			}
 			return Response.noContent().build();
 		}	
 		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repoInfo.getUri(), false);

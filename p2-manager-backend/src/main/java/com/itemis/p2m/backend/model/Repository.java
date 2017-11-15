@@ -8,6 +8,16 @@ public class Repository extends ResourceSupport {
 	
 	private String uri;
 	
+	public Repository(int repoId, String uri) {
+		super();
+		this.repoId = repoId;
+		this.uri = uri;
+	}
+	
+	public Repository() {
+		super();
+	}
+
 	public int getRepoId() {
 		return repoId;
 	}

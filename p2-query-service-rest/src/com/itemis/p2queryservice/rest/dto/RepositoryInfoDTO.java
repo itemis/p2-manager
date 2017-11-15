@@ -10,17 +10,19 @@ public class RepositoryInfoDTO {
 	private URI uri;
 	private String status;
 	private long modificationStamp = -1;
+	private boolean loading = false;
 	
 	public RepositoryInfoDTO() {
 		super();
 	}
 	
-	public RepositoryInfoDTO(int id, URI uri, String status, long modificationStamp) {
+	public RepositoryInfoDTO(int id, URI uri, String status, long modificationStamp, boolean loading) {
 		super();
 		this.id = id;
 		this.uri = uri;
 		this.status = status;
 		this.modificationStamp = modificationStamp;
+		this.loading = loading;
 	}
 	
 	public RepositoryInfoDTO(RepositoryInfo transfer) {
@@ -29,6 +31,7 @@ public class RepositoryInfoDTO {
 		this.uri = transfer.getUri();
 		this.status = transfer.getStatus();
 		this.modificationStamp = transfer.getModificationStamp();
+		this.loading = transfer.isLoading();
 	}
 
 	public int getId() {
@@ -61,6 +64,14 @@ public class RepositoryInfoDTO {
 
 	public void setModificationStamp(long modificationStamp) {
 		this.modificationStamp = modificationStamp;
+	}
+
+	public boolean isLoading() {
+		return loading;
+	}
+
+	public void setLoading(boolean loading) {
+		this.loading = loading;
 	}
 
 }
