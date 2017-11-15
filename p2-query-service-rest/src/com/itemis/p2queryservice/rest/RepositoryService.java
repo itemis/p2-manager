@@ -10,9 +10,6 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -22,20 +19,12 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 import org.eclipse.equinox.p2.repository.ICompositeRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 
-import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyName;
-import com.fasterxml.jackson.databind.deser.impl.ValueInjector;
 import com.itemis.p2.service.IRepositoryData;
 import com.itemis.p2.service.P2ResourcesActivator;
 import com.itemis.p2.service.model.IUMasterInfo;
@@ -209,8 +198,13 @@ public class RepositoryService {
 		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).build();
 		}
-		//TODO: Check loaded
-		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().getUri(), reload);
+		RepositoryInfo repoInfo = repo.get();
+		if (!repoInfo.areUnitsLoaded()) {
+			data.loadLocation(repoInfo.getUri());
+			return Response.noContent().build();
+		}	
+		
+		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repoInfo.getUri(), reload);
 		
 		List<IUMasterInfo> result = new ArrayList<>();
 		if (groupedIUs != null) {
@@ -230,8 +224,12 @@ public class RepositoryService {
 		if (!repo.isPresent()) {
 			return Response.status(Response.Status.NOT_FOUND).entity("Repoitory not found").entity("Unit not found").build();
 		}
-		//TODO: Check loaded
-		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repo.get().getUri(), false);
+		RepositoryInfo repoInfo = repo.get();
+		if (!repoInfo.areUnitsLoaded()) {
+			data.loadLocation(repoInfo.getUri());
+			return Response.noContent().build();
+		}	
+		IGroupedInstallableUnits groupedIUs = data.getRepositoryContent(repoInfo.getUri(), false);
 
 		Optional<IInstallableUnit> iUnit = groupedIUs.getRootIncludedInstallableUnits().parallelStream().filter(unit -> unit.getId().equals(unitname)).findFirst();
 		
