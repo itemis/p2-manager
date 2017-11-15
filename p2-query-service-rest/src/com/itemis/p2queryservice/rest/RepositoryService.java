@@ -10,6 +10,9 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -19,17 +22,26 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 import org.eclipse.equinox.p2.repository.ICompositeRepository;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepository;
 
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyName;
+import com.fasterxml.jackson.databind.deser.impl.ValueInjector;
 import com.itemis.p2.service.IRepositoryData;
 import com.itemis.p2.service.P2ResourcesActivator;
 import com.itemis.p2.service.model.IUMasterInfo;
 import com.itemis.p2.service.model.IUMetaInfo;
 import com.itemis.p2.service.model.RepositoryInfo;
+import com.itemis.p2queryservice.rest.dto.RepositoryInfoDTO;
 
 import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
@@ -37,6 +49,7 @@ import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
 @Path("/repositories")
 public class RepositoryService {
+	
 	public RepositoryService() {
 	}
 	
@@ -48,7 +61,6 @@ public class RepositoryService {
 	public Response getAllRepositories (@DefaultValue("false") @QueryParam("csv") boolean csv) {
 		ResponseBuilder response = Response.ok(getRepositoryData().getAllRepositories());
 		if (csv) {
-			// TODO: Check if other format is requested by header and react with error
 			response = response.type("text/csv");
 		}
 		response = response.type(MediaType.APPLICATION_JSON);
@@ -75,7 +87,6 @@ public class RepositoryService {
 
 	}
 
-	//TODO: add status to response instead of No Content
 	@GET
 	@Path("{id}")
 	public Response getRepo(@PathParam("id") int repoId, @DefaultValue("false") @QueryParam("csv") boolean csv) {
@@ -87,11 +98,9 @@ public class RepositoryService {
 		RepositoryInfo repoInfo = repo.get();
 		if (!repoInfo.isLoaded()) {
 			data.loadLocation(repoInfo.getUri());
-			return Response.noContent().build();
 		}
-		ResponseBuilder response = Response.ok(Collections.singletonList(repoInfo));
+		ResponseBuilder response = Response.ok(Collections.singletonList(new RepositoryInfoDTO(repoInfo)));
 		if (csv) {
-			// TODO: Check if other format is requested by header and react with error
 			response = response.type("text/csv");
 		}
 		else {
@@ -140,7 +149,6 @@ public class RepositoryService {
 		}
 		ResponseBuilder response = Response.ok(result);
 		if (csv) {
-			// TODO: Check if other format is requested by header and react with error
 			response = response.type("text/csv");
 		}
 		else {
