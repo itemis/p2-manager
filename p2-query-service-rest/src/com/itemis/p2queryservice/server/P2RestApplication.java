@@ -14,7 +14,7 @@ import com.eclipsesource.jaxrs.provider.gson.GsonProvider;
 import com.google.common.base.Joiner;
 import com.itemis.p2queryservice.rest.CORSFilter;
 import com.itemis.p2queryservice.rest.CSVMessageBodyWritter;
-import com.itemis.p2queryservice.rest.FunService;
+import com.itemis.p2queryservice.rest.UnitService;
 import com.itemis.p2queryservice.rest.PingService;
 import com.itemis.p2queryservice.rest.RepositoryService;
 
@@ -25,7 +25,7 @@ public class P2RestApplication implements IApplication {
 	private static final Class<?>[] SERVICE_CLASSES= {
 		PingService.class,
 		RepositoryService.class,
-		FunService.class,
+		UnitService.class,
 		GsonProvider.class,
 		CSVMessageBodyWritter.class,
 		CORSFilter.class
