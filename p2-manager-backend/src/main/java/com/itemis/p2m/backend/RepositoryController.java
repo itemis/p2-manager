@@ -109,6 +109,20 @@ public class RepositoryController {
 			return null;
 		}
 	}
+	
+	@ApiOperation(value = "Get the uri of a repository")
+	@RequestMapping(method=RequestMethod.GET, value="/{id}")
+	Repository getRepositoryURI(@PathVariable Integer id) {
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.getInterceptors().add(
+				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)WHERE r.serviceId = '"+id+"' RETURN r.serviceId, r.uri");
+		
+		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+
+		ArrayNode dataNode = (ArrayNode) _result.get("data");
+		return methods.toRepository((ArrayNode)dataNode.get(0));
+	}
 
 	@ApiOperation(value = "List all installable units available in the repository")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/units")

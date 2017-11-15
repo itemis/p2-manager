@@ -197,6 +197,7 @@ public class Methods {
 		r.setUri(repoData.get(1).asText());
 		
 		// HATEOAS links
+		r.add(linkTo(methodOn(RepositoryController.class).getRepositoryURI(r.getRepoId())).withSelfRel());
 		r.add(linkTo(methodOn(RepositoryController.class).listUnitsInRepository(r.getRepoId())).withRel("installableUnits"));
 		
 		return r;

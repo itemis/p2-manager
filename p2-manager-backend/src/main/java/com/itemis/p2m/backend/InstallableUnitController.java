@@ -1,5 +1,8 @@
 package com.itemis.p2m.backend;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,7 +13,6 @@ import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -57,8 +59,8 @@ public class InstallableUnitController {
 
 
 	@ApiOperation(value = "List all available versions of the installable unit")
-	@RequestMapping(method=RequestMethod.GET, value="/{id:.+}")
-	List<InstallableUnit> listVersionsForInstallableUnit(@PathVariable String id, @RequestParam(defaultValue = "false") boolean showRepositories) {
+	@RequestMapping(method=RequestMethod.GET, value="/{id}/versions")
+	List<InstallableUnit> listVersionsForInstallableUnit(@PathVariable String id) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(
 				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
@@ -68,12 +70,17 @@ public class InstallableUnitController {
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<InstallableUnit> result = new ArrayList<>();
-		dataNode.forEach((d) -> result.add(methods.toUnit((ArrayNode) d)));
+		dataNode.forEach((d) -> {
+			InstallableUnit unit = methods.toUnit((ArrayNode) d);
+			unit.add(linkTo(methodOn(InstallableUnitController.class).listRepositoriesForUnitVersion(unit.getUnitId(), unit.getVersion())).withRel("repositories"));
+			result.add(unit);
+		});
+		
 		return result;
 	}
 
 	@ApiOperation(value = "List all repositories that contain the installable unit in this version")
-	@RequestMapping(method=RequestMethod.GET, value="/{id}/{version:.+}")
+	@RequestMapping(method=RequestMethod.GET, value="/{id}/versions/{version}/repositories")
 	List<Repository> listRepositoriesForUnitVersion(@PathVariable String id, @PathVariable String version) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(
@@ -89,7 +96,6 @@ public class InstallableUnitController {
 	}
 	
 	//TODO: method to retrieve all repositories that have a unit in a version between a minimum and maximum
-	
-	//TODO: 
+
 
 }
