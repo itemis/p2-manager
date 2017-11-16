@@ -1,7 +1,8 @@
 package com.itemis.p2m.backend.tests;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.mockito.Matchers.contains;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.when;
@@ -10,8 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.IOException;
-import java.util.Collections;
 import java.util.Map;
 
 import org.junit.Before;
@@ -23,14 +22,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -107,8 +102,8 @@ public class BackendMockTest {
         			.andDo(print())
         			.andReturn().getResponse().getContentAsString();
         
-        assert !result.contains("42");
-        assert !result.contains("http://www.justOneRepository.org");
+        assertFalse(result.contains("42"));
+        assertFalse(result.contains("http://www.justOneRepository.org"));
     }
     
     @Test
@@ -143,7 +138,8 @@ public class BackendMockTest {
     @Test
     public void returnAllVersionsOfTheQueriedIU() throws Exception {
     	this.setupResponse("{\"data\":[[\"com.company.framework.unit\", \"1.2.3\"], [\"com.company.framework.unit\", \"1.5.2\"], [\"org.organization.tool\", \"9.0.1\"]]}");
-		
+
+    	assertEquals("", "");
         this.mockMvc.perform(get("/units/com.company.framework.unit/versions"))
         			.andDo(print())
         			.andExpect(status().isOk())
@@ -160,8 +156,8 @@ public class BackendMockTest {
         			.andDo(print())        
         			.andReturn().getResponse().getContentAsString();
         
-        assert !result.contains("org.organization.tool");
-        assert !result.contains("9.0.1");
+    	assertFalse(result.contains("org.organization.tool"));
+    	assertFalse(result.contains("9.0.1"));
     }
     
     @Test
