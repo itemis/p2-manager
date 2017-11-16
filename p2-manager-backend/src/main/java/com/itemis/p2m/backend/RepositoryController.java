@@ -41,8 +41,8 @@ public class RepositoryController {
 	
 	private Methods methods;
 	
-	public RepositoryController() {
-		this.methods = new Methods();
+	public RepositoryController(Methods methods) {
+		this.methods = methods;
 	}
 
 	@ApiOperation(value = "List all repositories")

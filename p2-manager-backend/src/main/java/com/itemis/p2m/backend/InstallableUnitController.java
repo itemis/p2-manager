@@ -37,8 +37,8 @@ public class InstallableUnitController {
 	
 	private Methods methods;
 	
-	public InstallableUnitController() {
-		this.methods = new Methods();
+	public InstallableUnitController(Methods methods) {
+		this.methods = methods;
 	}
 
 	@ApiOperation(value = "List all installable units")
@@ -53,7 +53,11 @@ public class InstallableUnitController {
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<InstallableUnit> result = new ArrayList<>();
-		dataNode.forEach((d) -> result.add(methods.toUnit((ArrayNode) d)));
+		dataNode.forEach((d) -> {
+			InstallableUnit unit = methods.toUnit((ArrayNode) d);
+			unit.add(linkTo(methodOn(InstallableUnitController.class).listVersionsForInstallableUnit(unit.getUnitId())).withRel("versions"));
+			result.add(unit);
+		});
 		return result;
 	}
 
@@ -70,11 +74,7 @@ public class InstallableUnitController {
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<InstallableUnit> result = new ArrayList<>();
-		dataNode.forEach((d) -> {
-			InstallableUnit unit = methods.toUnit((ArrayNode) d);
-			unit.add(linkTo(methodOn(InstallableUnitController.class).listRepositoriesForUnitVersion(unit.getUnitId(), unit.getVersion())).withRel("repositories"));
-			result.add(unit);
-		});
+		dataNode.forEach((d) -> result.add(methods.toUnit((ArrayNode) d)));
 		
 		return result;
 	}

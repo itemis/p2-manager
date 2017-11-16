@@ -35,7 +35,7 @@ public class Methods {
 	 * @param queryserviceUrl The URL under which the p2 query service can be reached.
 	 * @return The URI under which the repository has been added by the p2 query service.
 	 * */
-	URI postRepositoriesQueryService(URI uri, String queryserviceUrl) {
+	public URI postRepositoriesQueryService(URI uri, String queryserviceUrl) {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpMessageConverter<?> formHttpMessageConverter = new FormHttpMessageConverter();
 		HttpMessageConverter<?> stringHttpMessageConverternew = new StringHttpMessageConverter();
@@ -64,7 +64,7 @@ public class Methods {
 	 * @param queryLocation The {@link URI} of the repository under the p2 query service.
 	 * @return The id assigned to the repository by the neo4j database.
 	 */
-	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI queryLocation) {
+	public int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI queryLocation) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
 		StringBuilder queryBuilder = new StringBuilder("LOAD CSV WITH HEADERS FROM '").append(queryLocation.toString()).append("?csv=true' AS line ");
@@ -86,7 +86,7 @@ public class Methods {
 	 * @param parentId The id of the parent of the repository that is to be added.
 	 * @return The id assigned to the repository by the neo4j database.
 	 */
-	int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI queryLocation, int parentId) {
+	public int postRepositoriesNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI queryLocation, int parentId) {
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
 		StringBuilder queryBuilder = new StringBuilder("LOAD CSV WITH HEADERS FROM '").append(queryLocation.toString()).append("?csv=true' AS line ");
@@ -116,7 +116,7 @@ public class Methods {
 	 * @param repoId The id of the repository in the neo4j database.
 	 * @param queryLocation The {@link URI} of the repository under the p2 query service.
 	 */
-	void postUnitsNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, int repoId, URI queryLocation){
+	public void postUnitsNeoDB(String neo4jUsername, String neo4jPassword, String neo4jUrl, int repoId, URI queryLocation){
 		long startTimeOfThisMethod = System.currentTimeMillis();
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
@@ -130,13 +130,13 @@ public class Methods {
 		//TODO: maybe return number of new IUs?
 	}
 	
-	void addChildRepository(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI childLocation, int parentId) {
+	public void addChildRepository(String neo4jUsername, String neo4jPassword, String neo4jUrl, URI childLocation, int parentId) {
 		int repoDBId = postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, childLocation, parentId);
 		//Wait for Units are Loaded
 		postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, childLocation);		
 	}
 	
-	void addChildrenRepositories(String neo4jUsername, String neo4jPassword, String neo4jUrl, List<URI> childrenLocations, int parentId) {
+	public void addChildrenRepositories(String neo4jUsername, String neo4jPassword, String neo4jUrl, List<URI> childrenLocations, int parentId) {
 		childrenLocations.forEach(childLocation -> addChildRepository(neo4jUsername, neo4jPassword, neo4jUrl, childLocation, parentId));
 		//return childrenLocations.size();
 	}
@@ -148,7 +148,7 @@ public class Methods {
 	 * @param wantedStatus The desired {@link RepositoryStatus} of the resource.
 	 * @return The {@link URI} of the resource if it is already loaded or has the wantedStatus, null otherwise.
 	 */
-	URI getRepositoryStatusQueryService(URI location, String wantedStatus) {
+	public URI getRepositoryStatusQueryService(URI location, String wantedStatus) {
 		RestTemplate restTemplate = new RestTemplate();
 		String status = restTemplate.getForObject(location+"/status", String.class);
 		if (RepositoryStatus.LOADED.equals(status) || wantedStatus.equals(status))
@@ -164,7 +164,7 @@ public class Methods {
 	 * @param parentLocation The uri of the parent repository under the p2 query service.
 	 * @return The URIs of all children of the repository.
 	 */
-	List<URI> getChildrenQueryService(String queryLocation, String parentLocation) {
+	public List<URI> getChildrenQueryService(String queryLocation, String parentLocation) {
 		System.out.println(queryLocation);
 		RestTemplate restTemplate = new RestTemplate();
 		ArrayNode arrayNode = restTemplate.getForObject(parentLocation+"/children?csv=false", ArrayNode.class);
@@ -185,13 +185,13 @@ public class Methods {
 	 * @param queryLocation The {@link URI} of the repository under the p2 query service.
 	 * @return The amount of installable units of the repository.
 	 */
-	int getUnitsCountQueryService(URI queryLocation) {
+	public int getUnitsCountQueryService(URI queryLocation) {
 		RestTemplate restTemplate = new RestTemplate();
 		int count = restTemplate.getForObject(queryLocation+"/units/count", Integer.class);
 		return count;
 	}
 
-	Repository toRepository(ArrayNode repoData) {
+	public Repository toRepository(ArrayNode repoData) {
 		Repository r = new Repository();
 		r.setRepoId(repoData.get(0).asInt());
 		r.setUri(repoData.get(1).asText());
@@ -203,14 +203,13 @@ public class Methods {
 		return r;
 	}
 	
-	InstallableUnit toUnit(ArrayNode unitData) {
+	public InstallableUnit toUnit(ArrayNode unitData) {
 		InstallableUnit iu = new InstallableUnit();
 		iu.setUnitId(unitData.get(0).asText());
 		iu.setVersion(unitData.get(1).asText());
 		
 		// HATEOAS links
-		//iu.add(linkTo(methodOn(InstallableUnitController.class).listVersionsForInstallableUnit(iu.getUnitId(), false)).withRel("versions"));
-		//TODO: add link where available repositories for this version are shown
+		iu.add(linkTo(methodOn(InstallableUnitController.class).listRepositoriesForUnitVersion(iu.getUnitId(), iu.getVersion())).withRel("repositories"));
 		
 		return iu;
 	}
