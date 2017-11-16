@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -29,27 +29,25 @@ public class InstallableUnitController {
 	@Value("${url.queryservice}")
 	private String queryserviceUrl;	
 	@Value("${url.neo4j.cypher}")
-	private String neo4jUrl;	
-	@Value("${neo4j.username}")
-	private String neo4jUsername;
-	@Value("${neo4j.password}")
-	private String neo4jPassword;
+	private String neo4jUrl;
 	
 	private Methods methods;
 	
-	public InstallableUnitController(Methods methods) {
+	@Qualifier("neoRestTemplateBean")
+	private RestTemplate neoRestTemplate;
+	
+	
+	public InstallableUnitController(Methods methods, @Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
 		this.methods = methods;
+		this.neoRestTemplate = neoRestTemplate;
 	}
 
 	@ApiOperation(value = "List all installable units")
 	@RequestMapping(method=RequestMethod.GET)
 	List<InstallableUnit> listInstallableUnits() {
-		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getInterceptors().add(
-				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
 		Map<String,Object> params = Collections.singletonMap("query", "MATCH ()-[p:PROVIDES]->(iu:IU) RETURN iu.serviceId, p.version");
 		
-		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<InstallableUnit> result = new ArrayList<>();
@@ -65,12 +63,9 @@ public class InstallableUnitController {
 	@ApiOperation(value = "List all available versions of the installable unit")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/versions")
 	List<InstallableUnit> listVersionsForInstallableUnit(@PathVariable String id) {
-		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getInterceptors().add(
-				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
 		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE iu.serviceId = '"+id+"' RETURN iu.serviceId, p.version");
 		
-		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<InstallableUnit> result = new ArrayList<>();
@@ -82,12 +77,9 @@ public class InstallableUnitController {
 	@ApiOperation(value = "List all repositories that contain the installable unit in this version")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/versions/{version}/repositories")
 	List<Repository> listRepositoriesForUnitVersion(@PathVariable String id, @PathVariable String version) {
-		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getInterceptors().add(
-				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
 		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE iu.serviceId = '"+id+"' AND p.version = '"+version+"' RETURN r.serviceId, r.uri");
 		
-		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<Repository> result = new ArrayList<>();
