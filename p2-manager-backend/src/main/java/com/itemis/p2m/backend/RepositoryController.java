@@ -88,26 +88,29 @@ public class RepositoryController {
 
 	@ApiOperation(value = "Add a new repository")
 	@RequestMapping(method=RequestMethod.POST)
-	URI addRepositoryWithCF(@RequestParam URI uri) {
+	URI addRepositoryWithCF(@RequestParam URI uri) throws URISyntaxException {
 		Executor executor = Executors.newCachedThreadPool();
+		URI queryLocation = new URI(queryserviceUrl);
 		
-		CompletableFuture<URI> createRepoQueryService = CompletableFuture.supplyAsync(() -> methods.postRepositoriesQueryService(uri, queryserviceUrl), executor);
+		//Repo auf QueryServive erstellen
+		CompletableFuture<URI> createRepoQueryService = CompletableFuture.supplyAsync(() -> methods.postRepositoriesQueryService(uri, queryLocation), executor);
+
+		//Repo auf Neo erstellen
+		CompletableFuture<Integer> createRepoNeo = createRepoQueryService.thenApplyAsync((repoQueryLocation) -> methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoQueryLocation), executor);
+		//Repo Children aus QueryServive lesen
+		CompletableFuture<List<URI>> loadChildren = createRepoQueryService.thenApplyAsync((parentQueryLocation) -> methods.getChildrenQueryService(parentQueryLocation), executor);
 		
-		CompletableFuture<Integer> createRepoNeo = createRepoQueryService.thenApplyAsync((queryLocation) -> methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, queryLocation), executor);
-		CompletableFuture<URI> iUsAreLoaded = createRepoQueryService.thenApplyAsync((queryLocation) -> methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.UNIT), executor); //TODO: retry if not find maybe HandleAsync
-		CompletableFuture<URI> childrenAreLoaded = createRepoQueryService.thenApplyAsync((queryLocation) -> methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.CHILD), executor); //TODO: retry if not find maybe HandleAsync
+		//Units zu Neo hinzufügen
+		CompletableFuture<Void> createUnitsNeo = createRepoNeo.thenAcceptBothAsync(createRepoQueryService, (neoId, repoQueryLocation) -> methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, neoId, repoQueryLocation), executor);
+		//Children hinzufügen
+		CompletableFuture<Void> createChildren = loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, parentNeoId) -> methods.addChildrenRepositories(neo4jUsername, neo4jPassword, neo4jUrl, childQueryLocations, parentNeoId), executor);
 		
-		CompletableFuture<List<URI>> selectChildrenQueryService = childrenAreLoaded.thenApplyAsync((queryLocation) -> methods.getChildrenQueryService(queryserviceUrl+"/repositories", queryLocation.toString()), executor);
+		if (createUnitsNeo.isDone() && createChildren.isDone())
+			System.out.println("DONE");
+		else
+			System.out.println("done with EXCEPTION");
 		
-		iUsAreLoaded.thenAcceptBothAsync(createRepoNeo, (queryLocation, repoDBId) -> methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, queryLocation), executor).isDone();
-		selectChildrenQueryService.thenAcceptBothAsync(createRepoNeo, (childrenLocations, repoDBId) -> methods.addChildrenRepositories(neo4jUsername, neo4jPassword, neo4jUrl, childrenLocations, repoDBId), executor).isDone();
-		
-		try {
-			return new URI("http://localhost");
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-			return null;
-		}
+		return new URI("http://localhost");
 	}
 	
 	@ApiOperation(value = "Get the uri of a repository")
