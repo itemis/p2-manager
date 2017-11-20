@@ -46,7 +46,7 @@ public class RepositoryController {
 	@ApiOperation(value = "List all repositories")
 	@RequestMapping(method=RequestMethod.GET)
 	List<Repository> listRepositories() {
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) RETURN r.serviceId,r.uri");
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) RETURN DISTINCT r.serviceId,r.uri");
 		
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
@@ -111,7 +111,7 @@ public class RepositoryController {
 	@ApiOperation(value = "Get the uri of a repository")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}")
 	Repository getRepositoryURI(@PathVariable Integer id) {
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)WHERE r.serviceId = '"+id+"' RETURN r.serviceId, r.uri");
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)WHERE r.serviceId = '"+id+"' RETURN DISTINCT r.serviceId, r.uri");
 		
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 
@@ -123,7 +123,7 @@ public class RepositoryController {
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/units")
 	List<InstallableUnit> listUnitsInRepository(@PathVariable Integer id) {
 		List<InstallableUnit> result = new ArrayList<>();
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE r.serviceId = '"+id+"' RETURN iu.serviceId,p.version");
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE r.serviceId = '"+id+"' RETURN DISTINCT iu.serviceId,p.version");
 		
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 				

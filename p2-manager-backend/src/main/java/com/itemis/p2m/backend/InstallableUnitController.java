@@ -45,7 +45,7 @@ public class InstallableUnitController {
 	@ApiOperation(value = "List all installable units")
 	@RequestMapping(method=RequestMethod.GET)
 	List<InstallableUnit> listInstallableUnits() {
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH ()-[p:PROVIDES]->(iu:IU) RETURN iu.serviceId, p.version");
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH ()-[p:PROVIDES]->(iu:IU) RETURN DISTINCT iu.serviceId, p.version");
 		
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
@@ -63,7 +63,7 @@ public class InstallableUnitController {
 	@ApiOperation(value = "List all available versions of the installable unit")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/versions")
 	List<InstallableUnit> listVersionsForInstallableUnit(@PathVariable String id) {
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE iu.serviceId = '"+id+"' RETURN iu.serviceId, p.version");
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE iu.serviceId = '"+id+"' RETURN DISTINCT iu.serviceId, p.version");
 		
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
@@ -77,7 +77,7 @@ public class InstallableUnitController {
 	@ApiOperation(value = "List all repositories that contain the installable unit in this version")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/versions/{version}/repositories")
 	List<Repository> listRepositoriesForUnitVersion(@PathVariable String id, @PathVariable String version) {
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE iu.serviceId = '"+id+"' AND p.version = '"+version+"' RETURN r.serviceId, r.uri");
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE iu.serviceId = '"+id+"' AND p.version = '"+version+"' RETURN DISTINCT r.serviceId, r.uri");
 		
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
