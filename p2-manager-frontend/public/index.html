@@ -1,0 +1,32 @@
+<!doctype html>
+<html ng-app="com.itemis.p2-manager-frontend">
+	<head>
+		<title>P2-Manager</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
+    	<script src="RepositoryController.js"></script>
+	</head>
+
+	<body>
+		<div ng-controller="RepositoryController">
+			<h2>Response bodies:</h2>
+		  	<ul>
+		  	  <li ng-repeat="repository in repositories | orderBy:'uri'" ng-controller="UnitController">
+		  	    <span ng-class="{angularButton: units.length > 0}" ng-click="showUnits = !showUnits" ng-init="showUnits=false">{{repository.uri}}</span>
+		  	    <ul ng-if="showUnits">
+		  	      <li ng-repeat="(unitid, units) in units | groupBy: 'unitId'"> <!-- groupBy: 'unit.unitId' does not work yet -->  
+		  	        <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
+		  	        <ul ng-if="showVersions">
+		  	          <li ng-repeat="unit in units">
+		  	            {{unit.version}}
+		  	          </li>
+		  	        </ul>
+		  	      </li>
+		  	    </ul>
+		  	  </li>
+			</ul>
+			DEBUG: {{repositories}}
+		</div>
+	</body>
+</html>
