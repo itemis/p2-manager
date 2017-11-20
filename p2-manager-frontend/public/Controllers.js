@@ -26,6 +26,17 @@ ng.controller('P2MController', function($scope, $http, $timeout) {
         });
 	}
 	
+	$scope.searchUnits = function() {
+		//TODO
+	}
+	
+	$scope.isValidUnitId = function(unitId) {
+		return unitId.includes("/") || unitId.includes("\"");
+	}
+	
+	$scope.unitIdFormat = '[^/"]*';
+	$scope.repositoryURL = "http://www.example.com";
+	
 	$scope.getRepositories();
 	$scope.getUnits();
 });

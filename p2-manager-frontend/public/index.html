@@ -1,6 +1,9 @@
 <!doctype html>
-<html ng-app="com.itemis.p2-manager-frontend">
+<html lang="en" ng-app="com.itemis.p2-manager-frontend">
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
     <title>P2-Manager</title>
 	
     <!-- Bootstrap CSS -->
@@ -23,59 +26,75 @@
   </head>
 
   <body>
-    <div ng-controller="P2MController">
-    
-      <div name="Repositories">
-	    <h2>Add Repository:</h2>
-	    <form name="newRepositoryForm">
-	      <span>Repository URL:</span>
-	      <input name="repositoryURL" type="url" ng-model="repositoryURL" value="http://www.example.com" required>
-          <button ng-click="addRepository()" ng-disabled="newRepositoryForm.repositoryURL.$invalid">Add</button>
-	    </form>
-	    <h2>Repositories</h2>
-        <button ng-click="getRepositories()">Refresh</button>
-        
-  	    <ul>
-  	      <li ng-repeat="repository in repositories | orderBy:'uri'" ng-controller="RepositoryUnitController">
-  	        <span class="angularButton" ng-click="getUnitsForRepo()" ng-init="showUnits=false">{{repository.uri}}</span>
-  	        <ul ng-if="showUnits">
-  	          <li ng-if="units.length <= 0">No units in this repository.</li>
-  	          <li ng-repeat="(unitid, units) in unitsInRepository | groupBy: 'unitId' | orderBy:'unitId'">
-  	            <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
-  	            <ul ng-if="showVersions">
-  	              <li ng-repeat="unit in units">
-  	                {{unit.version}}
-  	              </li>
-  	            </ul>
-  	          </li>
-  	        </ul>
-  	      </li>
-	    </ul>
+    <div class="container" ng-controller="P2MController">
+      
+      <div class="row">
+        <div class="col-6">
+	      <h2 class="m-2">Add Repository:</h2>
+	      <form class="form-inline" name="newRepositoryForm">
+            <label class="m-1" for="repositoryURL">Repository URL:</label>
+	        <input class="form-control m-1" name="repositoryURL" type="url" id="repositoryURL" ng-model="repositoryURL" required>
+            <button type="button" class="btn m-1" ng-click="addRepository()" ng-disabled="newRepositoryForm.repositoryURL.$invalid">Add</button>
+	      </form>
+	    </div>
 	    
+        <div class="col-6">
+	      <h2 class="m-2">Search for Units:</h2>
+	      <form class="form-inline" name="searchUnitsForm">
+            <label class="m-1" for="unitId">Unit ID:</label>
+	        <input class="form-control m-1" name="unitId" type="text" id="unitId" ng-model="unitId" ng-pattern='unitIdFormat'>
+            <button type="button" class="btn m-1" ng-click="searchUnits()" ng-disabled="searchUnitsForm.unitId.$invalid">Search</button>
+	      </form>
+	    </div>
       </div>
-    
-      <div name="Units"">
-	    <h2>Units</h2>
-        <button ng-click="getUnits()">Refresh</button>
-        
-        <ul>
-  	      <li ng-repeat="(unitid, units) in units | groupBy: 'unitId' | orderBy:'unitId'">
-  	        <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
-  	        <ul ng-if="showVersions">
-  	          <li ng-repeat="unit in units" ng-controller="UnitController">
-  	            <span class="angularButton" ng-click="getRepositoriesForVersion()" ng-init="showVersions=false">{{unit.version}}</span>
-  	            <ul ng-if="showRepositories">
-  	              <li ng-repeat="repository in repositoriesWithVersion">
-  	                {{repository.uri}}
-  	              </li>
-  	            </ul>
-  	          </li>
-  	        </ul>
-  	      </li>
-	    </ul>
+      
+      <div class="row">
+        <div class="col" name="Repositories">
+	      <h2 class="m-2">Repositories</h2>
+          <button type="button" class="btn m-2" ng-click="getRepositories()">Refresh</button>
+          
+  	      <ul class="list-group">
+  	        <li class="list-group-item" ng-repeat="repository in repositories | orderBy:'uri'" ng-controller="RepositoryUnitController">
+  	          <span class="angularButton" ng-click="getUnitsForRepo()" ng-init="showUnits=false">{{repository.uri}}</span>
+  	          <ul class="list-group" ng-if="showUnits">
+  	            <li class="list-group-item" ng-if="unitsInRepository.length <= 0">No units in this repository.</li>
+  	            <li class="list-group-item" ng-repeat="(unitid, units) in unitsInRepository | groupBy: 'unitId' | orderBy:'unitId'">
+  	              <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
+  	              <ul class="list-group" ng-if="showVersions">
+  	                <li class="list-group-item" ng-repeat="unit in units">
+  	                  {{unit.version}}
+  	                </li>
+  	              </ul>
+  	            </li>
+  	          </ul>
+  	        </li>
+	      </ul>
 	    
+        </div>
+    
+        <div class="col" name="Units"">
+	      <h2 class="m-2">Units</h2>
+          <button type="button" class="btn m-2" ng-click="getUnits()">Refresh</button>
+        
+          <ul class="list-group">
+  	        <li class="list-group-item" ng-repeat="(unitid, units) in units | groupBy: 'unitId' | orderBy:'unitId'">
+  	          <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
+  	          <ul class="list-group" ng-if="showVersions">
+  	            <li class="list-group-item" ng-repeat="unit in units" ng-controller="UnitController">
+  	              <span class="angularButton" ng-click="getRepositoriesForVersion()" ng-init="showVersions=false">{{unit.version}}</span>
+  	              <ul class="list-group" ng-if="showRepositories">
+  	                <li class="list-group-item" ng-repeat="repository in repositoriesWithVersion">
+  	                  {{repository.uri}}
+  	                </li>
+  	              </ul>
+  	            </li>
+  	          </ul>
+  	        </li>
+	      </ul>
+	    
+        </div>
       </div>
-
+      
     </div>
   </body>
 </html>
