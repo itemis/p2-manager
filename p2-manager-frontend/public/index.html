@@ -1,32 +1,81 @@
 <!doctype html>
 <html ng-app="com.itemis.p2-manager-frontend">
-	<head>
-		<title>P2-Manager</title>
-        <link rel="stylesheet" type="text/css" href="style.css">
-		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
-    	<script src="RepositoryController.js"></script>
-	</head>
+  <head>
+    <title>P2-Manager</title>
+	
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+	
+    <!-- P2-Manager Frontend CSS -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+       
+    <!-- Angular.js -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
+       
+    <!-- Bootstrap.js -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+       
+    <!-- P2-Manager Frontend Logic -->
+   	<script src="Controllers.js"></script>
+  </head>
 
-	<body>
-		<div ng-controller="RepositoryController">
-			<h2>Response bodies:</h2>
-		  	<ul>
-		  	  <li ng-repeat="repository in repositories | orderBy:'uri'" ng-controller="UnitController">
-		  	    <span ng-class="{angularButton: units.length > 0}" ng-click="showUnits = !showUnits" ng-init="showUnits=false">{{repository.uri}}</span>
-		  	    <ul ng-if="showUnits">
-		  	      <li ng-repeat="(unitid, units) in units | groupBy: 'unitId'"> <!-- groupBy: 'unit.unitId' does not work yet -->  
-		  	        <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
-		  	        <ul ng-if="showVersions">
-		  	          <li ng-repeat="unit in units">
-		  	            {{unit.version}}
-		  	          </li>
-		  	        </ul>
-		  	      </li>
-		  	    </ul>
-		  	  </li>
-			</ul>
-			DEBUG: {{repositories}}
-		</div>
-	</body>
+  <body>
+    <div ng-controller="P2MController">
+    
+      <div name="Repositories">
+	    <h2>Add Repository:</h2>
+	    <form name="newRepositoryForm">
+	      <span>Repository URL:</span>
+	      <input name="repositoryURL" type="url" ng-model="repositoryURL" value="http://www.example.com" required>
+          <button ng-click="addRepository()" ng-disabled="newRepositoryForm.repositoryURL.$invalid">Add</button>
+	    </form>
+	    <h2>Repositories</h2>
+        <button ng-click="getRepositories()">Refresh</button>
+        
+  	    <ul>
+  	      <li ng-repeat="repository in repositories | orderBy:'uri'" ng-controller="RepositoryUnitController">
+  	        <span class="angularButton" ng-click="getUnitsForRepo()" ng-init="showUnits=false">{{repository.uri}}</span>
+  	        <ul ng-if="showUnits">
+  	          <li ng-if="units.length <= 0">No units in this repository.</li>
+  	          <li ng-repeat="(unitid, units) in unitsInRepository | groupBy: 'unitId' | orderBy:'unitId'">
+  	            <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
+  	            <ul ng-if="showVersions">
+  	              <li ng-repeat="unit in units">
+  	                {{unit.version}}
+  	              </li>
+  	            </ul>
+  	          </li>
+  	        </ul>
+  	      </li>
+	    </ul>
+	    
+      </div>
+    
+      <div name="Units"">
+	    <h2>Units</h2>
+        <button ng-click="getUnits()">Refresh</button>
+        
+        <ul>
+  	      <li ng-repeat="(unitid, units) in units | groupBy: 'unitId' | orderBy:'unitId'">
+  	        <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
+  	        <ul ng-if="showVersions">
+  	          <li ng-repeat="unit in units" ng-controller="UnitController">
+  	            <span class="angularButton" ng-click="getRepositoriesForVersion()" ng-init="showVersions=false">{{unit.version}}</span>
+  	            <ul ng-if="showRepositories">
+  	              <li ng-repeat="repository in repositoriesWithVersion">
+  	                {{repository.uri}}
+  	              </li>
+  	            </ul>
+  	          </li>
+  	        </ul>
+  	      </li>
+	    </ul>
+	    
+      </div>
+
+    </div>
+  </body>
 </html>
