@@ -21,10 +21,14 @@ ng.controller('P2MController', function($scope, $http, $timeout) {
 	
 	$scope.searchUnits = function() {
 		$scope.units = [];
+		$scope.allUnitsLoaded = false;
 		$scope.loadMoreUnits();
 	}
 	
 	$scope.loadMoreUnits = function() {
+		if ($scope.unitsAreLoading || $scope.allUnitsLoaded)
+			return;
+		
 		$scope.unitsAreLoading = true;
 		var searchQuery = $scope.unitId.split(" ")
 								.map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
@@ -32,10 +36,14 @@ ng.controller('P2MController', function($scope, $http, $timeout) {
 
 		$http.get('http://localhost:8080/units?limit='+$scope.scrollLoadSize
 											+"&offset="+$scope.units.length
-											+"&"+searchQuery).
-		then(function(response) {
+											+"&"+searchQuery)
+		.then(function(response) {
 			$scope.unitsAreLoading = false;
-			$scope.units = $scope.units.concat(response.data);
+			
+			if (response.status == 204) // No Content
+				$scope.allUnitsLoaded = true;
+			else
+				$scope.units = $scope.units.concat(response.data);
 		});
 	}
 	
@@ -44,6 +52,7 @@ ng.controller('P2MController', function($scope, $http, $timeout) {
 	}
 
 	$scope.unitsAreLoading = false;
+	$scope.allUnitsLoaded = false;
 	$scope.units = [];
 	$scope.repositories = [];
 	$scope.unitId="";
@@ -57,11 +66,11 @@ ng.controller('P2MController', function($scope, $http, $timeout) {
 ng.controller('RepositoryUnitController', function($scope, $http) {
 	
 	$scope.getUnitsForRepo = function() {
-		if (!$scope.isLoaded) 
+		if (!$scope.showUnits)
 			$http.get('http://localhost:8080/repositories/'+$scope.repository.repoId+'/units').
-			then(function(response) {
-				$scope.unitsInRepository = response.data;
-			});
+				then(function(response) {
+					$scope.unitsInRepository = response.data;
+				});
 		
 		$scope.showUnits = !$scope.showUnits;
 	}
@@ -70,12 +79,16 @@ ng.controller('RepositoryUnitController', function($scope, $http) {
 ng.controller('UnitController', function($scope, $http, $timeout) {
 	
 	$scope.getRepositoriesForVersion = function() {
-		if (!$scope.isLoaded) 
+		if (!$scope.repositoriesLoaded) {
 			$http.get('http://localhost:8080/units/'+$scope.unit.unitId+'/versions/'+$scope.unit.version+"/repositories").
-			then(function(response) {
-				$scope.repositoriesWithVersion = response.data;
-			});
+				then(function(response) {
+					$scope.repositoriesWithVersion = response.data;
+				});
+			$scope.repositoriesLoaded = true;
+		}
 		
 		$scope.showRepositories = !$scope.showRepositories;
 	}
+
+	$scope.repositoriesLoaded = false;
 });

@@ -11,3 +11,7 @@
     color: #ffa500;
     text-decoration: underline;
 }
+
+.spacingElement {
+	visibility: hidden;
+}

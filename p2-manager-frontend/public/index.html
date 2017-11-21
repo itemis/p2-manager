@@ -56,8 +56,9 @@
       
       <div class="row">
         <div class="col" name="Repositories">
-	      <h2 class="m-2">Repositories</h2>
-          <button type="button" class="btn m-2" ng-click="getRepositories()">Refresh</button>
+	      <h2 class="m-2">Repositories  
+            <button type="button" class="btn m-2" ng-click="getRepositories()"><img src="resource/reloadIcon.png" class="align-middle mb-1"></button>
+	      </h2>
           
   	      <ul class="list-group">
   	        <li class="list-group-item" ng-repeat="repository in repositories | orderBy:'uri'" ng-controller="RepositoryUnitController">
@@ -79,8 +80,9 @@
         </div>
     
         <div class="col" infinite-scroll="loadMoreUnits()" name="Units"">
-	      <h2 class="m-2">Units</h2>
-          <button type="button" class="btn m-2" ng-click="getUnits()">Refresh</button>
+	      <h2 class="m-2">Units
+	        <button type="button" class="btn m-2 spacingElement"></button>
+	      </h2>
         
           <ul class="list-group">
   	        <li class="list-group-item" ng-repeat="(unitid, units) in units | groupBy: 'unitId' | orderBy:'unitId'">
@@ -97,8 +99,9 @@
   	          </ul>
   	        </li>
 	      </ul>
-	      <div class="m-3 text-center" ng-if="unitsAreLoading">
-	        <img src="resource/loadingIcon.gif">
+	      <div class="m-3 text-center">
+	        <img src="resource/loadingIcon.gif" ng-if="unitsAreLoading">
+	        <h3 ng-if="allUnitsLoaded">You have reached the end</h3>
 	      </div>
         </div>
       </div>
