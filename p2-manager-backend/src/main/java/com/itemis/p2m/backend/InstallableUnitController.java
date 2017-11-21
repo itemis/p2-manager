@@ -4,6 +4,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -42,10 +44,18 @@ public class InstallableUnitController {
 		this.neoRestTemplate = neoRestTemplate;
 	}
 
-	@ApiOperation(value = "List all installable units")
+	@ApiOperation(value = "List all installable units whose ids match the search terms")
 	@RequestMapping(method=RequestMethod.GET)
-	List<InstallableUnit> listInstallableUnits() {
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH ()-[p:PROVIDES]->(iu:IU) RETURN DISTINCT iu.serviceId, p.version");
+	List<InstallableUnit> listInstallableUnits(@RequestParam(required = false) String[] searchTerm) {
+		String filter = Arrays.asList(searchTerm).parallelStream()
+												 .map((term) -> "iu.serviceId CONTAINS '"+term+"' ")
+												 .reduce((term1, term2) -> term1+"AND "+term2)
+												 .map((terms) -> "WHERE "+terms)
+												 .orElse("");
+		
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH ()-[p:PROVIDES]->(iu:IU) "
+																	+ filter
+																	+ "RETURN DISTINCT iu.serviceId, p.version");
 		
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");

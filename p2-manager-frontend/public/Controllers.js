@@ -27,18 +27,25 @@ ng.controller('P2MController', function($scope, $http, $timeout) {
 	}
 	
 	$scope.searchUnits = function() {
-		//TODO
+		var searchQuery = $scope.unitId.split(" ")
+									.map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
+									.reduce((keyword1, keyword2) => keyword1+"&"+keyword2);
+		
+		$http.get('http://localhost:8080/units?'+searchQuery).
+        then(function(response) {
+            $scope.units = response.data;
+        });
 	}
 	
 	$scope.isValidUnitId = function(unitId) {
 		return unitId.includes("/") || unitId.includes("\"");
 	}
 	
-	$scope.unitIdFormat = '[^/"]*';
+	$scope.unitIdFormat = '[^/"&]*';
 	$scope.repositoryURL = "http://www.example.com";
 	
 	$scope.getRepositories();
-	$scope.getUnits();
+	//$scope.getUnits();
 });
 
 ng.controller('RepositoryUnitController', function($scope, $http) {
