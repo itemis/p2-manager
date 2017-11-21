@@ -12,12 +12,17 @@
     <!-- P2-Manager Frontend CSS -->
     <link rel="stylesheet" type="text/css" href="style.css">
        
+    <!-- jQuery.js -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    
     <!-- Angular.js -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
+    
+    <!-- ngInfiniteScroll -->
+	<script type='text/javascript' src='lib/ng-infinite-scroll/ng-infinite-scroll.js'></script>
        
     <!-- Bootstrap.js -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
        
@@ -28,10 +33,12 @@
   <body>
     <div class="container" ng-controller="P2MController">
       
+      <hr>
+      
       <div class="row">
         <div class="col-6">
 	      <h2 class="m-2">Add Repository:</h2>
-	      <form class="form-inline" name="newRepositoryForm">
+	      <form class="form-inline" ng-submit="addRepository()" name="newRepositoryForm">
             <label class="m-1" for="repositoryURL">Repository URL:</label>
 	        <input class="form-control m-1" name="repositoryURL" type="url" id="repositoryURL" ng-model="repositoryURL" required>
             <button type="button" class="btn m-1" ng-click="addRepository()" ng-disabled="newRepositoryForm.repositoryURL.$invalid">Add</button>
@@ -40,8 +47,7 @@
 	    
         <div class="col-6">
 	      <h2 class="m-2">Search for Units:</h2>
-	      <form class="form-inline" name="searchUnitsForm">
-            <label class="m-1" for="unitId">Unit ID:</label>
+	      <form class="form-inline" ng-submit="searchUnits()" name="searchUnitsForm">
 	        <input class="form-control m-1" name="unitId" type="text" id="unitId" ng-model="unitId" ng-pattern='unitIdFormat'>
             <button type="button" class="btn m-1" ng-click="searchUnits()" ng-disabled="searchUnitsForm.unitId.$invalid">Search</button>
 	      </form>
@@ -72,7 +78,7 @@
 	    
         </div>
     
-        <div class="col" name="Units"">
+        <div class="col" infinite-scroll="loadMoreUnits()" name="Units"">
 	      <h2 class="m-2">Units</h2>
           <button type="button" class="btn m-2" ng-click="getUnits()">Refresh</button>
         
@@ -91,8 +97,14 @@
   	          </ul>
   	        </li>
 	      </ul>
-	    
+	      <div class="m-3 text-center" ng-if="unitsAreLoading">
+	        <img src="resource/loadingIcon.gif">
+	      </div>
         </div>
+      </div>
+      
+      <div id="footer">
+        <hr>
       </div>
       
     </div>

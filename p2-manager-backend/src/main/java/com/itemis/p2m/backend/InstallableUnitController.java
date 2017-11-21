@@ -46,16 +46,20 @@ public class InstallableUnitController {
 
 	@ApiOperation(value = "List all installable units whose ids match the search terms")
 	@RequestMapping(method=RequestMethod.GET)
-	List<InstallableUnit> listInstallableUnits(@RequestParam(required = false) String[] searchTerm) {
-		String filter = Arrays.asList(searchTerm).parallelStream()
-												 .map((term) -> "iu.serviceId CONTAINS '"+term+"' ")
-												 .reduce((term1, term2) -> term1+"AND "+term2)
-												 .map((terms) -> "WHERE "+terms)
-												 .orElse("");
+	List<InstallableUnit> listInstallableUnits(@RequestParam(required = false) String[] searchTerm,
+											   @RequestParam(defaultValue = "0") String limit,
+											   @RequestParam(defaultValue = "0") String offset) {
+		String filter = searchTerm == null ? "" : Arrays.asList(searchTerm).parallelStream()
+														.map((term) -> "iu.serviceId CONTAINS '"+term+"' ")
+														.reduce((term1, term2) -> term1+"AND "+term2)
+														.map((terms) -> "WHERE "+terms)
+														.orElse("");
 		
 		Map<String,Object> params = Collections.singletonMap("query", "MATCH ()-[p:PROVIDES]->(iu:IU) "
 																	+ filter
-																	+ "RETURN DISTINCT iu.serviceId, p.version");
+																	+ "RETURN DISTINCT iu.serviceId, p.version "
+																	+ "ORDER BY iu.serviceId"
+																	+ methods.neoResultLimit(limit,  offset));
 		
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");

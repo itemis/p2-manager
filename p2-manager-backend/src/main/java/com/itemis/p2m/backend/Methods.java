@@ -219,5 +219,10 @@ public class Methods {
 		
 		return iu;
 	}
+	
+	public String neoResultLimit(String limit, String offset) {
+		return (Integer.parseInt(offset) <= 0 ? "" : " SKIP "+offset)
+			 + (Integer.parseInt(limit) <= 0 ? "" : " LIMIT "+limit);
+	}
 
 }

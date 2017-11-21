@@ -1,4 +1,4 @@
-var ng = angular.module('com.itemis.p2-manager-frontend', ['angular.filter'])
+var ng = angular.module('com.itemis.p2-manager-frontend', ['angular.filter', 'infinite-scroll'])
 
 ng.controller('P2MController', function($scope, $http, $timeout) {
 	
@@ -9,43 +9,49 @@ ng.controller('P2MController', function($scope, $http, $timeout) {
         });
 	}
 	
+	//TODO allow input without "http://" to be automatically completed
 	$scope.addRepository = function() {
 		$http.post('http://localhost:8080/repositories?uri='+$scope.repositoryURL).
         then(function(response) {
         	$timeout(function() {
         		$scope.getRepositories();
-        		$scope.getUnits();
         	}, 1000);
         }); 
 	}
 	
-	$scope.getUnits = function() {
-		$http.get('http://localhost:8080/units').
-        then(function(response) {
-            $scope.units = response.data;
-        });
+	$scope.searchUnits = function() {
+		$scope.units = [];
+		$scope.loadMoreUnits();
 	}
 	
-	$scope.searchUnits = function() {
+	$scope.loadMoreUnits = function() {
+		$scope.unitsAreLoading = true;
 		var searchQuery = $scope.unitId.split(" ")
-									.map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
-									.reduce((keyword1, keyword2) => keyword1+"&"+keyword2);
-		
-		$http.get('http://localhost:8080/units?'+searchQuery).
-        then(function(response) {
-            $scope.units = response.data;
-        });
+								.map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
+								.reduce((keyword1, keyword2) => keyword1+"&"+keyword2);
+
+		$http.get('http://localhost:8080/units?limit='+$scope.scrollLoadSize
+											+"&offset="+$scope.units.length
+											+"&"+searchQuery).
+		then(function(response) {
+			$scope.unitsAreLoading = false;
+			$scope.units = $scope.units.concat(response.data);
+		});
 	}
 	
 	$scope.isValidUnitId = function(unitId) {
 		return unitId.includes("/") || unitId.includes("\"");
 	}
-	
+
+	$scope.unitsAreLoading = false;
+	$scope.units = [];
+	$scope.repositories = [];
+	$scope.unitId="";
+	$scope.scrollLoadSize = 20;
 	$scope.unitIdFormat = '[^/"&]*';
 	$scope.repositoryURL = "http://www.example.com";
 	
 	$scope.getRepositories();
-	//$scope.getUnits();
 });
 
 ng.controller('RepositoryUnitController', function($scope, $http) {
