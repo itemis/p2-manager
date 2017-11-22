@@ -34,6 +34,7 @@ import com.itemis.p2queryservice.rest.dto.RepositoryInfoDTO;
 
 import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
+//TODO: look at Http Statuscodes of responses
 @Path("/repositories")
 public class RepositoryService {
 	

@@ -92,25 +92,20 @@ public class RepositoryController {
 		Executor executor = Executors.newCachedThreadPool();
 		URI queryLocation = new URI(queryserviceUrl);
 		
-		//Repo auf QueryServive erstellen
 		CompletableFuture<URI> createRepoQueryService = CompletableFuture.supplyAsync(() -> methods.postRepositoriesQueryService(uri, queryLocation), executor);
 
-		//Repo auf Neo erstellen
 		CompletableFuture<Integer> createRepoNeo = createRepoQueryService.thenApplyAsync((repoQueryLocation) -> methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoQueryLocation), executor);
-		//Repo Children aus QueryServive lesen
 		CompletableFuture<List<URI>> loadChildren = createRepoQueryService.thenApplyAsync((parentQueryLocation) -> methods.getChildrenQueryService(parentQueryLocation), executor);
 		
-		//Units zu Neo hinzufügen
 		CompletableFuture<Void> createUnitsNeo = createRepoNeo.thenAcceptBothAsync(createRepoQueryService, (neoId, repoQueryLocation) -> methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, neoId, repoQueryLocation), executor);
-		//Children hinzufügen
 		CompletableFuture<Void> createChildren = loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, parentNeoId) -> methods.addChildrenRepositories(neo4jUsername, neo4jPassword, neo4jUrl, childQueryLocations, parentNeoId), executor);
 		
-		if (createUnitsNeo.isDone() && createChildren.isDone())
+		if (createChildren.isDone() && createUnitsNeo.isDone())
 			System.out.println("DONE");
 		else
 			System.out.println("done with EXCEPTION");
 		
-		return new URI("http://localhost");
+		return new URI("http://localhost");//return status code 102 processing
 	}
 	
 	@ApiOperation(value = "Get the uri of a repository")
