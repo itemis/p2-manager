@@ -10,8 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -21,7 +21,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.itemis.p2m.backend.constants.RepositoryStatus;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
 
@@ -34,26 +33,22 @@ public class RepositoryController {
 	private String queryserviceUrl;	
 	@Value("${url.neo4j.cypher}")
 	private String neo4jUrl;	
-	@Value("${neo4j.username}")
-	private String neo4jUsername;
-	@Value("${neo4j.password}")
-	private String neo4jPassword;
 	
 	private Methods methods;
+
+	private RestTemplate neoRestTemplate;	
 	
-	public RepositoryController() {
-		this.methods = new Methods();
+	public RepositoryController(Methods methods, @Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
+		this.methods = methods;
+		this.neoRestTemplate = neoRestTemplate;
 	}
 
 	@ApiOperation(value = "List all repositories")
 	@RequestMapping(method=RequestMethod.GET)
 	List<Repository> listRepositories() {
-		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getInterceptors().add(
-				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) RETURN r.serviceId,r.uri");
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) RETURN DISTINCT r.serviceId,r.uri");
 		
-		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<Repository> result = new ArrayList<>();
@@ -94,11 +89,11 @@ public class RepositoryController {
 		
 		CompletableFuture<URI> createRepoQueryService = CompletableFuture.supplyAsync(() -> methods.postRepositoriesQueryService(uri, queryLocation), executor);
 
-		CompletableFuture<Integer> createRepoNeo = createRepoQueryService.thenApplyAsync((repoQueryLocation) -> methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoQueryLocation), executor);
+		CompletableFuture<Integer> createRepoNeo = createRepoQueryService.thenApplyAsync((repoQueryLocation) -> methods.postRepositoriesNeoDB(neo4jUrl, repoQueryLocation), executor);
 		CompletableFuture<List<URI>> loadChildren = createRepoQueryService.thenApplyAsync((parentQueryLocation) -> methods.getChildrenQueryService(parentQueryLocation), executor);
 		
-		CompletableFuture<Void> createUnitsNeo = createRepoNeo.thenAcceptBothAsync(createRepoQueryService, (neoId, repoQueryLocation) -> methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, neoId, repoQueryLocation), executor);
-		CompletableFuture<Void> createChildren = loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, parentNeoId) -> methods.addChildrenRepositories(neo4jUsername, neo4jPassword, neo4jUrl, childQueryLocations, parentNeoId), executor);
+		CompletableFuture<Void> createUnitsNeo = createRepoNeo.thenAcceptBothAsync(createRepoQueryService, (neoId, repoQueryLocation) -> methods.postUnitsNeoDB(neo4jUrl, neoId, repoQueryLocation), executor);
+		CompletableFuture<Void> createChildren = loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, parentNeoId) -> methods.addChildrenRepositories(neo4jUrl, childQueryLocations, parentNeoId), executor);
 		
 		if (createChildren.isDone() && createUnitsNeo.isDone())
 			System.out.println("DONE");
@@ -111,12 +106,9 @@ public class RepositoryController {
 	@ApiOperation(value = "Get the uri of a repository")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}")
 	Repository getRepositoryURI(@PathVariable Integer id) {
-		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getInterceptors().add(
-				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)WHERE r.serviceId = '"+id+"' RETURN r.serviceId, r.uri");
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)WHERE r.serviceId = '"+id+"' RETURN DISTINCT r.serviceId, r.uri");
 		
-		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		return methods.toRepository((ArrayNode)dataNode.get(0));
@@ -125,13 +117,10 @@ public class RepositoryController {
 	@ApiOperation(value = "List all installable units available in the repository")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/units")
 	List<InstallableUnit> listUnitsInRepository(@PathVariable Integer id) {
-		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getInterceptors().add(
-				  new BasicAuthorizationInterceptor(neo4jUsername, neo4jPassword));
 		List<InstallableUnit> result = new ArrayList<>();
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE r.serviceId = '"+id+"' RETURN iu.serviceId,p.version");
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE r.serviceId = '"+id+"' RETURN DISTINCT iu.serviceId,p.version");
 		
-		ObjectNode _result = restTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 				
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		dataNode.forEach((d) -> result.add(methods.toUnit((ArrayNode)d)));

@@ -55,6 +55,7 @@ public class RepositoryService {
 		return response.build();
 	}
 
+	//TODO: if there is no repository at the url, no repository should be added
 	@POST
 	public Response addRepo(@Context UriInfo uriInfo, @FormParam("uri") URI uri) {
 		if (uri == null)
@@ -114,7 +115,7 @@ public class RepositoryService {
 	
 	@GET
 	@Path("{id}/children")
-	public Response getChildRepositories (@PathParam("id") int repoId, @QueryParam("reload") boolean reload, @DefaultValue("false") @QueryParam("csv") boolean csv) {
+	public Response getChildRepositories (@PathParam("id") int repoId, @DefaultValue("false") @QueryParam("reload") boolean reload, @DefaultValue("false") @QueryParam("csv") boolean csv) {
 		IRepositoryData data = getRepositoryData();
 		Optional<RepositoryInfo> repo = data.getRepositoryById(repoId);
 		if (!repo.isPresent()) {
@@ -237,8 +238,8 @@ public class RepositoryService {
 		RepositoryInfo repoInfo = repo.get();
 		if (!repoInfo.areUnitsLoaded()) {
 			if (!repoInfo.isLoading()) {
-				data.loadLocation(repoInfo.getUri());
 				repoInfo.startLoading();
+				data.loadLocation(repoInfo.getUri());
 			}
 			return Response.noContent().build();
 		}	

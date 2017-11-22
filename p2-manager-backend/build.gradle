@@ -32,15 +32,18 @@ dependencies {
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:21.0'
 
-    compile("org.springframework.boot:spring-boot-starter-web")
-    compile("org.springframework.hateoas:spring-hateoas")
-    compile("org.thymeleaf:thymeleaf-spring4")
-    compile("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
-    compile("io.springfox:springfox-swagger2:2.7.0")
-    compile("io.springfox:springfox-swagger-ui:2.7.0")
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.hateoas:spring-hateoas'
+    
+    implementation 'org.thymeleaf:thymeleaf-spring4'
+    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
+    
+    implementation 'io.springfox:springfox-swagger2:2.7.0'
+    implementation 'io.springfox:springfox-swagger-ui:2.7.0'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 group = "itemis"

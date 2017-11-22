@@ -1,0 +1,17 @@
+.angularButton {
+    color: blue;
+    cursor: pointer;
+}
+
+.angularButton:hover {
+    text-decoration: underline;
+}
+
+.angularButton:active {
+    color: #ffa500;
+    text-decoration: underline;
+}
+
+.spacingElement {
+	visibility: hidden;
+}
