@@ -56,31 +56,6 @@ public class RepositoryController {
 		return result;
 	}
 	
-	/*@RequestMapping(method=RequestMethod.POST, value="/repositories")
-	URI addRepository(@RequestParam URI uri) throws Exception {
-		URI queryLocation = methods.postRepositoriesQueryService(uri, queryserviceUrl);
-		int repoDBId = methods.postRepositoriesNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, queryLocation);
-		ExecutorService executor = Executors.newFixedThreadPool(2);
-		
-		Future<List<URI>> waitForChildren = executor.submit(()->{
-			while (methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.CHILD) == null) {
-				Thread.sleep(1000);
-			}
-			return methods.getChildrenQueryService(queryLocation);
-		});
-		waitForChildren.get().forEach(childLocation -> methods.addChildRepository(neo4jUsername, neo4jPassword, neo4jUrl, childLocation, repoDBId));
-		
-		Future<Boolean> waitForUnits = executor.submit(()->{
-			while (methods.getRepositoryStatusQueryService(queryLocation, RepositoryStatus.UNIT) == null) {
-				Thread.sleep(1000);
-			}
-			return (methods.getUnitsCountQueryService(queryLocation)>0);
-		});
-		if(waitForUnits.get()) methods.postUnitsNeoDB(neo4jUsername, neo4jPassword, neo4jUrl, repoDBId, queryLocation);
-		
-		return new URI("http://localhost"); //TODO: return statement
-	}*/
-
 	@ApiOperation(value = "Add a new repository")
 	@RequestMapping(method=RequestMethod.POST)
 	URI addRepositoryWithCF(@RequestParam URI uri) throws URISyntaxException {
@@ -92,13 +67,8 @@ public class RepositoryController {
 		CompletableFuture<Integer> createRepoNeo = createRepoQueryService.thenApplyAsync((repoQueryLocation) -> methods.postRepositoriesNeoDB(neo4jUrl, repoQueryLocation), executor);
 		CompletableFuture<List<URI>> loadChildren = createRepoQueryService.thenApplyAsync((parentQueryLocation) -> methods.getChildrenQueryService(parentQueryLocation), executor);
 		
-		CompletableFuture<Void> createUnitsNeo = createRepoNeo.thenAcceptBothAsync(createRepoQueryService, (neoId, repoQueryLocation) -> methods.postUnitsNeoDB(neo4jUrl, neoId, repoQueryLocation), executor);
-		CompletableFuture<Void> createChildren = loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, parentNeoId) -> methods.addChildrenRepositories(neo4jUrl, childQueryLocations, parentNeoId), executor);
-		
-		if (createChildren.isDone() && createUnitsNeo.isDone())
-			System.out.println("DONE");
-		else
-			System.out.println("done with EXCEPTION");
+		createRepoNeo.thenAcceptBothAsync(createRepoQueryService, (neoId, repoQueryLocation) -> methods.postUnitsNeoDB(neo4jUrl, neoId, repoQueryLocation), executor);
+		loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, parentNeoId) -> methods.addChildrenRepositories(neo4jUrl, childQueryLocations, parentNeoId), executor);
 		
 		return new URI("http://localhost");//return status code 102 processing
 	}

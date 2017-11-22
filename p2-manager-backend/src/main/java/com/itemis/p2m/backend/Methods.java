@@ -116,7 +116,7 @@ public class Methods {
 	 * @param neoId The id of the repository in the neo4j database.
 	 * @param repoQueryLocation The {@link URI} of the repository under the p2 query service.
 	 */
-	//TODO: Very slow!!!!!
+	//TODO: Neo is slow
 	public void postUnitsNeoDB(String neo4jUrl, int neoId, URI repoQueryLocation){
 		if (getUnitCountQueryService(repoQueryLocation) == 0) {
 			return;
@@ -125,69 +125,31 @@ public class Methods {
 		queryBuilder.append("MATCH (r:Repository) WHERE ID(r)=").append(neoId).append(" ");
 		queryBuilder.append("MERGE (iu:IU { serviceId: line.id}) ");
 		queryBuilder.append("MERGE (r)-[p:PROVIDES { version: line.version}]->(iu)");
-		System.out.println("Start to fill Neo with Units");
 		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
 		ObjectNode jsonResult = neoRestTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
 		
 	}
-	//TODO: Async
-	private void addChildRepository(String neo4jUrl, URI childQueryLocation, int parentNeoId) {
-		Date start = new Date();
-		System.out.println("Child " + childQueryLocation.toString() + " started");
-		int neoId = postRepositoriesNeoDB(neo4jUrl, childQueryLocation, parentNeoId);
-		System.out.println("Child " + childQueryLocation.toString() + " created in neoDB in " + ((new Date().getTime()-start.getTime())/1000) + " seconds");
-		postUnitsNeoDB(neo4jUrl, neoId, childQueryLocation);
-		System.out.println("Child " + childQueryLocation.toString() + " units are created in neoDB " + ((new Date().getTime()-start.getTime())/1000) + " seconds");
-		addChildrenRepositories(neo4jUrl, getChildrenQueryService(childQueryLocation), neoId);
-		System.out.println("Child " + childQueryLocation.toString() + " children are created in neoDB " + ((new Date().getTime()-start.getTime())/1000) + " seconds");
-		
-	}
-	//TODO: Async
+
 	private void addChildRepositoryWithFuture(String neo4jUrl, URI childQueryLocation, int parentNeoId, ExecutorService executor) {
 		Date start = new Date();
 		System.out.println("Child " + childQueryLocation.toString() + " started");
 		
-		/* 
-		 * Without Debug prints
-		 * CompletableFuture<Integer> createRepoNeo = CompletableFuture.supplyAsync(() -> postRepositoriesNeoDB(neo4jUrl, childQueryLocation, parentNeoId), executor);
-		 * CompletableFuture<List<URI>> loadChildren = CompletableFuture.supplyAsync(() -> getChildrenQueryService(childQueryLocation), executor);
-		 * 
-		 * CompletableFuture<Void> createUnitsNeo = createRepoNeo.thenAcceptAsync((neoId) -> postUnitsNeoDB(neo4jUrl, neoId, childQueryLocation), executor);
-		 * CompletableFuture<Void> createChildren = loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, neoId) -> addChildrenRepositories(neo4jUrl, childQueryLocations, neoId), executor);
-		*/
-		CompletableFuture<Integer> createRepoNeo = CompletableFuture.supplyAsync(() -> {
-			int neoId = postRepositoriesNeoDB(neo4jUrl, childQueryLocation, parentNeoId);
-			System.out.println("Child " + childQueryLocation.toString() + " created in neoDB in " + ((new Date().getTime()-start.getTime())/1000) + " seconds");
-			return neoId;
-		}, executor);
-		CompletableFuture<List<URI>> loadChildren = CompletableFuture.supplyAsync(() -> {
-			List<URI> children = getChildrenQueryService(childQueryLocation);
-			System.out.println("Childs of " + childQueryLocation.toString() + " are loaded from QueryService in " + ((new Date().getTime()-start.getTime())/1000) + " seconds");
-			return children;
-		}, executor);
+		CompletableFuture<Integer> createRepoNeo = CompletableFuture.supplyAsync(() -> postRepositoriesNeoDB(neo4jUrl, childQueryLocation, parentNeoId), executor);
+		CompletableFuture<List<URI>> loadChildren = CompletableFuture.supplyAsync(() -> getChildrenQueryService(childQueryLocation), executor);
 		
-		CompletableFuture<Void> createUnitsNeo = createRepoNeo.thenAcceptAsync((neoId) -> {
-			postUnitsNeoDB(neo4jUrl, neoId, childQueryLocation);
-			System.out.println("Child " + childQueryLocation.toString() + " units are created in neoDB " + ((new Date().getTime()-start.getTime())/1000) + " seconds");
-		}, executor);
-		CompletableFuture<Void> createChildren = loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, neoId) -> {
-			addChildrenRepositories(neo4jUrl, childQueryLocations, neoId);
-			System.out.println("Child " + childQueryLocation.toString() + " children are created in neoDB " + ((new Date().getTime()-start.getTime())/1000) + " seconds");
-		}, executor);
-		
+		CompletableFuture<Void> createUnitsNeo = createRepoNeo.thenAcceptAsync((neoId) -> postUnitsNeoDB(neo4jUrl, neoId, childQueryLocation), executor);
+		CompletableFuture<Void> createChildren = loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, neoId) -> addChildrenRepositories(neo4jUrl, childQueryLocations, neoId), executor);
+				
 		createUnitsNeo.thenAcceptBothAsync(createChildren, (void1, void2) -> {
-			System.out.println("Child " + childQueryLocation.toString() + " in " + ((new Date().getTime()-start.getTime())/1000) + " seconds");
+			//TODO: Resource is now available
+			System.out.println("Child " + childQueryLocation.toString() + " created in " + ((new Date().getTime()-start.getTime())/1000) + " seconds");
 			}, executor);
 	}
 	
 	public void addChildrenRepositories(String neo4jUrl, List<URI> childrenLocations, int parentId) {
 		ExecutorService executor = Executors.newCachedThreadPool();
 		for (URI childLocation : childrenLocations) {
-			executor.execute(() -> {
-//				Date start = new Date();
-				addChildRepositoryWithFuture(neo4jUrl, childLocation, parentId, executor);
-//				System.out.println("Child: " + childLocation.toString() + " in " + ((new Date().getTime()-start.getTime())/1000) + " seconds loaded");
-			});
+			executor.execute(() -> addChildRepositoryWithFuture(neo4jUrl, childLocation, parentId, executor));
 		}
 	}
 	
