@@ -50,7 +50,7 @@
         <div class="col-6">
         <h2 class="m-2">Search for Installable Units</h2>
         <form class="form-inline" ng-submit="searchUnits()" name="searchUnitsForm">
-          <input class="form-control m-1" name="unitId" type="text" size="50" id="unitId" ng-model="unitId" ng-pattern='unitIdFormat' ng-change="searchUnits()">
+          <input class="form-control m-1" name="unitId" type="text" size="50" id="unitId" ng-model="unitId" ng-model-options="{debounce:300}" ng-pattern='unitIdFormat' ng-change="searchUnits()">
             <button type="button" class="btn m-1" ng-click="searchUnits()" ng-disabled="searchUnitsForm.unitId.$invalid">Search</button>
         </form>
       </div>
