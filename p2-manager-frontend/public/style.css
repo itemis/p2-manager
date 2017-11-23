@@ -23,3 +23,9 @@ body {
 .spacingElement {
 	visibility: hidden;
 }
+
+.scrollList {
+    overflow-y: scroll;
+    min-height: 100px;
+    max-height: 80vh;
+}
