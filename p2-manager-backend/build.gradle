@@ -26,20 +26,18 @@ repositories {
 }
 
 dependencies {
-    // This dependency is exported to consumers, that is to say found on their compile classpath.
-    api 'org.apache.commons:commons-math3:3.6.1'
+    compile('org.apache.commons:commons-math3:3.6.1')
 
-    // This dependency is used internally, and not exposed to consumers on their own compile classpath.
-    implementation 'com.google.guava:guava:21.0'
+    compile('com.google.guava:guava:21.0')
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.hateoas:spring-hateoas'
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile('org.springframework.hateoas:spring-hateoas')
     
-    implementation 'org.thymeleaf:thymeleaf-spring4'
-    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
+    compile('org.thymeleaf:thymeleaf-spring4')
+    compile('nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect')
     
-    implementation 'io.springfox:springfox-swagger2:2.7.0'
-    implementation 'io.springfox:springfox-swagger-ui:2.7.0'
+    compile('io.springfox:springfox-swagger2:2.7.0')
+    compile('io.springfox:springfox-swagger-ui:2.7.0')
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
@@ -60,8 +58,9 @@ task docker(type: Docker) {
     applicationName = 'p2-manager-backend'
 	entryPoint = ['java -jar /usr/share/p2m/p2-manager-backend.jar']
 	addFile {
-        from 'build/libs/p2-manager-backend-${version}.jar'
-        into '/usr/share/p2m/p2-manager-backend.jar'
+        from 'build/libs'
+        into '/usr/share/p2m'
+        rename {'p2-manager-backend.jar'}
 	}
 	exposePort 8080
 }
