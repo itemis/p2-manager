@@ -34,7 +34,6 @@ import com.itemis.p2queryservice.rest.dto.RepositoryInfoDTO;
 
 import copied.com.ifedorenko.p2browser.model.IGroupedInstallableUnits;
 
-//TODO: look at Http Statuscodes of responses
 @Path("/repositories")
 public class RepositoryService {
 	
@@ -55,7 +54,6 @@ public class RepositoryService {
 		return response.build();
 	}
 
-	//TODO: if there is no repository at the url, no repository should be added
 	@POST
 	public Response addRepo(@Context UriInfo uriInfo, @FormParam("uri") URI uri) {
 		if (uri == null)
@@ -90,6 +88,7 @@ public class RepositoryService {
 				repoInfo.startLoading();
 				data.loadLocation(repoInfo.getUri());
 			}
+			return Response.noContent().build();
 		}
 		ResponseBuilder response = Response.ok(Collections.singletonList(new RepositoryInfoDTO(repoInfo)));
 		if (csv) {

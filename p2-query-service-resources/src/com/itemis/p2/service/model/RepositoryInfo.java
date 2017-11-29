@@ -10,12 +10,10 @@ public class RepositoryInfo {
 	private URI uri;
 	private transient String status;
 	private transient long modificationStamp = -1;
-	private boolean loading;
 	
 	public RepositoryInfo() {
 		this.id = -1;
 		this.status = RepositoryStatus.PENDING;
-		loading = false;
 	}
 
 	public RepositoryInfo(int id, URI uri) {
@@ -23,7 +21,6 @@ public class RepositoryInfo {
 		this.id = id;
 		this.uri = uri;
 		status = RepositoryStatus.ADDED;
-		loading = false;
 	}
 
 	public int getId() {
@@ -52,11 +49,9 @@ public class RepositoryInfo {
 	
 	public void childrenAreLoaded() {
 		if (status.equals(RepositoryStatus.LOADED)) {
-			loading = false;
 			return;
 		}
 		else if (status.equals(RepositoryStatus.UNIT)) {
-			loading = false;
 			status = RepositoryStatus.LOADED;
 		}
 		else {
@@ -66,11 +61,9 @@ public class RepositoryInfo {
 	
 	public void unitsAreLoaded() {
 		if (status.equals(RepositoryStatus.LOADED)) {
-			loading = false;
 			return;
 		}
 		else if (status.equals(RepositoryStatus.CHILD)) {
-			loading = false;
 			status = RepositoryStatus.LOADED;
 		}
 		else {
@@ -103,11 +96,11 @@ public class RepositoryInfo {
 	}
 	
 	public boolean isLoading() {
-		return loading;
+		return status.equals(RepositoryStatus.LOADING) || status.equals(RepositoryStatus.CHILD) || status.equals(RepositoryStatus.UNIT);
 	}
 	
 	public void startLoading() {
-		this.loading = true;
+		this.status = RepositoryStatus.LOADING;
 	}
 
 	@Override

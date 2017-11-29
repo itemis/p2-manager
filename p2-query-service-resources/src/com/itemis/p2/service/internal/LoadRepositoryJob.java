@@ -67,6 +67,7 @@ public class LoadRepositoryJob extends Job {
 			loadRepositoryContent(location, monitor);
 			info("Repository " + location + ": Successfully loaded.");
 		} catch (ProvisionException e) {
+			data.removeLocation(location);
 			errors.add(e.getStatus());
 		} catch (OperationCanceledException e) {
 			data.removeLocation(location);
