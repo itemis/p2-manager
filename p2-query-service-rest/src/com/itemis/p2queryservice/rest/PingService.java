@@ -5,7 +5,7 @@ import javax.ws.rs.Path;
 
 @Path("/ping")
 public class PingService {
-	@Path("/")
+
 	@GET
 	public String ping() {
 		return "pong";
