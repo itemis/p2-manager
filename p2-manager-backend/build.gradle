@@ -48,6 +48,12 @@ group = "itemis"
 sourceCompatibility = 1.8
 version = '1.0-SNAPSHOT'
 
+processResources {
+    from ('public/') {
+        into 'public'
+    }
+}
+
 docker {
     baseImage "openjdk:8-jre"
     maintainer 'Karsten Thoms <karsten.thoms@itemis.de>'
@@ -56,11 +62,10 @@ docker {
 task docker(type: Docker) {
     // The default image tag contains the applicationName
     applicationName = 'p2-manager-backend'
-	entryPoint = ['java -jar /usr/share/p2m/p2-manager-backend.jar']
+	entryPoint = ["java", "-jar", "/usr/share/p2m/p2-manager-backend-${version}.jar"]
 	addFile {
         from 'build/libs'
         into '/usr/share/p2m'
-        rename {'p2-manager-backend.jar'}
 	}
 	exposePort 8080
 }
