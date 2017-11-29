@@ -16,24 +16,17 @@ import java.util.concurrent.Executors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.support.BasicAuthorizationInterceptor;
-import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
-import com.itemis.p2m.backend.constants.RepositoryStatus;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
+import com.itemis.p2m.backend.model.RepositoryProvidesVersion;
 
 @Component
 public class Methods {
@@ -116,7 +109,6 @@ public class Methods {
 	 * @param neoId The id of the repository in the neo4j database.
 	 * @param repoQueryLocation The {@link URI} of the repository under the p2 query service.
 	 */
-	//TODO: Neo is slow
 	public void postUnitsNeoDB(String neo4jUrl, int neoId, URI repoQueryLocation){
 		if (getUnitCountQueryService(repoQueryLocation) == 0) {
 			return;
@@ -126,8 +118,7 @@ public class Methods {
 		queryBuilder.append("MERGE (iu:IU { serviceId: line.id}) ");
 		queryBuilder.append("MERGE (r)-[p:PROVIDES { version: line.version}]->(iu)");
 		Map<String,Object> body = Collections.singletonMap("query", queryBuilder.toString());
-		ObjectNode jsonResult = neoRestTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
-		
+		neoRestTemplate.postForObject(neo4jUrl, body, ObjectNode.class);
 	}
 
 	private void addChildRepositoryWithFuture(String neo4jUrl, URI childQueryLocation, int parentNeoId, ExecutorService executor) {
@@ -141,7 +132,7 @@ public class Methods {
 		CompletableFuture<Void> createChildren = loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, neoId) -> addChildrenRepositories(neo4jUrl, childQueryLocations, neoId), executor);
 				
 		createUnitsNeo.thenAcceptBothAsync(createChildren, (void1, void2) -> {
-			//TODO: Resource is now available
+			//Child is now available in NeoDB
 			System.out.println("Child " + childQueryLocation.toString() + " created in " + ((new Date().getTime()-start.getTime())/1000) + " seconds");
 			}, executor);
 	}
@@ -194,7 +185,6 @@ public class Methods {
 	 */
 	public Integer getUnitCountQueryService(URI repoQueryLocation) {
 		ResponseEntity<Integer> response = queryServiceRestTemplate.getForEntity(repoQueryLocation+"/units/count", Integer.class);
-		int debugCounter = 1;
 		while (response.getStatusCodeValue() == 204) {
 			try {
 				Thread.sleep(250);
@@ -213,6 +203,19 @@ public class Methods {
 		Repository r = new Repository();
 		r.setRepoId(repoData.get(0).asInt());
 		r.setUri(repoData.get(1).asText());
+		
+		// HATEOAS links
+		r.add(linkTo(methodOn(RepositoryController.class).getRepositoryURI(r.getRepoId())).withSelfRel());
+		r.add(linkTo(methodOn(RepositoryController.class).listUnitsInRepository(r.getRepoId())).withRel("installableUnits"));
+		
+		return r;
+	}
+
+	public RepositoryProvidesVersion toRepositoryProvidesVersion(ArrayNode repoData) {
+		RepositoryProvidesVersion r = new RepositoryProvidesVersion();
+		r.setRepoId(repoData.get(0).asInt());
+		r.setUri(repoData.get(1).asText());
+		r.setVersion(repoData.get(2).asText());
 		
 		// HATEOAS links
 		r.add(linkTo(methodOn(RepositoryController.class).getRepositoryURI(r.getRepoId())).withSelfRel());

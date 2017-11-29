@@ -3,8 +3,6 @@ package com.itemis.p2.service.model;
 import com.itemis.p2queryservice.constants.RepositoryStatus;
 import java.net.URI;
 
-import javax.swing.text.rtf.RTFEditorKit;
-
 public class RepositoryInfo {
 	private int id;
 	private URI uri;
@@ -44,6 +42,10 @@ public class RepositoryInfo {
 	}
 	
 	public void addedToQueryService() {
+		status = RepositoryStatus.ADDED;
+	}
+	
+	public void removedFromCache() {
 		status = RepositoryStatus.ADDED;
 	}
 	

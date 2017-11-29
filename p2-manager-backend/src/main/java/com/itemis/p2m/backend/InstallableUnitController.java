@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.itemis.p2m.backend.exceptions.NothingToLoadException;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
+import com.itemis.p2m.backend.model.RepositoryProvidesVersion;
 
 import io.swagger.annotations.ApiOperation;
 
@@ -105,8 +106,24 @@ public class InstallableUnitController {
 		dataNode.forEach((d) -> result.add(methods.toRepository((ArrayNode) d)));
 		return result;
 	}
-	
-	//TODO: method to retrieve all repositories that have a unit in a version between a minimum and maximum
 
-
+	@ApiOperation(value = "List all repositories that contain the installable unit in this version")
+	@RequestMapping(method=RequestMethod.GET, value="/{id}/versions/repositories")
+	List<RepositoryProvidesVersion> listRepositoriesForUnitVersionRange(@PathVariable String id, @RequestParam(value="minVersion", defaultValue="") String versionLow, @RequestParam(value="maxVersion", defaultValue="") String versionHigh) {
+		StringBuilder bodyBuilder = new StringBuilder("MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE iu.serviceId = '");
+		bodyBuilder.append(id);
+		if (!versionLow.isEmpty())
+			bodyBuilder.append("' AND p.version > '").append(versionLow);
+		if (!versionHigh.isEmpty())
+			bodyBuilder.append("' AND p.version < '").append(versionHigh);
+		bodyBuilder.append("' RETURN DISTINCT r.serviceId, r.uri, p.version");
+		Map<String,Object> params = Collections.singletonMap("query", bodyBuilder.toString());
+		
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ArrayNode dataNode = (ArrayNode) _result.get("data");
+		
+		List<RepositoryProvidesVersion> result = new ArrayList<>();
+		dataNode.forEach((d) -> result.add(methods.toRepositoryProvidesVersion((ArrayNode) d)));
+		return result;
+	}
 }

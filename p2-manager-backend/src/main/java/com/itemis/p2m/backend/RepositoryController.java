@@ -12,10 +12,13 @@ import java.util.concurrent.Executors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -45,7 +48,7 @@ public class RepositoryController {
 
 	@ApiOperation(value = "List all repositories")
 	@RequestMapping(method=RequestMethod.GET)
-	List<Repository> listRepositories() {
+	public List<Repository> listRepositories() {
 		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) RETURN DISTINCT r.serviceId,r.uri");
 		
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
@@ -58,7 +61,8 @@ public class RepositoryController {
 	
 	@ApiOperation(value = "Add a new repository")
 	@RequestMapping(method=RequestMethod.POST)
-	URI addRepositoryWithCF(@RequestParam URI uri) throws URISyntaxException {
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public void addRepositoryWithCF(@RequestParam URI uri) throws URISyntaxException {
 		Executor executor = Executors.newCachedThreadPool();
 		URI queryLocation = new URI(queryserviceUrl);
 		
@@ -69,13 +73,11 @@ public class RepositoryController {
 		
 		createRepoNeo.thenAcceptBothAsync(createRepoQueryService, (neoId, repoQueryLocation) -> methods.postUnitsNeoDB(neo4jUrl, neoId, repoQueryLocation), executor);
 		loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, parentNeoId) -> methods.addChildrenRepositories(neo4jUrl, childQueryLocations, parentNeoId), executor);
-		
-		return new URI("http://localhost");//return status code 102 processing
 	}
 	
 	@ApiOperation(value = "Get the uri of a repository")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}")
-	Repository getRepositoryURI(@PathVariable Integer id) {
+	public Repository getRepositoryURI(@PathVariable Integer id) {
 		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)WHERE r.serviceId = '"+id+"' RETURN DISTINCT r.serviceId, r.uri");
 		
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
@@ -86,7 +88,7 @@ public class RepositoryController {
 
 	@ApiOperation(value = "List all installable units available in the repository")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/units")
-	List<InstallableUnit> listUnitsInRepository(@PathVariable Integer id) {
+	public List<InstallableUnit> listUnitsInRepository(@PathVariable Integer id) {
 		List<InstallableUnit> result = new ArrayList<>();
 		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE r.serviceId = '"+id+"' RETURN DISTINCT iu.serviceId,p.version");
 		

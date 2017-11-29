@@ -267,7 +267,6 @@ public class InstallableUnitDAG {
 
 	public void print(PrintStream out) {
 		out.format("root#=%d unit#=%d edge%s\n", rootIUs.length, units.size(), getEdgeCount());
-		// TODO number of paths
 		for (IInstallableUnit root : rootIUs) {
 			print(out, root, 1);
 		}

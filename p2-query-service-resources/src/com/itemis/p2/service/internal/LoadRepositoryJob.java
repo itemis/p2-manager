@@ -91,11 +91,14 @@ public class LoadRepositoryJob extends Job {
 			info("Repository " + location + ": is a composite with " + composite.getChildren().size()
 					+ " children:");
 			for (URI childUri : composite.getChildren()) {
-				// composite repository refresh refreshes all child
-				// repositories. do not re-refresh children
-				// here
 				info ("   - "+childUri);
-				data.addLocation(childUri, false, true);
+				if (data.getRepositoryByUri(location).isPresent()) {
+					if (data.getRepositoryByUri(location).get().isLoaded() || data.getRepositoryByUri(location).get().isLoading())
+						continue;
+				}
+				else {
+					data.addLocation(childUri, false, true);
+				}
 				new LoadRepositoryJob(childUri, data, revealCompositeRepositories, groupIncludedIUs).schedule();
 			}
 		}
@@ -130,11 +133,8 @@ public class LoadRepositoryJob extends Job {
 
 			data.addRepositoryContents(location, new InstallableUnitDependencyTree(dag));
 		}
-		try {
+		if (data.getRepositoryByUri(location).isPresent())
 			data.getRepositoryByUri(location).get().unitsAreLoaded();
-		} catch (NoSuchElementException e) {
-			// TODO: handle exception
-		}
 	}
 
 	protected IStatus toStatus(List<IStatus> errors) {

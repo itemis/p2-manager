@@ -34,9 +34,11 @@ public class RepositoryCleanupJob extends Job {
 		
 		if (!toRemove.isEmpty()) {
 			info ("Cleaning up");
-			toRemove.forEach(r -> data.dispose(r.getUri()));
+			toRemove.forEach(r -> {
+				data.dispose(r.getUri());
+				r.removedFromCache();
+			});
 		}
-		//TODO: Set status of Repositories
 		return Status.OK_STATUS;
 	}
 
