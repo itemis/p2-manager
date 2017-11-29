@@ -41,11 +41,10 @@ docker {
 task docker(type: Docker) {
     // The default image tag contains the applicationName
     applicationName = 'p2-manager-frontend'
-	entryPoint = ['java -jar /usr/share/p2m/p2-manager-frontend.jar']
+	entryPoint = ["java", "-jar", "/usr/share/p2m/p2-manager-frontend-${version}.jar"]
 	addFile {
         from 'build/libs'
         into '/usr/share/p2m'
-        rename {'p2-manager-frontend.jar'}
 	}
 	exposePort 2357
 }
