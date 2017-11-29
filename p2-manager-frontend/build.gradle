@@ -33,6 +33,12 @@ group = "itemis"
 sourceCompatibility = 1.8
 version = '1.0-SNAPSHOT'
 
+processResources {
+    from ('public/') {
+        into 'public'
+    }
+}
+
 docker {
     baseImage "openjdk:8-jre"
     maintainer 'Karsten Thoms <karsten.thoms@itemis.de>'
