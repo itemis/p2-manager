@@ -45,13 +45,17 @@
             <input class="form-control m-1" name="repositoryURL" type="url" size="35" id="repositoryURL" ng-model="repositoryURL" required>
             <button type="button" class="btn m-1" ng-click="addRepository()" ng-disabled="newRepositoryForm.repositoryURL.$invalid">Add</button>
           </form>
+          
+          <h2 class="m-2">Search Repositories</h2>
+          <form class="form-inline" ng-submit="searchRepositories()" name="searchRepositoriesForm">
+            <input class="form-control m-1" name="repoId" type="text" size="50" id="repoId" ng-model="repoId" ng-model-options="{debounce:300}" ng-change="searchRepositories()">
+            <button type="button" class="btn m-1" ng-click="searchRepositories()">Search</button>
+          </form>
 
-          <h2 class="m-2 text-center">Repositories
-              <button type="button" class="btn m-2" ng-click="getRepositories()"><img src="resource/reloadIcon.png" class="align-middle mb-1"></button>
-          </h2>
+          <h2 class="m-2 text-center">Repositories</h2>
 
-          <div class="">
-            <ul class="list-group">
+          <div class="" name="Repositories">
+            <ul class="list-group" infinite-scroll="loadMoreRepositories()" infinite-scroll-use-document-bottom="true" infinite-scroll-parent="false">
               <li class="list-group-item" ng-repeat="repository in repositories | orderBy:'uri'" ng-controller="RepositoryUnitController">
                 <span class="angularButton" ng-click="getUnitsForRepo()" ng-init="showUnits=false">{{repository.uri}}</span>
                 <ul class="list-group" ng-if="showUnits">
@@ -72,7 +76,7 @@
         
         
         <div class="col">
-          <h2 class="m-2">Search for Installable Units</h2>
+          <h2 class="m-2">Search Installable Units</h2>
           <form class="form-inline" ng-submit="searchUnits()" name="searchUnitsForm">
             <input class="form-control m-1" name="unitId" type="text" size="50" id="unitId" ng-model="unitId" ng-model-options="{debounce:300}" ng-pattern='unitIdFormat' ng-change="searchUnits()">
             <button type="button" class="btn m-1" ng-click="searchUnits()" ng-disabled="searchUnitsForm.unitId.$invalid">Search</button>

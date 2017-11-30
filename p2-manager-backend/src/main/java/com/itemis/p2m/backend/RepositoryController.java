@@ -3,6 +3,7 @@ package com.itemis.p2m.backend;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +46,23 @@ public class RepositoryController {
 		this.neoRestTemplate = neoRestTemplate;
 	}
 
-	@ApiOperation(value = "List all repositories")
+	@ApiOperation(value = "List all repositories whose uris match the search terms")
 	@RequestMapping(method=RequestMethod.GET)
-	public List<Repository> listRepositories() {
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) RETURN DISTINCT r.serviceId,r.uri");
+	public List<Repository> listRepositories(@RequestParam(required = false) String[] searchTerm,
+											 @RequestParam(defaultValue = "0") String limit,
+											 @RequestParam(defaultValue = "0") String offset)  {
+		String filter = searchTerm == null ? "" : Arrays.asList(searchTerm).parallelStream()
+														.map((term) -> "r.uri CONTAINS '"+term+"' ")
+														.reduce((term1, term2) -> term1+"AND "+term2)
+														.map((terms) -> "WHERE "+terms)
+														.orElse("");
 		
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) "
+				+ filter
+				+ "RETURN DISTINCT r.serviceId,r.uri "
+				+ "ORDER BY r.serviceId"
+				+ methods.neoResultLimit(limit,  offset));
+
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
