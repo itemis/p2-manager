@@ -55,7 +55,7 @@
           <h2 class="m-2 text-center">Repositories</h2>
 
           <table class="" name="Repositories">
-            <ul class="list-group" infinite-scroll="loadMoreRepositories()" infinite-scroll-use-document-bottom="true" infinite-scroll-parent="false">
+            <ul class="list-group" infinite-scroll="loadMoreRepositories()" infinite-scroll-use-document-bottom="false" infinite-scroll-parent="false" infinite-scroll-distance="1">
               <li class="list-group-item" ng-repeat="repository in repositories | orderBy:'uri'" ng-controller="RepositoryUnitController">
                 <span class="angularButton" ng-click="getUnitsForRepo()" ng-init="showUnits=false">{{repository.uri}}</span>
                 <ul class="list-group" ng-if="showUnits">
@@ -88,7 +88,7 @@
 
           <h2 class="m-3 text-center">Installable Units</h2>
           <table class="" name="Units">
-            <ul class="list-group" infinite-scroll="loadMoreUnits()" infinite-scroll-use-document-bottom="true" infinite-scroll-parent="false">
+            <ul class="list-group" infinite-scroll="loadMoreUnits()" infinite-scroll-use-document-bottom="false" infinite-scroll-parent="false" infinite-scroll-distance="1">
               <li class="list-group-item" ng-repeat="(unitid, units) in units | groupBy: 'unitId' | orderBy:'unitId'">
                 <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
                 <ul class="list-group" ng-if="showVersions">

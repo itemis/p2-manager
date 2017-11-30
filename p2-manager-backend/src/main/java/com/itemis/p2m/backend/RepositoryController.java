@@ -24,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.itemis.p2m.backend.exceptions.NothingToLoadException;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
 
@@ -68,6 +69,10 @@ public class RepositoryController {
 		
 		List<Repository> result = new ArrayList<>();
 		dataNode.forEach((d) -> result.add(methods.toRepository((ArrayNode) d)));
+		
+		if (result.size() == 0)
+			throw new NothingToLoadException();
+		
 		return result;
 	}
 	

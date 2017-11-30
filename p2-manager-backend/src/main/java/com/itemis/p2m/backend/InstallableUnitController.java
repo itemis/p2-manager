@@ -4,10 +4,10 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,13 +51,44 @@ public class InstallableUnitController {
 	List<InstallableUnit> listInstallableUnits(@RequestParam(required = false) String[] searchTerm,
 											   @RequestParam(defaultValue = "0") String limit,
 											   @RequestParam(defaultValue = "0") String offset) {
-		String filter = searchTerm == null ? "" : Arrays.asList(searchTerm).parallelStream()
-														.map((term) -> "iu.serviceId CONTAINS '"+term+"' ")
-														.reduce((term1, term2) -> term1+"AND "+term2)
-														.map((terms) -> "WHERE "+terms)
-														.orElse("");
+		String filter = "";
 		
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH ()-[p:PROVIDES]->(iu:IU) "
+		if (!(searchTerm == null)) {
+			List<String> keywords = new ArrayList<>();
+			Collections.addAll(keywords, searchTerm);
+			List<String> repoKeywords = keywords.parallelStream()
+												.filter(keyword -> keyword.startsWith("repo:"))
+												.collect(Collectors.toList());
+			keywords.removeAll(repoKeywords);
+			
+			String repoFilter = repoKeywords.parallelStream()
+											.filter(keyword -> keyword.length() > 5)
+											.map(keyword -> keyword.substring(5))
+											.map((term) -> "r.uri CONTAINS '"+term+"' ")
+											.reduce((term1, term2) -> term1+"AND "+term2)
+											.orElse("");
+			
+			
+			
+			String unitFilter = keywords.parallelStream()
+										.map(keyword -> "iu.serviceId CONTAINS '"+keyword+"' ")
+										.reduce((keyword1, keyword2) -> keyword1+"AND "+ keyword2)
+										.orElse("");
+			
+			filter += repoFilter;
+			
+			if (!repoFilter.equals("") && !unitFilter.equals("")) {
+				filter += "AND ";
+			}
+			
+			filter += unitFilter;
+			
+			if (!filter.equals("")) {
+				filter = "WHERE " + filter;
+			}
+		}
+		
+		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) "
 																	+ filter
 																	+ "RETURN DISTINCT iu.serviceId, p.version "
 																	+ "ORDER BY iu.serviceId"

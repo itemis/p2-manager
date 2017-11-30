@@ -1,8 +1,9 @@
 "use strict";
 
 const ng = angular.module('com.itemis.p2-manager-frontend', ['angular.filter', 'infinite-scroll']);
-
 const backend = "http://localhost:8080"; // http://localhost:8080 http://p2-manager-backend:8888
+
+angular.module('infinite-scroll').value('THROTTLE_MILLISECONDS', 200)
 
 ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 	
@@ -31,6 +32,10 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 	
 	$scope.loadMoreRepositories = () => {
 		if ($scope.repositoriesAreLoading || $scope.allRepositoriesLoaded) {
+			return;
+		}
+
+		if ($scope.repoId === undefined) {
 			return;
 		}
 		
@@ -69,6 +74,10 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 			return;
 		}
 		
+		if ($scope.unitId === undefined) {
+			return;
+		}
+		
 		$scope.unitsAreLoading = true;
 		const searchQuery = $scope.unitId.split(" ")
 								.map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
@@ -97,7 +106,7 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 	$scope.repoId="";
 	$scope.unitId="";
 	$scope.scrollLoadSize = 20;
-	$scope.unitIdFormat = '[^/"&]*';
+	$scope.unitIdFormat = '[^"&]*';
 	$scope.repositoryURL = "http://www.example.com";
 });
 
