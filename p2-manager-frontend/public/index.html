@@ -38,7 +38,7 @@
       </div>
 
       <div class="row">
-        <div class="col">
+        <div class="col-lg-6">
           <h2 class="m-2">Add Repository</h2>
           <form class="form-inline" ng-submit="addRepository()" name="newRepositoryForm">
             <label class="m-1" for="repositoryURL">Repository URL:</label>
@@ -54,7 +54,7 @@
 
           <h2 class="m-2 text-center">Repositories</h2>
 
-          <div class="" name="Repositories">
+          <table class="" name="Repositories">
             <ul class="list-group" infinite-scroll="loadMoreRepositories()" infinite-scroll-use-document-bottom="true" infinite-scroll-parent="false">
               <li class="list-group-item" ng-repeat="repository in repositories | orderBy:'uri'" ng-controller="RepositoryUnitController">
                 <span class="angularButton" ng-click="getUnitsForRepo()" ng-init="showUnits=false">{{repository.uri}}</span>
@@ -71,11 +71,15 @@
                 </ul>
               </li>
             </ul>
+          </table>
+          <div class="m-3 text-center">
+            <img src="resource/loadingIcon.gif" ng-if="repositoriesAreLoading">
+            <h3 ng-if="allRepositoriesLoaded">You have reached the end</h3>
           </div>
         </div>
         
         
-        <div class="col">
+        <div class="col-lg-6">
           <h2 class="m-2">Search Installable Units</h2>
           <form class="form-inline" ng-submit="searchUnits()" name="searchUnitsForm">
             <input class="form-control m-1" name="unitId" type="text" size="50" id="unitId" ng-model="unitId" ng-model-options="{debounce:300}" ng-pattern='unitIdFormat' ng-change="searchUnits()">
@@ -83,7 +87,7 @@
           </form>
 
           <h2 class="m-3 text-center">Installable Units</h2>
-          <div class="" name="Units">
+          <table class="" name="Units">
             <ul class="list-group" infinite-scroll="loadMoreUnits()" infinite-scroll-use-document-bottom="true" infinite-scroll-parent="false">
               <li class="list-group-item" ng-repeat="(unitid, units) in units | groupBy: 'unitId' | orderBy:'unitId'">
                 <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
@@ -99,10 +103,10 @@
                 </ul>
               </li>
             </ul>
-            <div class="m-3 text-center">
-              <img src="resource/loadingIcon.gif" ng-if="unitsAreLoading">
-              <h3 ng-if="allUnitsLoaded">You have reached the end</h3>
-            </div>
+          </table>
+          <div class="m-3 text-center">
+            <img src="resource/loadingIcon.gif" ng-if="unitsAreLoading">
+            <h3 ng-if="allUnitsLoaded">You have reached the end</h3>
           </div>
         </div>
       </div>

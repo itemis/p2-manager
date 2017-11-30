@@ -2,6 +2,10 @@ body {
 	background-color: #19A9F9
 }
 
+li {
+    word-break: break-all;
+  }
+
 .container {
 	background-color: white
 }
