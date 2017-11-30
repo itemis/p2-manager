@@ -57,7 +57,7 @@
           <table class="" name="Repositories">
             <ul class="list-group" infinite-scroll="loadMoreRepositories()" infinite-scroll-use-document-bottom="false" infinite-scroll-parent="false" infinite-scroll-distance="1">
               <li class="list-group-item" ng-repeat="repository in repositories | orderBy:'uri'" ng-controller="RepositoryUnitController">
-                <span class="angularButton" ng-click="getUnitsForRepo()" ng-init="showUnits=false">{{repository.uri}}</span>
+                <span class="angularButton" ng-click="filterUnitsByRepo()" ng-init="showUnits=false">{{repository.uri}}</span>
                 <ul class="list-group" ng-if="showUnits">
                   <li class="list-group-item" ng-if="unitsInRepository.length <= 0">No units in this repository.</li>
                   <li class="list-group-item" ng-repeat="(unitid, units) in unitsInRepository | groupBy: 'unitId' | orderBy:'unitId'">

@@ -121,6 +121,11 @@ ng.controller('RepositoryUnitController', function($scope, $http) {
 		
 		$scope.showUnits = !$scope.showUnits;
 	}
+	
+	$scope.filterUnitsByRepo = () => {
+		$scope.$parent.$parent.unitId = "repo:"+$scope.repository.uri;
+		$scope.$parent.$parent.searchUnits();
+	}
 });
 
 ng.controller('UnitController', function($scope, $http, $timeout) {
