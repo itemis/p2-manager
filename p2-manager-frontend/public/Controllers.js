@@ -35,16 +35,16 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 			return;
 		}
 
-		if ($scope.repoId === undefined) {
+		if ($scope.repoSearch.keywords === undefined) {
 			return;
 		}
 		
 		$scope.repositoriesAreLoading = true;
-		const searchQuery = $scope.repoId.split(" ")
+		const searchQuery = $scope.repoSearch.keywords.split(" ")
 								.map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
 								.reduce((keyword1, keyword2) => keyword1+"&"+keyword2);
 								
-		$http.get(backend+'/repositories?limit='+$scope.scrollLoadSize
+		$http.get(backend+'/repositories?topLevelOnly=true&limit='+$scope.scrollLoadSize
 												+"&offset="+$scope.repositories.length
 												+"&"+searchQuery)
 		.then(response => {
@@ -74,12 +74,12 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 			return;
 		}
 		
-		if ($scope.unitId === undefined) {
+		if ($scope.unitSearch.keywords === undefined) {
 			return;
 		}
 		
 		$scope.unitsAreLoading = true;
-		const searchQuery = $scope.unitId.split(" ")
+		const searchQuery = $scope.unitSearch.keywords.split(" ")
 								.map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
 								.reduce((keyword1, keyword2) => keyword1+"&"+keyword2);
 
@@ -103,8 +103,8 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 	$scope.allUnitsLoaded = false;
 	$scope.units = [];
 	$scope.repositories = [];
-	$scope.repoId="";
-	$scope.unitId="";
+	$scope.repoSearch={"keywords":""};
+	$scope.unitSearch={"keywords":""};
 	$scope.scrollLoadSize = 20;
 	$scope.unitIdFormat = '[^"&]*';
 	$scope.repositoryURL = "http://www.example.com";
@@ -122,9 +122,20 @@ ng.controller('RepositoryUnitController', function($scope, $http) {
 		$scope.showUnits = !$scope.showUnits;
 	}
 	
+	$scope.getChildrenOfRepo = () => {
+		if (!$scope.repository.showChildren)
+			$http.get(backend+'/repositories/'+$scope.repository.repoId+'/children').
+				then(response => {
+					$scope.repository.children = response.data;
+				});
+		
+		$scope.repository.showChildren = !$scope.repository.showChildren;
+	}
+	
 	$scope.filterUnitsByRepo = () => {
-		$scope.$parent.$parent.unitId = "repo:"+$scope.repository.uri;
-		$scope.$parent.$parent.searchUnits();
+		//TODO: remove the "$parent" hack
+		$scope.unitSearch.keywords = "repo:"+$scope.repository.uri;
+		$scope.searchUnits();
 	}
 });
 

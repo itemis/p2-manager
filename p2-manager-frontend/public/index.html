@@ -27,7 +27,15 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
 
     <!-- P2-Manager Frontend Logic -->
-     <script src="Controllers.js"></script>
+    <script src="Controllers.js"></script>
+
+    <!-- Repository Template -->
+    <script type="text/ng-template"  id="repositoryTemplate.html">
+      <span class="angularButton" ng-click="filterUnitsByRepo(); getChildrenOfRepo()" ng-init="repository.showChildren=false">{{repository.uri}}</span>
+      <ul class="list-group" ng-if="repository.showChildren && (repository.children.length > 0)">
+        <li class="list-group-item" ng-repeat="repository in repository.children" ng-include="'repositoryTemplate.html'" ng-controller="RepositoryUnitController"></li>
+      </ul>
+    </script>
   </head>
 
   <body>
@@ -48,7 +56,7 @@
           
           <h2 class="m-2">Search Repositories</h2>
           <form class="form-inline" ng-submit="searchRepositories()" name="searchRepositoriesForm">
-            <input class="form-control m-1" name="repoId" type="text" size="50" id="repoId" ng-model="repoId" ng-model-options="{debounce:300}" ng-change="searchRepositories()">
+            <input class="form-control m-1" name="repoId" type="text" size="50" id="repoId" ng-model="repoSearch.keywords" ng-model-options="{debounce:300}" ng-change="searchRepositories()">
             <button type="button" class="btn m-1" ng-click="searchRepositories()">Search</button>
           </form>
 
@@ -56,9 +64,9 @@
 
           <table class="" name="Repositories">
             <ul class="list-group" infinite-scroll="loadMoreRepositories()" infinite-scroll-use-document-bottom="false" infinite-scroll-parent="false" infinite-scroll-distance="1">
-              <li class="list-group-item" ng-repeat="repository in repositories | orderBy:'uri'" ng-controller="RepositoryUnitController">
-                <span class="angularButton" ng-click="filterUnitsByRepo()" ng-init="showUnits=false">{{repository.uri}}</span>
-                <ul class="list-group" ng-if="showUnits">
+              <li class="list-group-item" ng-repeat="repository in repositories | orderBy:'uri'" ng-include="'repositoryTemplate.html'" ng-controller="RepositoryUnitController">
+
+                <!--                 <ul class="list-group" ng-if="showUnits">
                   <li class="list-group-item" ng-if="unitsInRepository.length <= 0">No units in this repository.</li>
                   <li class="list-group-item" ng-repeat="(unitid, units) in unitsInRepository | groupBy: 'unitId' | orderBy:'unitId'">
                     <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
@@ -68,7 +76,7 @@
                       </li>
                     </ul>
                   </li>
-                </ul>
+                </ul> -->
               </li>
             </ul>
           </table>
@@ -82,7 +90,7 @@
         <div class="col-lg-6">
           <h2 class="m-2">Search Installable Units</h2>
           <form class="form-inline" ng-submit="searchUnits()" name="searchUnitsForm">
-            <input class="form-control m-1" name="unitId" type="text" size="50" id="unitId" ng-model="unitId" ng-model-options="{debounce:300}" ng-pattern='unitIdFormat' ng-change="searchUnits()">
+            <input class="form-control m-1" name="unitId" type="text" size="50" id="unitId" ng-model="unitSearch.keywords" ng-model-options="{debounce:300}" ng-pattern='unitIdFormat' ng-change="searchUnits()">
             <button type="button" class="btn m-1" ng-click="searchUnits()" ng-disabled="searchUnitsForm.unitId.$invalid">Search</button>
           </form>
 
