@@ -235,6 +235,7 @@ public class Methods {
 		return iu;
 	}
 	
+	@Deprecated // use Neo4JQueryBuilder instead
 	public String neoResultLimit(String limit, String offset) {
 		return (Integer.parseInt(offset) <= 0 ? "" : " SKIP "+offset)
 			 + (Integer.parseInt(limit) <= 0 ? "" : " LIMIT "+limit);
