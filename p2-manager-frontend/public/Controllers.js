@@ -7,6 +7,18 @@ angular.module('infinite-scroll').value('THROTTLE_MILLISECONDS', 200)
 
 ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 	
+		$scope.repositoriesAreLoading = false;
+		$scope.allRepositoriesLoaded = false;
+		$scope.unitsAreLoading = false;
+		$scope.allUnitsLoaded = false;
+		$scope.units = [];
+		$scope.repositories = [];
+		$scope.repoSearch={"keywords":""};
+		$scope.unitSearch={"keywords":""};
+		$scope.scrollLoadSize = 20;
+		$scope.unitIdFormat = '[^"&]*';
+		$scope.repositoryURL = "http://www.example.com";
+	
 	//TODO allow input without "http://" to be automatically completed
 	$scope.addRepository = () => {
 		$http.post(backend+"/repositories?uri="+$scope.repositoryURL).
@@ -102,57 +114,27 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 		$scope.searchUnits();
 	}
 
-	$scope.repositoriesAreLoading = false;
-	$scope.allRepositoriesLoaded = false;
-	$scope.unitsAreLoading = false;
-	$scope.allUnitsLoaded = false;
-	$scope.units = [];
-	$scope.repositories = [];
-	$scope.repoSearch={"keywords":""};
-	$scope.unitSearch={"keywords":""};
-	$scope.scrollLoadSize = 20;
-	$scope.unitIdFormat = '[^"&]*';
-	$scope.repositoryURL = "http://www.example.com";
-});
-
-ng.controller('RepositoryUnitController', function($scope, $http) {
-	
-	$scope.getUnitsForRepo = () => {
-		if (!$scope.showUnits)
-			$http.get(backend+'/repositories/'+$scope.repository.repoId+'/units').
+	$scope.getChildrenOfRepo = (repository) => {
+		if (!repository.childrenLoaded) {
+			$http.get(backend+'/repositories/'+repository.repoId+'/children').
 				then(response => {
-					$scope.unitsInRepository = response.data;
+					repository.children = response.data;
 				});
-		
-		$scope.showUnits = !$scope.showUnits;
-	}
-	
-	$scope.getChildrenOfRepo = () => {
-		if (!$scope.repository.childrenLoaded) {
-			$http.get(backend+'/repositories/'+$scope.repository.repoId+'/children').
-				then(response => {
-					$scope.repository.children = response.data;
-				});
-				$scope.repository.childrenLoaded = true;
+				repository.childrenLoaded = true;
 		}
 		
-		$scope.repository.showChildren = !$scope.repository.showChildren;
+		repository.showChildren = !repository.showChildren;
 	}
-});
 
-ng.controller('UnitController', function($scope, $http, $timeout) {
-	
-	$scope.getRepositoriesForVersion = () => {
-		if (!$scope.repositoriesLoaded) {
-			$http.get(backend+'/units/'+$scope.unit.unitId+'/versions/'+$scope.unit.version+"/repositories").
+	$scope.getRepositoriesForVersion = (unit) => {
+		if (!unit.repositoriesLoaded) {
+			$http.get(backend+'/units/'+unit.unitId+'/versions/'+unit.version+"/repositories").
 				then(response => {
-					$scope.repositoriesWithVersion = response.data;
+					unit.repositoriesWithVersion = response.data;
 				});
-			$scope.repositoriesLoaded = true;
+				unit.repositoriesLoaded = true;
 		}
 		
-		$scope.showRepositories = !$scope.showRepositories;
+		unit.showRepositories = !unit.showRepositories;
 	}
-
-	$scope.repositoriesLoaded = false;
 });
