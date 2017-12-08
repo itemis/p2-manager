@@ -67,7 +67,7 @@ public class BackendMockTest {
     public void returnEmptyArrayIfNeoHasNoRepositories() throws Exception {
     	this.setupResponse("{\"data\":[]}");
 		
-        this.mockMvc.perform(get("/repositories")).andDo(print()).andExpect(status().isOk()).andExpect(content().json("[]"));
+        this.mockMvc.perform(get("/repositories")).andDo(print()).andExpect(status().isNoContent()).andExpect(content().string(""));
     }
 
     @Test
