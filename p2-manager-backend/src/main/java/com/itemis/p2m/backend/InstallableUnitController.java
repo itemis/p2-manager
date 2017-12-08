@@ -51,7 +51,14 @@ public class InstallableUnitController {
 	List<InstallableUnit> listInstallableUnits(@RequestParam(required = false) String[] searchTerm,
 											   @RequestParam(defaultValue = "0") String limit,
 											   @RequestParam(defaultValue = "0") String offset) {
-		String filter = "";
+
+		Neo4JQueryBuilder query = new Neo4JQueryBuilder();
+
+		query.match("(r:Repository)-[p:PROVIDES]->(iu:IU)")
+			 .result("iu.serviceId, p.version")
+			 .orderBy("iu.serviceId")
+			 .limit(limit, offset)
+			 .distinct();
 		
 		if (!(searchTerm == null)) {
 			List<String> keywords = new ArrayList<>();
@@ -59,42 +66,20 @@ public class InstallableUnitController {
 			List<String> repoKeywords = keywords.parallelStream()
 												.filter(keyword -> keyword.startsWith("repo:"))
 												.collect(Collectors.toList());
-			keywords.removeAll(repoKeywords);
+
+			keywords.parallelStream()
+					.filter(k -> !repoKeywords.contains(k))
+					.map(k -> "iu.serviceId CONTAINS '"+k+"'")
+					.forEach(k -> query.filter(k));
 			
-			String repoFilter = repoKeywords.parallelStream()
-											.filter(keyword -> keyword.length() > 5)
-											.map(keyword -> keyword.substring(5))
-											.map((term) -> "r.uri CONTAINS '"+term+"' ")
-											.reduce((term1, term2) -> term1+"AND "+term2)
-											.orElse("");
-			
-			
-			
-			String unitFilter = keywords.parallelStream()
-										.map(keyword -> "iu.serviceId CONTAINS '"+keyword+"' ")
-										.reduce((keyword1, keyword2) -> keyword1+"AND "+ keyword2)
-										.orElse("");
-			
-			filter += repoFilter;
-			
-			if (!repoFilter.equals("") && !unitFilter.equals("")) {
-				filter += "AND ";
-			}
-			
-			filter += unitFilter;
-			
-			if (!filter.equals("")) {
-				filter = "WHERE " + filter;
-			}
+			repoKeywords.parallelStream()
+						.filter(k -> k.length() > 5)
+						.map(k -> k.substring(5))
+						.map(k -> "r.uri CONTAINS '"+k+"' ")
+						.forEach(k -> query.filter(k));
 		}
 		
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) "
-																	+ filter
-																	+ "RETURN DISTINCT iu.serviceId, p.version "
-																	+ "ORDER BY iu.serviceId"
-																	+ methods.neoResultLimit(limit,  offset));
-		
-		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<InstallableUnit> result = new ArrayList<>();
@@ -114,9 +99,12 @@ public class InstallableUnitController {
 	@ApiOperation(value = "List all available versions of the installable unit")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/versions")
 	List<InstallableUnit> listVersionsForInstallableUnit(@PathVariable String id) {
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE iu.serviceId = '"+id+"' RETURN DISTINCT iu.serviceId, p.version");
+		Neo4JQueryBuilder query = new Neo4JQueryBuilder().match("(r:Repository)-[p:PROVIDES]->(iu:IU)")
+														 .filter("iu.serviceId = '"+id+"'")
+														 .result("iu.serviceId, p.version")
+														 .distinct();
 		
-		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<InstallableUnit> result = new ArrayList<>();
@@ -128,9 +116,13 @@ public class InstallableUnitController {
 	@ApiOperation(value = "List all repositories that contain the installable unit in this version")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/versions/{version}/repositories")
 	List<Repository> listRepositoriesForUnitVersion(@PathVariable String id, @PathVariable String version) {
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE iu.serviceId = '"+id+"' AND p.version = '"+version+"' RETURN DISTINCT r.serviceId, r.uri");
+		Neo4JQueryBuilder query = new Neo4JQueryBuilder().match("(r:Repository)-[p:PROVIDES]->(iu:IU)")
+				 										 .filter("iu.serviceId = '"+id+"'")
+				 										 .filter("p.version = '"+version+"'")
+				 										 .result("r.serviceId, r.uri")
+				 										 .distinct();
 		
-		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<Repository> result = new ArrayList<>();
@@ -141,16 +133,16 @@ public class InstallableUnitController {
 	@ApiOperation(value = "List all repositories that contain the installable unit in this version")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/versions/repositories")
 	List<RepositoryProvidesVersion> listRepositoriesForUnitVersionRange(@PathVariable String id, @RequestParam(value="minVersion", defaultValue="") String versionLow, @RequestParam(value="maxVersion", defaultValue="") String versionHigh) {
-		StringBuilder bodyBuilder = new StringBuilder("MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE iu.serviceId = '");
-		bodyBuilder.append(id);
+		Neo4JQueryBuilder query = new Neo4JQueryBuilder().match("(r:Repository)-[p:PROVIDES]->(iu:IU)")
+														 .filter("iu.serviceId = '"+id+"'")
+														 .result("r.serviceId, r.uri, p.version")
+														 .distinct();
 		if (!versionLow.isEmpty())
-			bodyBuilder.append("' AND p.version > '").append(versionLow);
+			query.filter("p.version > '"+versionLow+"'");
 		if (!versionHigh.isEmpty())
-			bodyBuilder.append("' AND p.version < '").append(versionHigh);
-		bodyBuilder.append("' RETURN DISTINCT r.serviceId, r.uri, p.version");
-		Map<String,Object> params = Collections.singletonMap("query", bodyBuilder.toString());
+			query.filter("p.version < '"+versionHigh+"'");
 		
-		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<RepositoryProvidesVersion> result = new ArrayList<>();

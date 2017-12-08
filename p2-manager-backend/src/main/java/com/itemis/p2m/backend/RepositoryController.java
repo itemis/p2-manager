@@ -58,22 +58,17 @@ public class RepositoryController {
 														 .distinct()
 														 .orderBy("r.serviceId")
 														 .limit(limit, offset);
-		
-		for (String term : searchTerm) {
-			query.filterContains("r.uri", term);
+		if (searchTerm != null) {
+			for (String term : searchTerm) {
+				query.filterContains("r.uri", term);
+			}
 		}
 		
 		if (topLevelOnly) {
 			query.filter("size(()-[:PARENT_OF]->(r)) = 0");
 		}
 
-		System.out.println(query.build());
-		
-		Map<String,Object> params = Collections.singletonMap("query", query.build());
-		
-		System.out.println(params.get("query"));
-
-		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<Repository> result = new ArrayList<>();
@@ -104,9 +99,12 @@ public class RepositoryController {
 	@ApiOperation(value = "Get the uri of a repository")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}")
 	public Repository getRepositoryURI(@PathVariable Integer id) {
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)WHERE r.serviceId = '"+id+"' RETURN DISTINCT r.serviceId, r.uri");
+		Neo4JQueryBuilder query = new Neo4JQueryBuilder().match("(r:Repository)")
+														 .filter("r.serviceId = '"+id+"'")
+														 .result("r.serviceId, r.uri")
+														 .distinct();
 		
-		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		return methods.toRepository((ArrayNode)dataNode.get(0));
@@ -116,9 +114,12 @@ public class RepositoryController {
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/units")
 	public List<InstallableUnit> listUnitsInRepository(@PathVariable Integer id) {
 		List<InstallableUnit> result = new ArrayList<>();
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository)-[p:PROVIDES]->(iu:IU) WHERE r.serviceId = '"+id+"' RETURN DISTINCT iu.serviceId,p.version");
+		Neo4JQueryBuilder query = new Neo4JQueryBuilder().match("(r:Repository)-[p:PROVIDES]->(iu:IU)")
+				 										 .filter("r.serviceId = '"+id+"'")
+				 										 .result("iu.serviceId,p.version")
+				 										 .distinct();
 		
-		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 				
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		dataNode.forEach((d) -> result.add(methods.toUnit((ArrayNode)d)));
@@ -128,12 +129,13 @@ public class RepositoryController {
 	@ApiOperation(value = "List all child repositories of this repository")
 	@RequestMapping(method=RequestMethod.GET, value="/{id}/children")
 	public List<Repository> listChildren(@PathVariable Integer id)  {
-		Map<String,Object> params = Collections.singletonMap("query", "MATCH (r:Repository) -[]-> (c:Repository) "
-				+ "WHERE r.serviceId = '"+id+"' "
-				+ "RETURN DISTINCT c.serviceId,c.uri "
-				+ "ORDER BY c.serviceId");
+		Neo4JQueryBuilder query = new Neo4JQueryBuilder().match("(r:Repository) -[]-> (c:Repository)")
+				 										 .filter("r.serviceId = '"+id+"'")
+				 										 .result("c.serviceId,c.uri")
+				 										 .orderBy("c.serviceId")
+				 										 .distinct();
 
-		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, params, ObjectNode.class);
+		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<Repository> result = new ArrayList<>();
