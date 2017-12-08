@@ -31,7 +31,7 @@
 
     <!-- Repository Template -->
     <script type="text/ng-template"  id="repositoryTemplate.html">
-      <span class="angularButton" ng-click="filterUnitsByRepo(); getChildrenOfRepo()" ng-init="repository.showChildren=false">{{repository.uri}}</span>
+      <span class="angularButton" ng-click="filterUnitsByRepo(repository); getChildrenOfRepo()" ng-init="repository.showChildren=false; repository.childrenLoaded=false">{{repository.uri}}</span>
       <ul class="list-group" ng-if="repository.showChildren && (repository.children.length > 0)">
         <li class="list-group-item" ng-repeat="repository in repository.children" ng-include="'repositoryTemplate.html'" ng-controller="RepositoryUnitController"></li>
       </ul>
@@ -104,7 +104,7 @@
                     <span class="angularButton" ng-click="getRepositoriesForVersion()" ng-init="showVersions=false">{{unit.version}}</span>
                     <ul class="list-group" ng-if="showRepositories">
                       <li class="list-group-item" ng-repeat="repository in repositoriesWithVersion">
-                        {{repository.uri}}
+                        <span class="angularButton" ng-click="filterUnitsByRepo(repository)">{{repository.uri}}</span>
                       </li>
                     </ul>
                   </li>

@@ -96,6 +96,11 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 			}
 		});
 	}
+	
+	$scope.filterUnitsByRepo = (repo) => {
+		$scope.unitSearch.keywords = "repo:"+repo.uri;
+		$scope.searchUnits();
+	}
 
 	$scope.repositoriesAreLoading = false;
 	$scope.allRepositoriesLoaded = false;
@@ -123,19 +128,15 @@ ng.controller('RepositoryUnitController', function($scope, $http) {
 	}
 	
 	$scope.getChildrenOfRepo = () => {
-		if (!$scope.repository.showChildren)
+		if (!$scope.repository.childrenLoaded) {
 			$http.get(backend+'/repositories/'+$scope.repository.repoId+'/children').
 				then(response => {
 					$scope.repository.children = response.data;
 				});
+				$scope.repository.childrenLoaded = true;
+		}
 		
 		$scope.repository.showChildren = !$scope.repository.showChildren;
-	}
-	
-	$scope.filterUnitsByRepo = () => {
-		//TODO: remove the "$parent" hack
-		$scope.unitSearch.keywords = "repo:"+$scope.repository.uri;
-		$scope.searchUnits();
 	}
 });
 
