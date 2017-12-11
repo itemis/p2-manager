@@ -5,7 +5,7 @@ const backend = "http://localhost:8080"; // http://localhost:8080 http://p2-mana
 
 angular.module('infinite-scroll').value('THROTTLE_MILLISECONDS', 200)
 
-ng.controller('P2MController', function($scope, $http, $timeout, $q) {
+ng.controller('P2MController', function($scope, $http, $timeout, shoppingCart, $q) {
 	
 		$scope.repositoriesAreLoading = false;
 		$scope.allRepositoriesLoaded = false;
@@ -18,6 +18,8 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 		$scope.scrollLoadSize = 20;
 		$scope.unitIdFormat = '[^"&]*';
 		$scope.repositoryURL = "http://www.example.com";
+
+		$scope.neededRepositories = {};
 	
 	//TODO allow input without "http://" to be automatically completed
 	$scope.addRepository = () => {
@@ -137,4 +139,43 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 		
 		unit.showRepositories = !unit.showRepositories;
 	}
+
+	$scope.getTestUnits = () => {
+		shoppingCart.reset();
+		shoppingCart.addUnit($scope.units[0]);
+		shoppingCart.addUnit($scope.units[1]);
+		shoppingCart.getRepos($scope.neededRepositories);
+	}
+});
+
+ng.factory("shoppingCart", function ($http) {
+	return {
+		units: [],
+
+		addUnit: function (unit) {
+			this.units.push(unit);
+		},
+		
+		getUnits: function () {
+			return this.units;
+		},
+		
+		removeUnit: function (unit) {
+			this.units = this.units.filter(u => u !== unit);
+		},
+
+		reset: function () {
+			this.units = [];
+		},
+		
+		getRepos: function (repoList) {
+			let query = this.units.map(u => 'shoppingCart='+u.unitId+'+'+u.version)
+							  .reduce((acc, current) => acc+'&'+current);
+
+			$http.get(backend+'/repositories?'+query).
+			then(response => {
+				repoList.items = response.data;
+			});
+		}
+	};
 });

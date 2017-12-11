@@ -42,10 +42,13 @@ public class RepositoryController {
 	
 	private QueryServiceHandler handler;
 
+	private ShoppingCartOptimizer optimizer;
+
 	private RestTemplate neoRestTemplate;	
 	
-	public RepositoryController(QueryServiceHandler handler, @Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
+	public RepositoryController(QueryServiceHandler handler, ShoppingCartOptimizer optimizer, @Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
 		this.handler = handler;
+		this.optimizer = optimizer;
 		this.neoRestTemplate = neoRestTemplate;
 	}
 
@@ -75,14 +78,11 @@ public class RepositoryController {
 		if (shoppingCart != null) {
 			List<InstallableUnit> units = new ArrayList<>();
 			for(String item : shoppingCart) {
-				try {
-					units.add(new ObjectMapper().readValue(item, InstallableUnit.class));
-					
-				} catch (IOException e) {
-					e.printStackTrace();
-					throw new InvalidInputException();
-				}
+				System.out.println(item);
+				String[] parsedItem = item.split(" ");
+				units.add(new InstallableUnit(parsedItem[0], parsedItem[1]));
 			}
+			return optimizer.getRepositoryList(units);
 		}
 
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
