@@ -5,7 +5,7 @@ const backend = "http://localhost:8080"; // http://localhost:8080 http://p2-mana
 
 angular.module('infinite-scroll').value('THROTTLE_MILLISECONDS', 200)
 
-ng.controller('P2MController', function($scope, $http, $timeout, shoppingCart, $q) {
+ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 	
 		$scope.repositoriesAreLoading = false;
 		$scope.allRepositoriesLoaded = false;
@@ -13,13 +13,15 @@ ng.controller('P2MController', function($scope, $http, $timeout, shoppingCart, $
 		$scope.allUnitsLoaded = false;
 		$scope.units = [];
 		$scope.repositories = [];
+		$scope.unitsInCart = [];
+		$scope.neededRepositories = [];
 		$scope.repoSearch={"keywords":""};
 		$scope.unitSearch={"keywords":""};
 		$scope.scrollLoadSize = 20;
 		$scope.unitIdFormat = '[^"&]*';
 		$scope.repositoryURL = "http://www.example.com";
+		$scope.activeView = "browsing";
 
-		$scope.neededRepositories = {};
 	
 	//TODO allow input without "http://" to be automatically completed
 	$scope.addRepository = () => {
@@ -139,43 +141,39 @@ ng.controller('P2MController', function($scope, $http, $timeout, shoppingCart, $
 		
 		unit.showRepositories = !unit.showRepositories;
 	}
-
-	$scope.getTestUnits = () => {
-		shoppingCart.reset();
-		shoppingCart.addUnit($scope.units[0]);
-		shoppingCart.addUnit($scope.units[1]);
-		shoppingCart.getRepos($scope.neededRepositories);
-	}
-});
-
-ng.factory("shoppingCart", function ($http) {
-	return {
-		units: [],
-
-		addUnit: function (unit) {
-			this.units.push(unit);
-		},
-		
-		getUnits: function () {
-			return this.units;
-		},
-		
-		removeUnit: function (unit) {
-			this.units = this.units.filter(u => u !== unit);
-		},
-
-		reset: function () {
-			this.units = [];
-		},
-		
-		getRepos: function (repoList) {
-			let query = this.units.map(u => 'shoppingCart='+u.unitId+'+'+u.version)
-							  .reduce((acc, current) => acc+'&'+current);
-
-			$http.get(backend+'/repositories?'+query).
-			then(response => {
-				repoList.items = response.data;
-			});
+	
+	$scope.$watch('unitsInCart.length', function(oldValue, newValue) {
+		if ($scope.unitsInCart === undefined || $scope.unitsInCart.length === 0) {
+			$scope.neededRepositories = [];
+			return;
 		}
-	};
+
+		let query = $scope.unitsInCart.map(u => 'shoppingCart='+u.unitId+'+'+u.version)
+							.reduce((acc, current) => acc+'&'+current);
+
+		$http.get(backend+'/repositories?'+query).
+		then(response => {
+			$scope.neededRepositories = response.data;
+		});
+	});
+
+	$scope.addUnitToCart = (unit) => {
+		if (!$scope.unitsInCart.includes(unit)) {
+			$scope.unitsInCart.push(unit);
+		}
+		unit.isAdded = true;
+	}
+	
+	$scope.removeUnitFromCart = (unit) => {
+		$scope.unitsInCart = $scope.unitsInCart.filter(u => u !== unit);
+		unit.isAdded = false;
+	}
+
+	$scope.switchToCart = () => {
+		$scope.activeView = "shoppingCart";
+	}
+	
+	$scope.switchToBrowsing = () => {
+		$scope.activeView = "browsing";
+	}
 });

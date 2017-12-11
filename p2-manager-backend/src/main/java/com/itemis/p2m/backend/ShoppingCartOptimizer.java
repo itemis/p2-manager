@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
+
+//TODO: write tests for this class
 
 @Component
 public class ShoppingCartOptimizer {
@@ -36,6 +39,7 @@ public class ShoppingCartOptimizer {
 	public List<Repository> getRepositoryList(List<InstallableUnit> units) {
 		// trivial implementation: for all units -> retrieve list of all repositories that have that unit -> pick one
 		//TODO: smarter implementation that compiles a minimal list of repositories
+		//approximation: greedy, take whatever repo covers most units, iterate until all units are covered
 		
 		List<Repository> result = new ArrayList<>();
 		
@@ -49,7 +53,16 @@ public class ShoppingCartOptimizer {
 			ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 			ArrayNode dataNode = (ArrayNode) _result.get("data");
 			
-			result.add(new Repository((ArrayNode)dataNode.get(0)));
+			boolean unitIsAlreadyCovered = false;
+			for (JsonNode n : dataNode) {
+				Repository repo = new Repository((ArrayNode)n);
+				if (result.stream().anyMatch(r -> r.getUri().equals(repo.getUri()))) {
+					unitIsAlreadyCovered = true;
+				}
+			};
+			if (!unitIsAlreadyCovered) {
+				result.add(new Repository((ArrayNode)dataNode.get(0)));
+			}
 		});
 
 		return result;

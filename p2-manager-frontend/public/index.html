@@ -16,7 +16,7 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 
     <!-- Angular.js -->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
 
     <!-- ngInfiniteScroll -->
@@ -43,10 +43,16 @@
       <div class="m-3">
         <h1 class="display-3 p-4 text-center">p2-Manager</h1>
         <hr>
+        <div id="navbar" class="text-right">
+          <button type="button" class="btn" ng-click="switchToCart()" ng-if="activeView === 'browsing'">Cart</button>
+          <button type="button" class="btn" ng-click="switchToBrowsing()" ng-if="activeView === 'shoppingCart'">Home</button>
+        </div>
+        <hr>
       </div>
 
-      <div class="row">
+      <div class="row" ng-show="activeView === 'browsing'">
         <div class="col-lg-6">
+          <!-- TODO: put this in a dedicated view reachable from the navbar -->
           <h2 class="m-2">Add Repository</h2>
           <form class="form-inline" ng-submit="addRepository()" name="newRepositoryForm">
             <label class="m-1" for="repositoryURL">Repository URL:</label>
@@ -82,26 +88,16 @@
             <button type="button" class="btn m-1" ng-click="searchUnits()" ng-disabled="searchUnitsForm.unitId.$invalid">Search</button>
           </form>
 
-          <!-- <TESTING> -->
-          <h2 class="m-2">Get necessary Repositories</h2>
-          <form class="form-inline" ng-submit="getTestUnits()">
-            <button type="button" class="btn m-1" ng-click="getTestUnits()" ng-disabled="searchUnitsForm.unitId.$invalid">Test</button>
-          </form>
-          <ul class="list-group">
-            <li class="list-group-item" ng-repeat="repository in neededRepositories.items | orderBy:'uri'">
-                {{repository.uri}}
-            </li>
-          </ul>   
-          <!-- </TESTING> -->
-
           <h2 class="m-3 text-center">Installable Units</h2>
           <table class="" name="Units">
             <ul class="list-group" infinite-scroll="loadMoreUnits()" infinite-scroll-use-document-bottom="false" infinite-scroll-parent="false" infinite-scroll-distance="1">
               <li class="list-group-item" ng-repeat="(unitid, units) in units | groupBy: 'unitId' | orderBy:'unitId'">
                 <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
-                <ul class="list-group" ng-if="showVersions">
-                  <li class="list-group-item" ng-repeat="unit in units" ng-init="unit.repositoriesLoaded=false">
+                <ul class="list-group" ng-show="showVersions">
+                  <li class="list-group-item" ng-repeat="unit in units" ng-init="unit.repositoriesLoaded=false; unit.isAdded=false">
                     <span class="angularButton" ng-click="getRepositoriesForVersion(unit)" ng-init="unit.showRepositories=false">{{unit.version}}</span>
+                    <button type="button" class="btn m-1" ng-if="!unit.isAdded" ng-click="addUnitToCart(unit)">Add to cart</button>
+                    <button type="button" class="btn m-1" ng-if="unit.isAdded" ng-click="removeUnitFromCart(unit)">Remove from cart</button>
                     <ul class="list-group" ng-if="unit.showRepositories">
                       <li class="list-group-item" ng-repeat="repository in unit.repositoriesWithVersion">
                         <span class="angularButton" ng-click="filterUnitsByRepo(repository)">{{repository.uri}}</span>
@@ -117,6 +113,27 @@
             <h3 ng-if="allUnitsLoaded">You have reached the end</h3>
           </div>
         </div>
+      </div>
+
+      <div class="row" ng-show="activeView === 'shoppingCart'">
+        <div class="col-lg-6">
+          <h2 class="m-2">Units in cart</h2>
+          <ul class="list-group">
+            <li class="list-group-item" ng-repeat="unit in unitsInCart | orderBy:'unitId'">
+              <span>{{unit.unitId}} -</span>
+              <span>{{unit.version}}</span>
+              <button type="button" class="btn m-1" ng-click="removeUnitFromCart(unit)">Remove from cart</button>
+            </li>
+          </ul> 
+        </div> 
+        <div class="col-lg-6">
+          <h2 class="m-2">Required repositories</h2>
+          <ul class="list-group">
+            <li class="list-group-item" ng-repeat="repository in neededRepositories | orderBy:'uri'">
+                {{repository.uri}}
+            </li>
+          </ul>  
+        </div> 
       </div>
 
       <div id="footer">

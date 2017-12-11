@@ -60,6 +60,15 @@ public class RepositoryController {
 											 @RequestParam(defaultValue = "0") String limit,
 											 @RequestParam(defaultValue = "0") String offset)  {
 		
+		if (shoppingCart != null) {
+			List<InstallableUnit> units = new ArrayList<>();
+			for(String item : shoppingCart) {
+				String[] parsedItem = item.split(" ");
+				units.add(new InstallableUnit(parsedItem[0], parsedItem[1]));
+			}
+			return optimizer.getRepositoryList(units);
+		}
+		
 		Neo4JQueryBuilder query = new Neo4JQueryBuilder().match("(r:Repository)")
 														 .result("r.serviceId,r.uri")
 														 .distinct()
@@ -74,22 +83,12 @@ public class RepositoryController {
 		if (topLevelOnly) {
 			query.filter("size(()-[:PARENT_OF]->(r)) = 0");
 		}
-		
-		if (shoppingCart != null) {
-			List<InstallableUnit> units = new ArrayList<>();
-			for(String item : shoppingCart) {
-				System.out.println(item);
-				String[] parsedItem = item.split(" ");
-				units.add(new InstallableUnit(parsedItem[0], parsedItem[1]));
-			}
-			return optimizer.getRepositoryList(units);
-		}
 
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<Repository> result = new ArrayList<>();
-		dataNode.forEach((d) -> result.add(new Repository((ArrayNode) d)));
+		dataNode.forEach(d -> result.add(new Repository((ArrayNode)d)));
 		
 		if (result.size() == 0)
 			throw new NothingToLoadException();
