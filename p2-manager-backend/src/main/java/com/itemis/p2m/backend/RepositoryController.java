@@ -1,5 +1,6 @@
 package com.itemis.p2m.backend;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -21,8 +22,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.itemis.p2m.backend.exceptions.InvalidInputException;
 import com.itemis.p2m.backend.exceptions.NothingToLoadException;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
@@ -37,12 +40,12 @@ public class RepositoryController {
 	@Value("${url.neo4j.cypher}")
 	private String neo4jUrl;	
 	
-	private Methods methods;
+	private QueryServiceHandler handler;
 
 	private RestTemplate neoRestTemplate;	
 	
-	public RepositoryController(Methods methods, @Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
-		this.methods = methods;
+	public RepositoryController(QueryServiceHandler handler, @Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
+		this.handler = handler;
 		this.neoRestTemplate = neoRestTemplate;
 	}
 
@@ -50,6 +53,7 @@ public class RepositoryController {
 	@RequestMapping(method=RequestMethod.GET)
 	public List<Repository> listRepositories(@RequestParam(defaultValue = "false") boolean topLevelOnly,
 											 @RequestParam(required = false) String[] searchTerm,
+											 @RequestParam(required = false) String[] shoppingCart,
 											 @RequestParam(defaultValue = "0") String limit,
 											 @RequestParam(defaultValue = "0") String offset)  {
 		
@@ -67,12 +71,25 @@ public class RepositoryController {
 		if (topLevelOnly) {
 			query.filter("size(()-[:PARENT_OF]->(r)) = 0");
 		}
+		
+		if (shoppingCart != null) {
+			List<InstallableUnit> units = new ArrayList<>();
+			for(String item : shoppingCart) {
+				try {
+					units.add(new ObjectMapper().readValue(item, InstallableUnit.class));
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+					throw new InvalidInputException();
+				}
+			}
+		}
 
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<Repository> result = new ArrayList<>();
-		dataNode.forEach((d) -> result.add(methods.toRepository((ArrayNode) d)));
+		dataNode.forEach((d) -> result.add(new Repository((ArrayNode) d)));
 		
 		if (result.size() == 0)
 			throw new NothingToLoadException();
@@ -87,13 +104,13 @@ public class RepositoryController {
 		Executor executor = Executors.newCachedThreadPool();
 		URI queryLocation = new URI(queryserviceUrl);
 		
-		CompletableFuture<URI> createRepoQueryService = CompletableFuture.supplyAsync(() -> methods.postRepositoriesQueryService(uri, queryLocation), executor);
+		CompletableFuture<URI> createRepoQueryService = CompletableFuture.supplyAsync(() -> handler.postRepositoriesQueryService(uri, queryLocation), executor);
 
-		CompletableFuture<Integer> createRepoNeo = createRepoQueryService.thenApplyAsync((repoQueryLocation) -> methods.postRepositoriesNeoDB(neo4jUrl, repoQueryLocation), executor);
-		CompletableFuture<List<URI>> loadChildren = createRepoQueryService.thenApplyAsync((parentQueryLocation) -> methods.getChildrenQueryService(parentQueryLocation), executor);
+		CompletableFuture<Integer> createRepoNeo = createRepoQueryService.thenApplyAsync((repoQueryLocation) -> handler.postRepositoriesNeoDB(neo4jUrl, repoQueryLocation), executor);
+		CompletableFuture<List<URI>> loadChildren = createRepoQueryService.thenApplyAsync((parentQueryLocation) -> handler.getChildrenQueryService(parentQueryLocation), executor);
 		
-		createRepoNeo.thenAcceptBothAsync(createRepoQueryService, (neoId, repoQueryLocation) -> methods.postUnitsNeoDB(neo4jUrl, neoId, repoQueryLocation), executor);
-		loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, parentNeoId) -> methods.addChildrenRepositories(neo4jUrl, childQueryLocations, parentNeoId), executor);
+		createRepoNeo.thenAcceptBothAsync(createRepoQueryService, (neoId, repoQueryLocation) -> handler.postUnitsNeoDB(neo4jUrl, neoId, repoQueryLocation), executor);
+		loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, parentNeoId) -> handler.addChildrenRepositories(neo4jUrl, childQueryLocations, parentNeoId), executor);
 	}
 	
 	@ApiOperation(value = "Get the uri of a repository")
@@ -107,7 +124,7 @@ public class RepositoryController {
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
-		return methods.toRepository((ArrayNode)dataNode.get(0));
+		return new Repository((ArrayNode)dataNode.get(0));
 	}
 
 	@ApiOperation(value = "List all installable units available in the repository")
@@ -122,7 +139,7 @@ public class RepositoryController {
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 				
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
-		dataNode.forEach((d) -> result.add(methods.toUnit((ArrayNode)d)));
+		dataNode.forEach((d) -> result.add(new InstallableUnit((ArrayNode) d)));
 		return result;
 	}
 
@@ -139,7 +156,7 @@ public class RepositoryController {
 		ArrayNode dataNode = (ArrayNode) _result.get("data");
 		
 		List<Repository> result = new ArrayList<>();
-		dataNode.forEach((d) -> result.add(methods.toRepository((ArrayNode) d)));
+		dataNode.forEach((d) -> result.add(new Repository((ArrayNode) d)));
 		
 		if (result.size() == 0)
 			throw new NothingToLoadException();

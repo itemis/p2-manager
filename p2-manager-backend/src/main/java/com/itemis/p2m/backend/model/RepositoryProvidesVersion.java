@@ -1,6 +1,12 @@
 package com.itemis.p2m.backend.model;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 import org.springframework.hateoas.ResourceSupport;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.itemis.p2m.backend.RepositoryController;
 
 public class RepositoryProvidesVersion extends ResourceSupport {
 
@@ -15,6 +21,16 @@ public class RepositoryProvidesVersion extends ResourceSupport {
 		this.repoId = repoId;
 		this.uri = uri;
 		this.version = version;
+	}
+	
+	public RepositoryProvidesVersion(ArrayNode repoData) {
+		this.setRepoId(repoData.get(0).asInt());
+		this.setUri(repoData.get(1).asText());
+		this.setVersion(repoData.get(2).asText());
+		
+		// HATEOAS links
+		this.add(linkTo(methodOn(RepositoryController.class).getRepositoryURI(this.getRepoId())).withSelfRel());
+		this.add(linkTo(methodOn(RepositoryController.class).listUnitsInRepository(this.getRepoId())).withRel("installableUnits"));
 	}
 	
 	public RepositoryProvidesVersion() {

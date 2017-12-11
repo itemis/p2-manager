@@ -29,13 +29,13 @@ import com.itemis.p2m.backend.model.Repository;
 import com.itemis.p2m.backend.model.RepositoryProvidesVersion;
 
 @Component
-public class Methods {
+public class QueryServiceHandler {
 	
 	private RestTemplate queryServiceRestTemplate;
 	
 	private RestTemplate neoRestTemplate;
 	
-	public Methods(@Qualifier("queryServiceRestTemplateBean") RestTemplate queryServiceRestTemplate,
+	public QueryServiceHandler(@Qualifier("queryServiceRestTemplateBean") RestTemplate queryServiceRestTemplate,
 								@Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
 		this.queryServiceRestTemplate = queryServiceRestTemplate;
 		this.neoRestTemplate = neoRestTemplate;
@@ -197,48 +197,6 @@ public class Methods {
 		Integer count = response.getBody();
 		
 		return count;
-	}
-
-	public Repository toRepository(ArrayNode repoData) {
-		Repository r = new Repository();
-		r.setRepoId(repoData.get(0).asInt());
-		r.setUri(repoData.get(1).asText());
-		
-		// HATEOAS links
-		r.add(linkTo(methodOn(RepositoryController.class).getRepositoryURI(r.getRepoId())).withSelfRel());
-		r.add(linkTo(methodOn(RepositoryController.class).listUnitsInRepository(r.getRepoId())).withRel("installableUnits"));
-		
-		return r;
-	}
-
-	public RepositoryProvidesVersion toRepositoryProvidesVersion(ArrayNode repoData) {
-		RepositoryProvidesVersion r = new RepositoryProvidesVersion();
-		r.setRepoId(repoData.get(0).asInt());
-		r.setUri(repoData.get(1).asText());
-		r.setVersion(repoData.get(2).asText());
-		
-		// HATEOAS links
-		r.add(linkTo(methodOn(RepositoryController.class).getRepositoryURI(r.getRepoId())).withSelfRel());
-		r.add(linkTo(methodOn(RepositoryController.class).listUnitsInRepository(r.getRepoId())).withRel("installableUnits"));
-		
-		return r;
-	}
-	
-	public InstallableUnit toUnit(ArrayNode unitData) {
-		InstallableUnit iu = new InstallableUnit();
-		iu.setUnitId(unitData.get(0).asText());
-		iu.setVersion(unitData.get(1).asText());
-		
-		// HATEOAS links
-		iu.add(linkTo(methodOn(InstallableUnitController.class).listRepositoriesForUnitVersion(iu.getUnitId(), iu.getVersion())).withRel("repositories"));
-		
-		return iu;
-	}
-	
-	@Deprecated // use Neo4JQueryBuilder instead
-	public String neoResultLimit(String limit, String offset) {
-		return (Integer.parseInt(offset) <= 0 ? "" : " SKIP "+offset)
-			 + (Integer.parseInt(limit) <= 0 ? "" : " LIMIT "+limit);
 	}
 
 }
