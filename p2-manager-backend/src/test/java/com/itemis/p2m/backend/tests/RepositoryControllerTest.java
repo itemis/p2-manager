@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.itemis.p2m.backend.QueryServiceHandler;
 import com.itemis.p2m.backend.RepositoryController;
+import com.itemis.p2m.backend.ShoppingCartOptimizer;
 
 /**
  * Unit tests for the RepositoryController class.
@@ -30,10 +31,14 @@ public class RepositoryControllerTest {
 	private MockMvc mockMvc;
 	
 	@MockBean
-	private QueryServiceHandler methods;
+	private QueryServiceHandler handler;
+	
+	@MockBean
+	private ShoppingCartOptimizer optimizer;
 	
 	@Test
 	public void someTestForRepoController() {
+		//TODO: write tests
 		final String repositoryURI = "http://www.fakeURI.com";
 		
 //		when(methods.postRepositoriesQueryService(URI.create(repositoryURI), anyString())).thenReturn(URI.create("http://www.fakeURI.com/repos/42"));

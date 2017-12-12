@@ -1,19 +1,19 @@
 "use strict";
 
-const ng = angular.module('com.itemis.p2-manager-frontend', ['angular.filter', 'infinite-scroll']);
+const ng = angular.module('com.itemis.p2-manager-frontend', ['angular.filter', 'infinite-scroll', 'ngCookies']);
 const backend = "http://localhost:8080"; // http://localhost:8080 http://p2-manager-backend:8888
 
 angular.module('infinite-scroll').value('THROTTLE_MILLISECONDS', 200)
 
-ng.controller('P2MController', function($scope, $http, $timeout, $q) {
+ng.controller('P2MController', function($scope, $http, $timeout, $cookies, $q) {
 	
 		$scope.repositoriesAreLoading = false;
 		$scope.allRepositoriesLoaded = false;
 		$scope.unitsAreLoading = false;
 		$scope.allUnitsLoaded = false;
 		$scope.units = [];
-		$scope.repositories = [];
 		$scope.unitsInCart = [];
+		$scope.repositories = [];
 		$scope.neededRepositories = [];
 		$scope.repoSearch={"keywords":""};
 		$scope.unitSearch={"keywords":""};
@@ -21,6 +21,41 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 		$scope.unitIdFormat = '[^"&]*';
 		$scope.repositoryURL = "http://www.example.com";
 		$scope.activeView = "browsing";
+
+		const cookieUnitsInCart = $cookies.getObject("unitsInCart");
+		if (cookieUnitsInCart === undefined) {
+			$cookies.putObject("unitsInCart", $scope.unitsInCart);
+		} else {
+			$scope.unitsInCart = cookieUnitsInCart;
+		}
+		
+		const cookieActiveView = $cookies.get("activeView");
+		if (cookieActiveView === undefined) {
+			$cookies.put("activeView", $scope.activeView);
+		} else {
+			$scope.activeView = cookieActiveView;
+		}
+
+		$scope.$watch('activeView', function(oldValue, newValue) {
+			$cookies.put("activeView", $scope.activeView);
+		});
+
+		$scope.$watch('unitsInCart.length', function(oldValue, newValue) {
+			$cookies.putObject("unitsInCart", $scope.unitsInCart);
+
+			if ($scope.unitsInCart === undefined || $scope.unitsInCart.length === 0) {
+				$scope.neededRepositories = [];
+				return;
+			}
+	
+			let query = $scope.unitsInCart.map(u => 'shoppingCart='+u.unitId+'+'+u.version)
+								.reduce((acc, current) => acc+'&'+current);
+	
+			$http.get(backend+'/repositories?'+query).
+			then(response => {
+				$scope.neededRepositories = response.data;
+			});
+		});
 
 	
 	//TODO allow input without "http://" to be automatically completed
@@ -141,39 +176,19 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 		
 		unit.showRepositories = !unit.showRepositories;
 	}
-	
-	$scope.$watch('unitsInCart.length', function(oldValue, newValue) {
-		if ($scope.unitsInCart === undefined || $scope.unitsInCart.length === 0) {
-			$scope.neededRepositories = [];
-			return;
-		}
-
-		let query = $scope.unitsInCart.map(u => 'shoppingCart='+u.unitId+'+'+u.version)
-							.reduce((acc, current) => acc+'&'+current);
-
-		$http.get(backend+'/repositories?'+query).
-		then(response => {
-			$scope.neededRepositories = response.data;
-		});
-	});
 
 	$scope.addUnitToCart = (unit) => {
 		if (!$scope.unitsInCart.includes(unit)) {
 			$scope.unitsInCart.push(unit);
 		}
-		unit.isAdded = true;
 	}
 	
 	$scope.removeUnitFromCart = (unit) => {
-		$scope.unitsInCart = $scope.unitsInCart.filter(u => u !== unit);
-		unit.isAdded = false;
+		$scope.unitsInCart = $scope.unitsInCart.filter(u => !unitEquals(unit, u));
 	}
 	
 	$scope.clearCart = () => {
-		for (let unit of $scope.unitsInCart) {
-			unit.isAdded = false;
-		}
-		$scope.unitsInCart = [];
+		$scope.unitsInCart.length = 0;
 	}
 
 	$scope.switchToCart = () => {
@@ -183,4 +198,12 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 	$scope.switchToBrowsing = () => {
 		$scope.activeView = "browsing";
 	}
+
+	$scope.isInCart = (unit) => {
+		return $scope.unitsInCart.some((cartUnit, i, unitsInCart) => unitEquals(unit, cartUnit));
+	}
 });
+
+let unitEquals = (unit1, unit2) => {
+	return unit1.unitId === unit2.unitId && unit1.version === unit2.version;
+}

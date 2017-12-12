@@ -12,12 +12,12 @@ import com.itemis.p2m.backend.QueryServiceHandler;
 public class MethodsTest {
 
 	@Autowired
-	private QueryServiceHandler methods;
+	private QueryServiceHandler handler;
 	
 	
 	
 	@Test
 	public void postRepositoriesQueryServiceTest() {
-		
+		//TODO: write tests
 	}
 }

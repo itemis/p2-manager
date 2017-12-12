@@ -17,6 +17,7 @@
 
     <!-- Angular.js -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-cookies.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
 
     <!-- ngInfiniteScroll -->
@@ -94,10 +95,10 @@
               <li class="list-group-item" ng-repeat="(unitid, units) in units | groupBy: 'unitId' | orderBy:'unitId'">
                 <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
                 <ul class="list-group" ng-show="showVersions">
-                  <li class="list-group-item" ng-repeat="unit in units" ng-init="unit.repositoriesLoaded=false; unit.isAdded=false">
+                  <li class="list-group-item" ng-repeat="unit in units" ng-init="unit.repositoriesLoaded=false">
                     <span class="angularButton" ng-click="getRepositoriesForVersion(unit)" ng-init="unit.showRepositories=false">{{unit.version}}</span>
-                    <button type="button" class="btn m-1" ng-if="!unit.isAdded" ng-click="addUnitToCart(unit)">Add to cart</button>
-                    <button type="button" class="btn m-1" ng-if="unit.isAdded" ng-click="removeUnitFromCart(unit)">Remove from cart</button>
+                    <button type="button" class="btn m-1" ng-if="!isInCart(unit)" ng-click="addUnitToCart(unit)">Add to cart</button>
+                    <button type="button" class="btn m-1" ng-if="isInCart(unit)" ng-click="removeUnitFromCart(unit)">Remove from cart</button>
                     <ul class="list-group" ng-if="unit.showRepositories">
                       <li class="list-group-item" ng-repeat="repository in unit.repositoriesWithVersion">
                         <span class="angularButton" ng-click="filterUnitsByRepo(repository)">{{repository.uri}}</span>
