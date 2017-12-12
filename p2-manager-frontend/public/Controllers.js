@@ -168,6 +168,13 @@ ng.controller('P2MController', function($scope, $http, $timeout, $q) {
 		$scope.unitsInCart = $scope.unitsInCart.filter(u => u !== unit);
 		unit.isAdded = false;
 	}
+	
+	$scope.clearCart = () => {
+		for (let unit of $scope.unitsInCart) {
+			unit.isAdded = false;
+		}
+		$scope.unitsInCart = [];
+	}
 
 	$scope.switchToCart = () => {
 		$scope.activeView = "shoppingCart";

@@ -118,6 +118,7 @@
       <div class="row" ng-show="activeView === 'shoppingCart'">
         <div class="col-lg-6">
           <h2 class="m-2">Units in cart</h2>
+          <button type="button" class="btn m-1" ng-click="clearCart()">Clear cart</button>
           <ul class="list-group">
             <li class="list-group-item" ng-repeat="unit in unitsInCart | orderBy:'unitId'">
               <span>{{unit.unitId}} -</span>
