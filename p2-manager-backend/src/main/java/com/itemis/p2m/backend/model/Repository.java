@@ -3,6 +3,8 @@ package com.itemis.p2m.backend.model;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+import java.util.Objects;
+
 import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -47,5 +49,24 @@ public class Repository extends ResourceSupport {
 	
 	public void setUri(String uri) {
 		this.uri = uri;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || o.getClass() != this.getClass())
+			return false;
+		
+		Repository r = (Repository)o;
+		
+		if (repoId == r.repoId && uri.equals(r.uri)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(repoId, uri);
 	}
 }

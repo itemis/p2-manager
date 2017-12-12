@@ -3,6 +3,8 @@ package com.itemis.p2m.backend.model;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+import java.util.Objects;
+
 import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -38,5 +40,24 @@ public class InstallableUnit extends ResourceSupport {
 		
 		// HATEOAS links
 		this.add(linkTo(methodOn(InstallableUnitController.class).listRepositoriesForUnitVersion(unitId, version)).withRel("repositories"));
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || o.getClass() != this.getClass())
+			return false;
+		
+		InstallableUnit iu = (InstallableUnit)o;
+		
+		if (unitId.equals(iu.unitId) && version.equals(iu.version)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(unitId, version);
 	}
 }

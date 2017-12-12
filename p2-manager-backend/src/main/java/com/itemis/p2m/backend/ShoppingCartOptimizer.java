@@ -1,7 +1,12 @@
 package com.itemis.p2m.backend;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,9 +42,12 @@ public class ShoppingCartOptimizer {
 	 * @return The list of repositories from which all units can be retrieved.
 	 */
 	public List<Repository> getRepositoryList(List<InstallableUnit> units) {
+		return new ArrayList<>(this.greedilyApproximatedOptimization(units));
+//		return this.simpleOptimization(units);
+	}
+	
+	public List<Repository> simpleOptimization(List<InstallableUnit> units) {
 		// trivial implementation: for all units -> retrieve list of all repositories that have that unit -> pick one
-		//TODO: smarter implementation that compiles a minimal list of repositories
-		//approximation: greedy, take whatever repo covers most units, iterate until all units are covered
 		
 		List<Repository> result = new ArrayList<>();
 		
@@ -66,5 +74,77 @@ public class ShoppingCartOptimizer {
 		});
 
 		return result;
+	}
+
+	//TODO: write tests for this method (!!!)
+	public Set<Repository> greedilyApproximatedOptimization(List<InstallableUnit> units) {
+		//approximation: greedy, take whatever repo covers most units, iterate until all units are covered
+		
+		Set<Repository> result = new HashSet<>();
+		Map<Repository, List<InstallableUnit>> unitsInRepository = new HashMap<>();
+		Set<Repository> allRepositories = new HashSet<>();
+		calculateUnitsInRepository(units, unitsInRepository, allRepositories);
+		
+		// calculate the result list
+		int repositoryCount = allRepositories.size();
+		for (int i = 0; i < repositoryCount; i++) {
+			Repository greedyChoice = chooseRepoWithHighestCoverage(unitsInRepository);
+			result.add(greedyChoice);
+
+			cleanupForNextIteration(units, unitsInRepository, greedyChoice);
+			
+			// stop early if all units are covered
+			if (units.size() == 0) {
+				break;
+			}
+		}
+		
+		if (units.size() != 0) {
+			throw new RuntimeException(String.format("Unit %s in version %s is not contained in any known repository.", units.get(0).getUnitId(), units.get(0).getVersion()));
+		}
+		
+		return result;
+	}
+	
+	
+	protected void calculateUnitsInRepository(List<InstallableUnit> units, Map<Repository, List<InstallableUnit>> unitsInRepository, Set<Repository> allRepositories) {
+		units.forEach(u -> {
+			Neo4JQueryBuilder query = new Neo4JQueryBuilder().match("(r)-[p:PROVIDES]->(u)")
+					 										 .filter("u.serviceId = '"+u.getUnitId()+"'")
+					 										 .filter("p.version = '"+u.getVersion()+"'")
+					 										 .result("r.serviceId, r.uri")
+					 										 .distinct();
+			
+			ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
+			ArrayNode dataNode = (ArrayNode) _result.get("data");
+
+			List<Repository> repositoriesForUnit = new ArrayList<>();
+			for (JsonNode n : dataNode) {
+				Repository repo = new Repository((ArrayNode)n);
+				repositoriesForUnit.add(repo);
+				allRepositories.add(repo);
+				if (unitsInRepository.get(repo) == null) {
+					unitsInRepository.put(repo, new ArrayList<>());
+				}
+				
+				unitsInRepository.get(repo).add(u);
+			};
+		});
+	}
+	
+	protected Repository chooseRepoWithHighestCoverage(Map<Repository, List<InstallableUnit>> unitsInRepository) {
+		return unitsInRepository.entrySet().stream()
+										   .reduce((entry1, entry2) -> entry1.getValue().size() >= entry2.getValue().size() ? entry1 : entry2)
+										   .orElseThrow(() -> new RuntimeException("Error while calculating maximum of list; this should not happen."))
+										   .getKey();
+	}
+	
+	protected void cleanupForNextIteration(List<InstallableUnit> units, Map<Repository, List<InstallableUnit>> unitsInRepository, Repository chosenRepository) {
+		List<InstallableUnit> coveredUnits = unitsInRepository.get(chosenRepository);
+		units.removeAll(coveredUnits);
+		unitsInRepository.remove(chosenRepository);
+		for (List<InstallableUnit> unitsInRepo : unitsInRepository.values()) {
+			unitsInRepo.removeAll(coveredUnits);
+		}
 	}
 }
