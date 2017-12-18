@@ -1,0 +1,1 @@
+angular.module('repositoryList', ['unitList', 'infinite-scroll']);

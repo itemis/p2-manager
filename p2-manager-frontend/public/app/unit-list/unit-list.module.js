@@ -1,0 +1,1 @@
+angular.module('unitList', ['angular.filter', 'infinite-scroll', 'shoppingCart']);

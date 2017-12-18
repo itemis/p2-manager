@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" ng-app="com.itemis.p2-manager-frontend">
+<html lang="en" ng-app="p2-manager-frontend">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,17 +8,27 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
-
+   
+    <!-- AngularJS Material CSS -->
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+    
     <!-- P2-Manager Frontend CSS -->
     <link rel="stylesheet" type="text/css" href="style.css">
 
     <!-- jQuery.js -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 
-    <!-- Angular.js -->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.js"></script>
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-route.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-cookies.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
+
+    <!-- AngularJS Material -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
 
     <!-- ngInfiniteScroll -->
     <script type='text/javascript' src='lib/ng-infinite-scroll/ng-infinite-scroll.js'></script>
@@ -27,116 +37,38 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
 
-    <!-- P2-Manager Frontend Logic -->
-    <script src="Controllers.js"></script>
-
-    <!-- Repository Template -->
-    <script type="text/ng-template"  id="repositoryTemplate.html">
-      <span class="angularButton" ng-click="filterUnitsByRepo(repository); getChildrenOfRepo(repository)" ng-init="repository.showChildren=false; repository.childrenLoaded=false">{{repository.uri}}</span>
-      <ul class="list-group" ng-if="repository.showChildren && (repository.children.length > 0)">
-        <li class="list-group-item" ng-repeat="repository in repository.children" ng-include="'repositoryTemplate.html'"></li>
-      </ul>
-    </script>
+    <!-- P2-Manager Frontend -->
+    <script src="app/p2-manager-frontend.module.js"></script>
+    <script src="app/shopping-cart/shopping-cart.module.js"></script>
+    <script src="app/shopping-cart/shopping-cart.service.js"></script>
+    <script src="app/shopping-cart/shopping-cart-view.controller.js"></script>
+    <script src="app/repository-list/repository-list.module.js"></script>
+    <script src="app/repository-list/repository-list.component.js"></script>
+    <script src="app/unit-list/unit-list.module.js"></script>
+    <script src="app/unit-list/unit-list.component.js"></script>
+    <script src="app/unit-list/unit-search.service.js"></script>
+    <!-- TODO further refactoring
+    <script src="app/repository-adder/repository-adder.component.js"></script>
+    <script src="app/shopping-cart/shopping-cart.module.js"></script>
+    <script src="app/shopping-cart/shopping-cart.component.js"></script>
+    -->
+    
   </head>
-
   <body>
-    <div class="container px-5" ng-controller="P2MController">
+    <div class="container px-5 ">
+
       <div class="m-3">
         <h1 class="display-3 p-4 text-center">p2-Manager</h1>
         <hr>
-        <div id="navbar" class="text-right">
-          <button type="button" class="btn" ng-click="switchToCart()" ng-if="activeView === 'browsing'">Cart</button>
-          <button type="button" class="btn" ng-click="switchToBrowsing()" ng-if="activeView === 'shoppingCart'">Home</button>
-        </div>
+      </div>
+
+      <div id="navbar" class="m-3">
+        <a href="#browse" class="btn">Home</a>
+        <a href="#cart" class="btn">Cart</a>
         <hr>
       </div>
 
-      <div class="row" ng-show="activeView === 'browsing'">
-        <div class="col-lg-6">
-          <!-- TODO: put this in a dedicated view reachable from the navbar -->
-          <h2 class="m-2">Add Repository</h2>
-          <form class="form-inline" ng-submit="addRepository()" name="newRepositoryForm">
-            <label class="m-1" for="repositoryURL">Repository URL:</label>
-            <input class="form-control m-1" name="repositoryURL" type="url" size="35" id="repositoryURL" ng-model="repositoryURL" required>
-            <button type="button" class="btn m-1" ng-click="addRepository()" ng-disabled="newRepositoryForm.repositoryURL.$invalid">Add</button>
-          </form>
-          
-          <h2 class="m-2">Search Repositories</h2>
-          <form class="form-inline" ng-submit="searchRepositories()" name="searchRepositoriesForm">
-            <input class="form-control m-1" name="repoId" type="text" size="50" id="repoId" ng-model="repoSearch.keywords" ng-model-options="{debounce:300}" ng-change="searchRepositories()">
-            <button type="button" class="btn m-1" ng-click="searchRepositories()">Search</button>
-          </form>
-
-          <h2 class="m-2 text-center">Repositories</h2>
-
-          <table class="" name="Repositories">
-            <ul class="list-group" infinite-scroll="loadMoreRepositories()" infinite-scroll-use-document-bottom="false" infinite-scroll-parent="false" infinite-scroll-distance="1">
-              <li class="list-group-item" ng-repeat="repository in repositories | orderBy:'uri'" ng-include="'repositoryTemplate.html'">
-              </li>
-            </ul>
-          </table>
-          <div class="m-3 text-center">
-            <img src="resource/loadingIcon.gif" ng-if="repositoriesAreLoading">
-            <h3 ng-if="allRepositoriesLoaded">You have reached the end</h3>
-          </div>
-        </div>
-        
-        
-        <div class="col-lg-6">
-          <h2 class="m-2">Search Installable Units</h2>
-          <form class="form-inline" ng-submit="searchUnits()" name="searchUnitsForm">
-            <input class="form-control m-1" name="unitId" type="text" size="50" id="unitId" ng-model="unitSearch.keywords" ng-model-options="{debounce:300}" ng-pattern='unitIdFormat' ng-change="searchUnits()">
-            <button type="button" class="btn m-1" ng-click="searchUnits()" ng-disabled="searchUnitsForm.unitId.$invalid">Search</button>
-          </form>
-
-          <h2 class="m-3 text-center">Installable Units</h2>
-          <table class="" name="Units">
-            <ul class="list-group" infinite-scroll="loadMoreUnits()" infinite-scroll-use-document-bottom="false" infinite-scroll-parent="false" infinite-scroll-distance="1">
-              <li class="list-group-item" ng-repeat="(unitid, units) in units | groupBy: 'unitId' | orderBy:'unitId'">
-                <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unitid}}</span>
-                <ul class="list-group" ng-show="showVersions">
-                  <li class="list-group-item" ng-repeat="unit in units" ng-init="unit.repositoriesLoaded=false">
-                    <span class="angularButton" ng-click="getRepositoriesForVersion(unit)" ng-init="unit.showRepositories=false">{{unit.version}}</span>
-                    <button type="button" class="btn m-1" ng-if="!isInCart(unit)" ng-click="addUnitToCart(unit)">Add to cart</button>
-                    <button type="button" class="btn m-1" ng-if="isInCart(unit)" ng-click="removeUnitFromCart(unit)">Remove from cart</button>
-                    <ul class="list-group" ng-if="unit.showRepositories">
-                      <li class="list-group-item" ng-repeat="repository in unit.repositoriesWithVersion">
-                        <span class="angularButton" ng-click="filterUnitsByRepo(repository)">{{repository.uri}}</span>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </table>
-          <div class="m-3 text-center">
-            <img src="resource/loadingIcon.gif" ng-if="unitsAreLoading">
-            <h3 ng-if="allUnitsLoaded">You have reached the end</h3>
-          </div>
-        </div>
-      </div>
-
-      <div class="row" ng-show="activeView === 'shoppingCart'">
-        <div class="col-lg-6">
-          <h2 class="m-2">Units in cart</h2>
-          <button type="button" class="btn m-1" ng-click="clearCart()">Clear cart</button>
-          <ul class="list-group">
-            <li class="list-group-item" ng-repeat="unit in unitsInCart | orderBy:'unitId'">
-              <span>{{unit.unitId}} -</span>
-              <span>{{unit.version}}</span>
-              <button type="button" class="btn m-1" ng-click="removeUnitFromCart(unit)">Remove from cart</button>
-            </li>
-          </ul> 
-        </div> 
-        <div class="col-lg-6">
-          <h2 class="m-2">Required repositories</h2>
-          <ul class="list-group">
-            <li class="list-group-item" ng-repeat="repository in neededRepositories | orderBy:'uri'">
-                {{repository.uri}}
-            </li>
-          </ul>  
-        </div> 
-      </div>
+      <ng-view></ng-view>
 
       <div id="footer">
         <hr>
