@@ -1,21 +1,35 @@
-<div class="row">
-  <div class="col-lg-6">
-    <h2 class="m-2">Units in cart</h2>
-    <button type="button" class="btn m-1" ng-click="$ctrl.shoppingCart.empty()">Clear cart</button>
-    <ul class="list-group">
-    <li class="list-group-item" ng-repeat="unit in $ctrl.shoppingCart.getUnits() | orderBy:'unitId'">
-      <span>{{unit.unitId}} -</span>
-      <span>{{unit.version}}</span>
-      <button type="button" class="btn m-1" ng-click="$ctrl.shoppingCart.removeUnit(unit.unitId, unit.version)">Remove from cart</button>
-    </li>
-    </ul> 
-  </div> 
-  <div class="col-lg-6">
-    <h2 class="m-2">Required repositories</h2>
-    <ul class="list-group">
-    <li class="list-group-item" ng-repeat="repository in $ctrl.shoppingCart.getRepositories() | orderBy:'uri'">
-      {{repository.uri}}
-    </li>
-    </ul>  
-  </div> 
-  </div>
+<div layout="row">
+  <md-content flex="50" layout-align="space-between center">
+    <md-list>
+
+      <div layout="row" layout-align="space-between center">
+        <md-subheader class="md-no-sticky">Units in cart</md-subheader>
+        <md-button class="md-warn md-raised" ng-click="$ctrl.shoppingCart.empty()">Clear cart</md-button>
+      </div>
+
+      <md-list-item layout-align="space-around center" class="secondary-button-padding md-2-line" ng-repeat="unit in $ctrl.shoppingCart.getUnits() | orderBy:'unitId'">
+        <div class="md-list-item-text" layout="column">
+          <h3>{{unit.unitId}}</h3>
+          <p>{{unit.version}}</p>
+        </div>
+        <md-button class="md-icon-button md-warn md-secondary" ng-click="$ctrl.shoppingCart.removeUnit(unit.unitId, unit.version)"><md-icon>remove_shopping_cart</md-icon></md-button>
+      </md-list-item>
+
+    </md-list>
+  </md-content> 
+
+  <md-divider></md-divider>
+
+  <md-content flex="50" layout-align="space-between center">
+    <md-list>
+      <md-subheader class="md-no-sticky">Required repositories</md-subheader>
+      
+      <md-list-item ng-repeat="repository in $ctrl.shoppingCart.getRepositories() | orderBy:'uri'">
+        <div class="md-list-item-text" layout="column">
+          <p>{{repository.uri}}</p>
+        </div>
+      </md-list-item>
+
+    </md-list>  
+  </md-content> 
+</div>

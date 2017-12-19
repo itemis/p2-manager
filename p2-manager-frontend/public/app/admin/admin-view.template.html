@@ -1,0 +1,9 @@
+<div layout="row" layout-margin layout-align="space-between center">
+  <div flex>
+    <md-input-container ng-submit="$ctrl.addRepository()" name="newRepositoryForm">
+      <label>Add Repository</label>
+      <input name="repositoryURL" id="repositoryURL" ng-model="$ctrl.repositoryURL">
+    </md-input-container>
+  </div>
+  <md-button class="md-primary md-raised" ng-click="$ctrl.addRepository()" ng-disabled="repositoryURL.$invalid">Add</md-button>
+</div>

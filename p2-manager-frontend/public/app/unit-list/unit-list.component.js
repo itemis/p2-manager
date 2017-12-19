@@ -5,18 +5,44 @@ angular
     controller: ['$http', '$q', 'unitSearch', 'shoppingCart', function UnitListController($http, $q, unitSearch, shoppingCart) {
         
         this.backend = "http://localhost:8080";
-
+        this.units = [];
 		this.unitsAreLoading = false;
 		this.allUnitsLoaded = false;
-		this.units = [];
 		this.unitSearchField={"keywords":""};
         unitSearch.onSearchTextChange((keywords) => {
             this.unitSearchField.keywords = keywords;
             this.searchUnits();
         });
-		this.scrollLoadSize = 100;
-        this.scrollDistance = 2;
         this.shoppingCart = shoppingCart;
+
+        this.scrollLoadSize = 100;
+        this.scrollDistance = 2;
+
+        this.units2 = {
+            numLoaded: 0,
+            toLoad: 0,
+            scrollLoadSize: 100,
+            
+            getItemAtIndex: function(index) {
+                if (index > this.numLoaded) {
+                    this.fetchMoreItems(index);
+                    return null;
+                }
+  
+                return index;
+            },
+
+            getLength: function() {
+                return this.numLoaded + 10;
+            },
+  
+            fetchMoreItems_: function(index) {
+                if (this.toLoad < index) {
+                    this.toLoad += this.scrollLoadSize;
+                    //TODO: call loadMoreUnits appropriately
+                }
+            }
+        };
         
         this.searchUnits = () => {
             if (this.searchUnitTimeout !== undefined) {

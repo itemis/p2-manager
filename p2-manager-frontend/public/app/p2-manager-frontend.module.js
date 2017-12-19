@@ -1,17 +1,22 @@
 "use strict";
 
-angular.module('p2-manager-frontend', ['ngRoute', 'repositoryList', 'unitList'])
-       .config(['$routeProvider', ($routeProvider) => {
+angular.module('p2-manager-frontend', ['ngRoute', 'repositoryList', 'unitList', 'ngMaterial', 'ngMessages', 'ngAria', 'ngAnimate'])
+       .config(['$routeProvider', '$mdThemingProvider', ($routeProvider, $mdThemingProvider) => {
     $routeProvider
     .when('/browse', {
-        templateUrl: 'app/views/browsing-view.template.html'
+        templateUrl: 'app/browsing/browsing-view.template.html'
     })
     .when('/cart', {
         templateUrl: 'app/shopping-cart/shopping-cart-view.template.html',
         controller: 'shoppingCartController',
         controllerAs: '$ctrl'
     })
+    .when('/admin', {
+        templateUrl: 'app/admin/admin-view.template.html'
+    })
     .otherwise({
        redirectTo: '/browse'
     });
+
+    $mdThemingProvider.theme('default');
 }]);

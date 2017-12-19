@@ -11,6 +11,7 @@
    
     <!-- AngularJS Material CSS -->
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     
     <!-- P2-Manager Frontend CSS -->
     <link rel="stylesheet" type="text/css" href="style.css">
@@ -46,27 +47,20 @@
     <script src="app/repository-list/repository-list.component.js"></script>
     <script src="app/unit-list/unit-list.module.js"></script>
     <script src="app/unit-list/unit-list.component.js"></script>
-    <script src="app/unit-list/unit-search.service.js"></script>
-    <!-- TODO further refactoring
-    <script src="app/repository-adder/repository-adder.component.js"></script>
-    <script src="app/shopping-cart/shopping-cart.module.js"></script>
-    <script src="app/shopping-cart/shopping-cart.component.js"></script>
-    -->
-    
+    <script src="app/unit-list/unit-search.service.js"></script>    
   </head>
   <body>
     <div class="container px-5 ">
 
       <div class="m-3">
         <h1 class="display-3 p-4 text-center">p2-Manager</h1>
-        <hr>
       </div>
 
-      <div id="navbar" class="m-3">
-        <a href="#browse" class="btn">Home</a>
-        <a href="#cart" class="btn">Cart</a>
-        <hr>
-      </div>
+      <md-nav-bar md-selected-nav-item="browse">
+        <md-nav-item md-nav-href="#browse" name="browse">Home</md-nav-item>
+        <md-nav-item md-nav-href="#cart" name="cart">Cart</md-nav-item>
+        <md-nav-item md-nav-href="#admin" name="admin">Admin</md-nav-item>
+      </md-nav-bar>
 
       <ng-view></ng-view>
 

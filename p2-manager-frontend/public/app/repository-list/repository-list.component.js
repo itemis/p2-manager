@@ -12,19 +12,8 @@ angular
         this.repoSearch={"keywords":""};
         this.scrollLoadSize = 100;
         this.scrollDistance = 2;
-        this.repositoryURL = "http://www.example.com";
+        this.repositoryURL = "";
         this.unitSearch = unitSearch;
-
-        this.addRepository = () => {
-            $http.post(this.backend+"/repositories?uri="+this.repositoryURL).
-            then(response => {
-                
-                $timeout(() => {
-                    this.searchRepositories();
-                }, 1000);
-            }); 
-            
-        }
         
         this.searchRepositories = () => {
             if (this.searchRepoTimeout !== undefined) {

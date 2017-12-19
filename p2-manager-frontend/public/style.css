@@ -7,6 +7,10 @@ li {
     word-break: break-all;
   }
 
+md-input-container {
+    display: flex;
+}
+
 .container {
     background-color: white;
     min-height:90vh;
@@ -34,5 +38,5 @@ li {
 .scrollList {
     overflow-y: scroll;
     min-height: 100px;
-    max-height: 80vh;
+    max-height: 60vh;
 }

@@ -1,23 +1,20 @@
-
-<h2 class="m-2">Add Repository</h2>
-<form class="form-inline" ng-submit="$ctrl.addRepository()" name="newRepositoryForm">
-  <label class="m-1" for="repositoryURL">Repository URL:</label>
-  <input class="form-control m-1" name="repositoryURL" type="url" size="25" id="repositoryURL" ng-model="$ctrl.repositoryURL" required>
-  <button type="button" class="btn m-1" ng-click="$ctrl.addRepository()" ng-disabled="newRepositoryForm.repositoryURL.$invalid">Add</button>
-</form>
-
 <h2 class="m-2">Search Repositories</h2>
-<form class="form-inline" ng-submit="$ctrl.searchRepositories()" name="searchRepositoriesForm">
-  <input class="form-control m-1" name="repoId" type="text" size="32" id="repoId" ng-model="$ctrl.repoSearch.keywords" ng-model-options="{debounce:300}" ng-change="$ctrl.searchRepositories()">
-  <button type="button" class="btn m-1" ng-click="$ctrl.searchRepositories()">Search</button>
-</form>
+<div layout="row" layout-align="space-between center">
+  <div flex>
+    <md-input-container ng-submit="$ctrl.searchRepositories()" name="searchRepositoriesForm">
+      <input name="repoId" id="repoId" ng-model="$ctrl.repoSearch.keywords" ng-model-options="{debounce:300}" ng-change="$ctrl.searchRepositories()">
+    </md-input-container>
+  </div>
+  <div>
+    <md-button class="md-primary md-raised" ng-click="$ctrl.searchRepositories()">Search</md-button>
+  </div>
+</div>
 
-<h2 class="m-2 text-center">Repositories</h2>
 <ul class="list-group" infinite-scroll="$ctrl.loadMoreRepositories()" infinite-scroll-use-document-bottom="false" infinite-scroll-parent="false" infinite-scroll-distance="1">
   <li class="list-group-item" ng-repeat="repository in $ctrl.repositories | orderBy:'uri'" ng-include="'app/repository-list/repository-list-children.template.html'">
   </li>
 </ul>
-<div class="m-3 text-center">
-  <img src="resource/loadingIcon.gif" ng-if="$ctrl.repositoriesAreLoading">
+<div layout="row" layout-padding layout-align="space-around">
+  <md-progress-circular ng-if="$ctrl.repositoriesAreLoading" md-mode="indeterminate"></md-progress-circular>
   <h3 ng-if="$ctrl.allRepositoriesLoaded">You have reached the end</h3>
 </div>
