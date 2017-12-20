@@ -10,27 +10,27 @@
   </div>
 </div>
 
-<md-content>
-  <!-- md-virtual-repeat-container, div md-virtual-repeat="unit in units" md-on-demand class="repeated-item" -->
-  <ul class="list-group" infinite-scroll="$ctrl.loadMoreUnits()" infinite-scroll-use-document-bottom="false" infinite-scroll-parent="true" infinite-scroll-distance="1">
-    <li class="list-group-item" ng-repeat="unit in $ctrl.units">
-      <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unit.unitId}}</span>
-      <ul class="list-group" ng-if="showVersions">
-        <li layout="row" class="list-group-item" ng-repeat="version in unit.versions" ng-init="version.repositoriesLoaded=false">
-          <span class="angularButton" ng-click="$ctrl.getRepositoriesForVersion(unit.unitId, version)" ng-init="version.showRepositories=false">{{version.version}}</span>
-          <md-button class="md-icon-button md-primary" ng-if="!$ctrl.shoppingCart.isInCart(unit.unitId, version.version)" ng-click="$ctrl.shoppingCart.addUnit(unit.unitId, version.version)"><i class="material-icons">shopping_cart</i></md-button>
-          <md-button class="md-icon-button md-warn" ng-if="$ctrl.shoppingCart.isInCart(unit.unitId, version.version)" ng-click="$ctrl.shoppingCart.removeUnit(unit.unitId, version.version)"><md-icon>remove_shopping_cart</md-icon></md-button>
-          <ul class="list-group" ng-if="version.showRepositories">
-            <li class="list-group-item" ng-repeat="repository in version.repositoriesWithVersion">
-              <span class="angularButton" ng-click="$ctrl.filterUnitsByRepo(repository)">{{repository.uri}}</span>
-            </li>
-          </ul>
+<md-list class="scrollList">
+  <md-subheader class="md-sticky">Units</md-subheader>
+  <md-virtual-repeat-container class="infiniteScroll">
+    <md-list-item md-virtual-repeat="unit in $ctrl.units" md-on-demand ng-click="$ctrl.activeUnit = unit" class="repeated-item" flex>
+      {{unit.unitId}}
+    </md-list-item>
+  </md-virtual-repeat-container>
+</md-list>
+
+<md-content class="scrollList smallScrollList">
+  <md-list>
+    <md-subheader class="md-sticky">Versions</md-subheader>
+    <md-list-item ng-repeat="version in $ctrl.activeUnit.versions" ng-click="$ctrl.getRepositoriesForVersion($ctrl.activeUnit.unitId, version)" ng-init="version.repositoriesLoaded=false; version.showRepositories=false">
+      {{version.version}}
+      <md-button class="md-icon-button md-primary md-secondary" ng-if="!$ctrl.shoppingCart.isInCart($ctrl.activeUnit.unitId, version.version)" ng-click="$ctrl.shoppingCart.addUnit($ctrl.activeUnit.unitId, version.version)"><i class="material-icons">shopping_cart</i></md-button>
+      <md-button class="md-icon-button md-warn md-secondary" ng-if="$ctrl.shoppingCart.isInCart($ctrl.activeUnit.unitId, version.version)" ng-click="$ctrl.shoppingCart.removeUnit($ctrl.activeUnit.unitId, version.version)"><md-icon>remove_shopping_cart</md-icon></md-button>
+      <ul class="list-group" ng-if="version.showRepositories">
+        <li class="list-group-item" ng-repeat="repository in version.repositoriesWithVersion">
+          <span class="angularButton" ng-click="$ctrl.filterUnitsByRepo(repository)">{{repository.uri}}</span>
         </li>
       </ul>
-    </li>
-  </ul>
-  <div layout="row" layout-padding layout-align="space-around">
-    <md-progress-circular ng-if="$ctrl.unitsAreLoading" md-mode="indeterminate"></md-progress-circular>
-    <h3 ng-if="$ctrl.allUnitsLoaded">You have reached the end</h3>
-  </div>
+    </md-list-item>
+  </md-list> 
 </md-content>

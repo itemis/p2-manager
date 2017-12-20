@@ -2,10 +2,9 @@ angular
 .module('unitList')
 .component('unitList', {
     templateUrl: 'app/unit-list/unit-list.template.html',
-    controller: ['$http', '$q', 'unitSearch', 'shoppingCart', function UnitListController($http, $q, unitSearch, shoppingCart) {
+    controller: ['$http', '$q', 'unitSearch', 'shoppingCart', '$timeout', function UnitListController($http, $q, unitSearch, shoppingCart, $timeout) {
         
         this.backend = "http://localhost:8080";
-        this.units = [];
 		this.unitsAreLoading = false;
 		this.allUnitsLoaded = false;
 		this.unitSearchField={"keywords":""};
@@ -15,34 +14,70 @@ angular
         });
         this.shoppingCart = shoppingCart;
 
-        this.scrollLoadSize = 100;
-        this.scrollDistance = 2;
-
-        this.units2 = {
-            numLoaded: 0,
-            toLoad: 0,
-            scrollLoadSize: 100,
+        this.units = {
+            unitList: [],
+            scrollLoadSize: 20,
             
             getItemAtIndex: function(index) {
-                if (index > this.numLoaded) {
-                    this.fetchMoreItems(index);
+                if (index >= this.unitList.length) {
+                    this.loadMoreUnits(index);
                     return null;
                 }
   
-                return index;
+                return this.unitList[index];
             },
 
             getLength: function() {
-                return this.numLoaded + 10;
+                if (this.ctrl.allUnitsLoaded) {
+                    return this.unitList.length
+                }
+                return this.unitList.length + 5;
             },
   
-            fetchMoreItems_: function(index) {
-                if (this.toLoad < index) {
-                    this.toLoad += this.scrollLoadSize;
-                    //TODO: call loadMoreUnits appropriately
+            loadMoreUnits: function(index) {
+                if (index < this.unitList.length || this.ctrl.unitsAreLoading || this.ctrl.allUnitsLoaded) {
+                    return;
                 }
+                
+                this.ctrl.unitsAreLoading = true;
+                const searchQuery = this.ctrl.unitSearchField.keywords.split(" ")
+                                        .map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
+                                        .reduce((keyword1, keyword2) => keyword1+"&"+keyword2);
+        
+                $http.get(this.ctrl.backend+'/units?limit='+this.scrollLoadSize
+                                                    +"&offset="
+                                                    +this.getTrueUnitListSize()
+                                                    +"&"+searchQuery)
+                .then(response => {
+                    this.ctrl.unitsAreLoading = false;
+                    
+                    if (response.status === 204) { // No Content 
+                        this.ctrl.allUnitsLoaded = true;
+                    } else {
+                        for (let unit of response.data) {
+                            let existingUnit = this.unitList.find((elem, i, arr) => elem.unitId.valueOf() === unit.unitId.valueOf());
+                            if (existingUnit !== undefined) {
+                                existingUnit.versions.push({"version": unit.version});
+                            } else {
+                                this.unitList.push({
+                                    "unitId": unit.unitId,
+                                    "versions": [{"version": unit.version}]
+                                });
+                            }
+                        }
+                    }
+                });
+            },
+
+            reset: function() {
+                this.unitList = [];
+            },
+
+            getTrueUnitListSize: function() {
+                return this.unitList.reduce((length, unit) => unit.versions.length + length, 0);
             }
         };
+        this.units.ctrl = this;
         
         this.searchUnits = () => {
             if (this.searchUnitTimeout !== undefined) {
@@ -50,9 +85,8 @@ angular
             }
             this.searchUnitTimeout = $q.defer();
     
-            this.units = [];
+            this.units.reset();
             this.allUnitsLoaded = false;
-            this.loadMoreUnits();
         }
         
         this.loadMoreUnits = () => {

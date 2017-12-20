@@ -50,11 +50,7 @@
     <script src="app/unit-list/unit-search.service.js"></script>    
   </head>
   <body>
-    <div class="container px-5 ">
-
-      <div class="m-3">
-        <h1 class="display-3 p-4 text-center">p2-Manager</h1>
-      </div>
+    <div layout-align="space-around center" class="container">
 
       <md-nav-bar md-selected-nav-item="browse">
         <md-nav-item md-nav-href="#browse" name="browse">Home</md-nav-item>
@@ -65,7 +61,7 @@
       <ng-view></ng-view>
 
       <div id="footer">
-        <hr>
+        <md-divider></md-divider>
       </div>
 
     </div>
