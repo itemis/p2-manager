@@ -48,3 +48,7 @@ md-input-container {
     min-height: 200px;
     max-height: 200px;
 }
+
+#fullPageList {
+    max-height: 80vh;
+}
