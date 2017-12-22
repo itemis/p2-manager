@@ -1,6 +1,10 @@
 body {
-    background-color: #19A9F9;
     overflow-y:scroll;
+    width: 100vw;
+}
+
+h2 {
+    text-align: center;
 }
 
 li {
@@ -11,28 +15,9 @@ md-input-container {
     display: flex;
 }
 
-.container {
-    background-color: white;
-    height: 95vh;
-    max-width: 950px;
-}
-
-.angularButton {
-    color: blue;
-    cursor: pointer;
-}
-
-.angularButton:hover {
-    text-decoration: underline;
-}
-
-.angularButton:active {
-    color: #ffa500;
-    text-decoration: underline;
-}
-
-.spacingElement {
-	visibility: hidden;
+.mainContent {
+    margin-top: 2em;
+    width: 960px;
 }
 
 .scrollList {

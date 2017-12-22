@@ -1,14 +1,11 @@
 <!doctype html>
-<html lang="en" ng-app="p2-manager-frontend">
+<html lang="en" ng-app="p2-manager-frontend" class="background">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>p2-Manager</title>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
-   
     <!-- AngularJS Material CSS -->
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -34,10 +31,6 @@
     <!-- ngInfiniteScroll -->
     <script type='text/javascript' src='lib/ng-infinite-scroll/ng-infinite-scroll.js'></script>
 
-    <!-- Bootstrap.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
-
     <!-- P2-Manager Frontend -->
     <script src="app/p2-manager-frontend.module.js"></script>
     <script src="app/shopping-cart/shopping-cart.module.js"></script>
@@ -49,10 +42,10 @@
     <script src="app/unit-list/unit-list.component.js"></script>
     <script src="app/unit-list/unit-search.service.js"></script>    
   </head>
-  <body>
-    <div layout-align="space-around center" class="container">
+  <body class="background" layout="column" layout-align="space-around center">
+    <div flex class="mainContent">
 
-      <md-nav-bar md-selected-nav-item="browse">
+      <md-nav-bar flex md-selected-nav-item="selectedNavItem">
         <md-nav-item md-nav-href="#browse" name="browse">Home</md-nav-item>
         <md-nav-item md-nav-href="#cart" name="cart">Cart</md-nav-item>
         <md-nav-item md-nav-href="#admin" name="admin">Admin</md-nav-item>

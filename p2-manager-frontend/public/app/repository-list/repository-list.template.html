@@ -1,4 +1,4 @@
-<h2 class="m-2">Search Repositories</h2>
+<h2>Search Repositories</h2>
 <div layout="row" layout-align="space-between center">
   <div flex>
     <md-input-container ng-submit="$ctrl.searchRepositories()" name="searchRepositoriesForm">
@@ -26,8 +26,3 @@
     </md-list-item>
   </md-virtual-repeat-container>
 </md-list>
-
-<div layout="row" layout-padding layout-align="space-around">
-  <md-progress-circular ng-if="$ctrl.repositoriesAreLoading" md-mode="indeterminate"></md-progress-circular>
-  <h3 ng-if="$ctrl.allRepositoriesLoaded">You have reached the end</h3>
-</div>
