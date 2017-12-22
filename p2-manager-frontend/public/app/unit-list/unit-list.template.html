@@ -2,7 +2,7 @@
 <div layout="row" layout-align="space-between center">
   <div flex>
     <md-input-container ng-submit="$ctrl.searchUnits()" name="searchUnitsForm">
-      <input name="unitId" id="unitId" ng-model="$ctrl.unitSearchField.keywords" ng-model-options="{debounce:300}" ng-pattern='$ctrl.unitIdFormat' ng-change="$ctrl.searchUnits()">
+      <input name="unitId" id="unitId" ng-model="$ctrl.unitSearchField.keywords" ng-model-options="{debounce:300}" ng-change="$ctrl.searchUnits()">
     </md-input-container>
   </div>
   <div>

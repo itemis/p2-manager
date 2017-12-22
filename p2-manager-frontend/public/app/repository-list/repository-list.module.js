@@ -1,1 +1,1 @@
-angular.module('repositoryList', ['unitList', 'infinite-scroll']);
+angular.module('repositoryList', ['unitList', 'constants']);

@@ -2,21 +2,17 @@ angular
 .module('repositoryList')
 .component('repositoryList', {
     templateUrl: 'app/repository-list/repository-list.template.html',
-    controller: function RepositoryListController($http, $q, $timeout, unitSearch) {
+    controller: function RepositoryListController($http, $q, $timeout, unitSearch, constants) {
         
-        this.backend = "http://localhost:8080"; // http://localhost:8080 http://p2-manager-backend:8888
-
-        this.repositoriesAreLoading = false;
-        this.allRepositoriesLoaded = false;
+        this.backend = constants.backend;
         this.repoSearch={"keywords":""};
-        this.scrollLoadSize = 100;
-        this.scrollDistance = 20;
-        this.repositoryURL = "";
         this.unitSearch = unitSearch;
 
         this.repositories = {
             repositoryList: [],
-            scrollLoadSize: 7,
+            scrollLoadSize: 100,
+            allRepositoriesLoaded: false,
+            repositoriesAreLoading: false,
             
             getItemAtIndex: function(index) {
                 if (index >= this.repositoryList.length) {
@@ -28,18 +24,18 @@ angular
             },
 
             getLength: function() {
-                if (this.ctrl.allRepositoriesLoaded) {
+                if (this.allRepositoriesLoaded) {
                     return this.repositoryList.length
                 }
                 return this.repositoryList.length + 5;
             },
   
             loadMoreRepositories: function(index) {
-                if (index < this.repositoryList.length || this.ctrl.repositoriesAreLoading || this.ctrl.allRepositoriesLoaded) {
+                if (index < this.repositoryList.length || this.repositoriesAreLoading || this.allRepositoriesLoaded) {
                     return;
                 }
                 
-                this.ctrl.repositoriesAreLoading = true;
+                this.repositoriesAreLoading = true;
                 const searchQuery = this.ctrl.repoSearch.keywords.split(" ")
                                         .map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
                                         .reduce((keyword1, keyword2) => keyword1+"&"+keyword2);
@@ -49,10 +45,10 @@ angular
                                                     +this.repositoryList.length
                                                     +"&"+searchQuery)
                 .then(response => {
-                    this.ctrl.repositoriesAreLoading = false;
+                    this.repositoriesAreLoading = false;
                     
                     if (response.status === 204) { // No Content 
-                        this.ctrl.allRepositoriesLoaded = true;
+                        this.allRepositoriesLoaded = true;
                     } else {
                         for (let repo of response.data) {
                             this.repositoryList.push(repo);
@@ -63,6 +59,7 @@ angular
 
             reset: function() {
                 this.repositoryList = [];
+                this.allRepositoriesLoaded = false;
             }
         };
         this.repositories.ctrl = this;
@@ -74,7 +71,6 @@ angular
             this.searchRepoTimeout = $q.defer();
 
             this.repositories.reset();
-            this.allRepositoriesLoaded = false;
         }
         
         this.getChildrenOfRepo = (repository) => {

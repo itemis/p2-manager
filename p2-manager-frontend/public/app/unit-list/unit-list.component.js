@@ -2,11 +2,9 @@ angular
 .module('unitList')
 .component('unitList', {
     templateUrl: 'app/unit-list/unit-list.template.html',
-    controller: ['$http', '$q', 'unitSearch', 'shoppingCart', '$timeout', function UnitListController($http, $q, unitSearch, shoppingCart, $timeout) {
+    controller: ['$http', '$q', 'unitSearch', 'shoppingCart', '$timeout', 'constants', function UnitListController($http, $q, unitSearch, shoppingCart, $timeout, constants) {
         
-        this.backend = "http://localhost:8080";
-		this.unitsAreLoading = false;
-		this.allUnitsLoaded = false;
+        this.backend = constants.backend;
 		this.unitSearchField={"keywords":""};
         unitSearch.onSearchTextChange((keywords) => {
             this.unitSearchField.keywords = keywords;
@@ -16,7 +14,9 @@ angular
 
         this.units = {
             unitList: [],
-            scrollLoadSize: 20,
+            scrollLoadSize: 100,
+            allUnitsLoaded: false,
+            unitsAreLoading: false,
             
             getItemAtIndex: function(index) {
                 if (index >= this.unitList.length) {
@@ -28,18 +28,18 @@ angular
             },
 
             getLength: function() {
-                if (this.ctrl.allUnitsLoaded) {
+                if (this.allUnitsLoaded) {
                     return this.unitList.length
                 }
                 return this.unitList.length + 5;
             },
   
             loadMoreUnits: function(index) {
-                if (index < this.unitList.length || this.ctrl.unitsAreLoading || this.ctrl.allUnitsLoaded) {
+                if (index < this.unitList.length || this.unitsAreLoading || this.allUnitsLoaded) {
                     return;
                 }
                 
-                this.ctrl.unitsAreLoading = true;
+                this.unitsAreLoading = true;
                 const searchQuery = this.ctrl.unitSearchField.keywords.split(" ")
                                         .map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
                                         .reduce((keyword1, keyword2) => keyword1+"&"+keyword2);
@@ -49,10 +49,10 @@ angular
                                                     +this.getTrueUnitListSize()
                                                     +"&"+searchQuery)
                 .then(response => {
-                    this.ctrl.unitsAreLoading = false;
+                    this.unitsAreLoading = false;
                     
                     if (response.status === 204) { // No Content 
-                        this.ctrl.allUnitsLoaded = true;
+                        this.allUnitsLoaded = true;
                     } else {
                         for (let unit of response.data) {
                             let existingUnit = this.unitList.find((elem, i, arr) => elem.unitId.valueOf() === unit.unitId.valueOf());
@@ -71,6 +71,7 @@ angular
 
             reset: function() {
                 this.unitList = [];
+                this.allUnitsLoaded = false;
             },
 
             getTrueUnitListSize: function() {
@@ -86,46 +87,6 @@ angular
             this.searchUnitTimeout = $q.defer();
     
             this.units.reset();
-            this.allUnitsLoaded = false;
-        }
-        
-        this.loadMoreUnits = () => {
-            if (this.unitsAreLoading || this.allUnitsLoaded) {
-                return;
-            }
-            
-            if (this.unitSearchField.keywords === undefined) {
-                return;
-            }
-            
-            this.unitsAreLoading = true;
-            const searchQuery = this.unitSearchField.keywords.split(" ")
-                                    .map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
-                                    .reduce((keyword1, keyword2) => keyword1+"&"+keyword2);
-    
-            $http.get(this.backend+'/units?limit='+this.scrollLoadSize
-                                                +"&offset="
-                                                +this.units.reduce((length, unit) => unit.versions.length + length, 0)
-                                                +"&"+searchQuery)
-            .then(response => {
-                this.unitsAreLoading = false;
-                
-                if (response.status === 204) { // No Content 
-                    this.allUnitsLoaded = true;
-                } else {
-                    for (let unit of response.data) {
-                        let existingUnit = this.units.find((elem, i, arr) => elem.unitId.valueOf() === unit.unitId.valueOf());
-                        if (existingUnit !== undefined) {
-                            existingUnit.versions.push({"version": unit.version});
-                        } else {
-                            this.units.push({
-                                "unitId": unit.unitId,
-                                "versions": [{"version": unit.version}]
-                            });
-                        }
-                    }
-                }
-            });
         }
         
         this.getRepositoriesForVersion = (unitId, version) => {

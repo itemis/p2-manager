@@ -1,1 +1,1 @@
-angular.module('shoppingCart', ['ngCookies']);
+angular.module('shoppingCart', ['ngCookies', 'constants']);

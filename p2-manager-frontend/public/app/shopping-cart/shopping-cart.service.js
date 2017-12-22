@@ -1,9 +1,9 @@
 angular.module('shoppingCart')
-.factory('shoppingCart', ($cookies, $http) => {
+.factory('shoppingCart', ($cookies, $http, constants) => {
     let units = [];
     let repositories = [];
 
-    const backend = "http://localhost:8080";
+    const backend = constants.backend;
 
     const cookieUnitsInCart = $cookies.getObject("unitsInCart");
     if (cookieUnitsInCart === undefined) {
