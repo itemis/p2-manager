@@ -72,7 +72,7 @@ public class RepositoryController {
 		Neo4JQueryBuilder query = new Neo4JQueryBuilder().match("(r:Repository)")
 														 .result("r.serviceId,r.uri")
 														 .distinct()
-														 .orderBy("r.serviceId")
+														 .orderBy("r.uri")
 														 .limit(limit, offset);
 		if (searchTerm != null) {
 			for (String term : searchTerm) {
@@ -148,7 +148,7 @@ public class RepositoryController {
 		Neo4JQueryBuilder query = new Neo4JQueryBuilder().match("(r:Repository) -[]-> (c:Repository)")
 				 										 .filter("r.serviceId = '"+id+"'")
 				 										 .result("c.serviceId,c.uri")
-				 										 .orderBy("c.serviceId")
+				 										 .orderBy("c.uri")
 				 										 .distinct();
 
 		ObjectNode _result = neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
