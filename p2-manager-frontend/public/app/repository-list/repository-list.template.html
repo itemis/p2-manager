@@ -10,10 +10,23 @@
   </div>
 </div>
 
-<ul class="list-group" infinite-scroll="$ctrl.loadMoreRepositories()" infinite-scroll-use-document-bottom="false" infinite-scroll-parent="false" infinite-scroll-distance="1">
+<!--<ul class="list-group" infinite-scroll="$ctrl.loadMoreRepositories()" infinite-scroll-use-document-bottom="false" infinite-scroll-parent="false" infinite-scroll-distance="1">
   <li class="list-group-item" ng-repeat="repository in $ctrl.repositories | orderBy:'uri'" ng-include="'app/repository-list/repository-list-children.template.html'">
   </li>
-</ul>
+</ul>-->
+
+<md-list class="scrollList">
+  <md-subheader class="md-sticky">Repositories</md-subheader>
+  <md-virtual-repeat-container class="infiniteScroll">
+    <md-list-item md-virtual-repeat="repository in $ctrl.repositories" md-on-demand ng-click="$ctrl.getChildrenOfRepo(repository); $ctrl.filterUnitsByRepo(repository)" class="repeated-item" flex>
+      <div>
+        {{repository.uri}}
+        <div ng-include="'app/repository-list/repository-list-children.template.html'"></div>
+      </div>
+    </md-list-item>
+  </md-virtual-repeat-container>
+</md-list>
+
 <div layout="row" layout-padding layout-align="space-around">
   <md-progress-circular ng-if="$ctrl.repositoriesAreLoading" md-mode="indeterminate"></md-progress-circular>
   <h3 ng-if="$ctrl.allRepositoriesLoaded">You have reached the end</h3>

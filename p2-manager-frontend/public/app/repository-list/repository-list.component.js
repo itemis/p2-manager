@@ -8,12 +8,64 @@ angular
 
         this.repositoriesAreLoading = false;
         this.allRepositoriesLoaded = false;
-        this.repositories = [];
         this.repoSearch={"keywords":""};
         this.scrollLoadSize = 100;
-        this.scrollDistance = 2;
+        this.scrollDistance = 20;
         this.repositoryURL = "";
         this.unitSearch = unitSearch;
+
+        this.repositories = {
+            repositoryList: [],
+            scrollLoadSize: 7,
+            
+            getItemAtIndex: function(index) {
+                if (index >= this.repositoryList.length) {
+                    this.loadMoreRepositories(index);
+                    return null;
+                }
+  
+                return this.repositoryList[index];
+            },
+
+            getLength: function() {
+                if (this.ctrl.allRepositoriesLoaded) {
+                    return this.repositoryList.length
+                }
+                return this.repositoryList.length + 5;
+            },
+  
+            loadMoreRepositories: function(index) {
+                if (index < this.repositoryList.length || this.ctrl.repositoriesAreLoading || this.ctrl.allRepositoriesLoaded) {
+                    return;
+                }
+                
+                this.ctrl.repositoriesAreLoading = true;
+                const searchQuery = this.ctrl.repoSearch.keywords.split(" ")
+                                        .map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
+                                        .reduce((keyword1, keyword2) => keyword1+"&"+keyword2);
+        
+                $http.get(this.ctrl.backend+'/repositories?topLevelOnly=true&limit='+this.scrollLoadSize
+                                                    +"&offset="
+                                                    +this.repositoryList.length
+                                                    +"&"+searchQuery)
+                .then(response => {
+                    this.ctrl.repositoriesAreLoading = false;
+                    
+                    if (response.status === 204) { // No Content 
+                        this.ctrl.allRepositoriesLoaded = true;
+                    } else {
+                        for (let repo of response.data) {
+                            this.repositoryList.push(repo);
+                        }
+                    }
+                });
+            },
+
+            reset: function() {
+                this.repositoryList = [];
+            }
+        };
+        this.repositories.ctrl = this;
         
         this.searchRepositories = () => {
             if (this.searchRepoTimeout !== undefined) {
@@ -21,37 +73,8 @@ angular
             }
             this.searchRepoTimeout = $q.defer();
 
-            this.repositories = [];
+            this.repositories.reset();
             this.allRepositoriesLoaded = false;
-            this.loadMoreRepositories();
-        }
-        
-        this.loadMoreRepositories = () => {
-            if (this.repositoriesAreLoading || this.allRepositoriesLoaded) {
-                return;
-            }
-
-            if (this.repoSearch.keywords === undefined) {
-                return;
-            }
-            
-            this.repositoriesAreLoading = true;
-            const searchQuery = this.repoSearch.keywords.split(" ")
-                                    .map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
-                                    .reduce((keyword1, keyword2) => keyword1+"&"+keyword2);
-                                    
-            $http.get(this.backend+'/repositories?topLevelOnly=true&limit='+this.scrollLoadSize
-                                                    +"&offset="+this.repositories.length
-                                                    +"&"+searchQuery)
-            .then(response => {
-                this.repositoriesAreLoading = false;
-                
-                if (response.status === 204) { // No Content 
-                    this.allRepositoriesLoaded = true;
-                } else {
-                    this.repositories = this.repositories.concat(response.data);
-                }
-            });
         }
         
         this.getChildrenOfRepo = (repository) => {
