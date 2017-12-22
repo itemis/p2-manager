@@ -1,38 +1,39 @@
 body {
-    background-color: #19A9F9;
     overflow-y:scroll;
+    width: 100vw;
+}
+
+h2 {
+    text-align: center;
 }
 
 li {
     word-break: break-all;
-  }
-
-.container {
-    background-color: white;
-    min-height:90vh;
-    
 }
 
-.angularButton {
-    color: blue;
-    cursor: pointer;
+md-input-container {
+    display: flex;
 }
 
-.angularButton:hover {
-    text-decoration: underline;
-}
-
-.angularButton:active {
-    color: #ffa500;
-    text-decoration: underline;
-}
-
-.spacingElement {
-	visibility: hidden;
+.mainContent {
+    margin-top: 2em;
+    width: 960px;
 }
 
 .scrollList {
-    overflow-y: scroll;
-    min-height: 100px;
+    word-break: break-all;
+    border: solid 1px grey;
+}
+
+.infiniteScroll {
+    min-height: 320px;
+}
+
+.smallScrollList {
+    min-height: 200px;
+    max-height: 200px;
+}
+
+#fullPageList {
     max-height: 80vh;
 }

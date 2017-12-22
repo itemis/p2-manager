@@ -2,21 +2,82 @@ angular
 .module('unitList')
 .component('unitList', {
     templateUrl: 'app/unit-list/unit-list.template.html',
-    controller: ['$http', '$q', 'unitSearch', 'shoppingCart', function UnitListController($http, $q, unitSearch, shoppingCart) {
+    controller: ['$http', '$q', 'unitSearch', 'shoppingCart', '$timeout', function UnitListController($http, $q, unitSearch, shoppingCart, $timeout) {
         
         this.backend = "http://localhost:8080";
-
 		this.unitsAreLoading = false;
 		this.allUnitsLoaded = false;
-		this.units = [];
 		this.unitSearchField={"keywords":""};
         unitSearch.onSearchTextChange((keywords) => {
             this.unitSearchField.keywords = keywords;
             this.searchUnits();
         });
-		this.scrollLoadSize = 100;
-        this.scrollDistance = 2;
         this.shoppingCart = shoppingCart;
+
+        this.units = {
+            unitList: [],
+            scrollLoadSize: 20,
+            
+            getItemAtIndex: function(index) {
+                if (index >= this.unitList.length) {
+                    this.loadMoreUnits(index);
+                    return null;
+                }
+  
+                return this.unitList[index];
+            },
+
+            getLength: function() {
+                if (this.ctrl.allUnitsLoaded) {
+                    return this.unitList.length
+                }
+                return this.unitList.length + 5;
+            },
+  
+            loadMoreUnits: function(index) {
+                if (index < this.unitList.length || this.ctrl.unitsAreLoading || this.ctrl.allUnitsLoaded) {
+                    return;
+                }
+                
+                this.ctrl.unitsAreLoading = true;
+                const searchQuery = this.ctrl.unitSearchField.keywords.split(" ")
+                                        .map(keyword => "searchTerm="+keyword.replace(/\s/g, ''))
+                                        .reduce((keyword1, keyword2) => keyword1+"&"+keyword2);
+        
+                $http.get(this.ctrl.backend+'/units?limit='+this.scrollLoadSize
+                                                    +"&offset="
+                                                    +this.getTrueUnitListSize()
+                                                    +"&"+searchQuery)
+                .then(response => {
+                    this.ctrl.unitsAreLoading = false;
+                    
+                    if (response.status === 204) { // No Content 
+                        this.ctrl.allUnitsLoaded = true;
+                    } else {
+                        for (let unit of response.data) {
+                            let existingUnit = this.unitList.find((elem, i, arr) => elem.unitId.valueOf() === unit.unitId.valueOf());
+                            if (existingUnit !== undefined) {
+                                existingUnit.versions.push({"version": unit.version});
+                            } else {
+                                this.unitList.push({
+                                    "unitId": unit.unitId,
+                                    "versions": [{"version": unit.version}]
+                                });
+                            }
+                        }
+                    }
+                });
+            },
+
+            reset: function() {
+                this.unitList = [];
+            },
+
+            getTrueUnitListSize: function() {
+                return this.unitList.reduce((length, unit) => unit.versions.length + length, 0);
+            }
+        };
+        this.units.ctrl = this;
         
         this.searchUnits = () => {
             if (this.searchUnitTimeout !== undefined) {
@@ -24,9 +85,8 @@ angular
             }
             this.searchUnitTimeout = $q.defer();
     
-            this.units = [];
+            this.units.reset();
             this.allUnitsLoaded = false;
-            this.loadMoreUnits();
         }
         
         this.loadMoreUnits = () => {

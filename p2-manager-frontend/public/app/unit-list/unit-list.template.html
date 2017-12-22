@@ -1,28 +1,36 @@
-<h2 class="m-2">Search Installable Units</h2>
-<form class="form-inline" ng-submit="$ctrl.searchUnits()" name="searchUnitsForm">
-  <input class="form-control m-1" name="unitId" type="text" size="32" id="unitId" ng-model="$ctrl.unitSearchField.keywords" ng-model-options="{debounce:300}" ng-pattern='$ctrl.unitIdFormat' ng-change="$ctrl.searchUnits()">
-  <button type="button" class="btn m-1" ng-click="$ctrl.searchUnits()" ng-disabled="$ctrl.searchUnitsForm.unitId.$invalid">Search</button>
-</form>
-
-<h2 class="m-3 text-center">Installable Units</h2>
-<ul class="list-group" infinite-scroll="$ctrl.loadMoreUnits()" infinite-scroll-use-document-bottom="false" infinite-scroll-parent="false" infinite-scroll-distance="1">
-  <li class="list-group-item" ng-repeat="unit in $ctrl.units">
-    <span class="angularButton" ng-click="showVersions = !showVersions" ng-init="showVersions=false">{{unit.unitId}}</span>
-    <ul class="list-group" ng-if="showVersions">
-      <li class="list-group-item" ng-repeat="version in unit.versions" ng-init="version.repositoriesLoaded=false">
-        <span class="angularButton" ng-click="$ctrl.getRepositoriesForVersion(unit.unitId, version)" ng-init="version.showRepositories=false">{{version.version}}</span>
-        <button type="button" class="btn m-1" ng-if="!$ctrl.shoppingCart.isInCart(unit.unitId, version.version)" ng-click="$ctrl.shoppingCart.addUnit(unit.unitId, version.version)">Add to cart</button>
-        <button type="button" class="btn m-1" ng-if="$ctrl.shoppingCart.isInCart(unit.unitId, version.version)" ng-click="$ctrl.shoppingCart.removeUnit(unit.unitId, version.version)">Remove from cart</button>
-        <ul class="list-group" ng-if="version.showRepositories">
-          <li class="list-group-item" ng-repeat="repository in version.repositoriesWithVersion">
-            <span class="angularButton" ng-click="$ctrl.filterUnitsByRepo(repository)">{{repository.uri}}</span>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>
-<div class="m-3 text-center">
-  <img src="resource/loadingIcon.gif" ng-if="$ctrl.unitsAreLoading">
-  <h3 ng-if="$ctrl.allUnitsLoaded">You have reached the end</h3>
+<h2>Search Installable Units</h2>
+<div layout="row" layout-align="space-between center">
+  <div flex>
+    <md-input-container ng-submit="$ctrl.searchUnits()" name="searchUnitsForm">
+      <input name="unitId" id="unitId" ng-model="$ctrl.unitSearchField.keywords" ng-model-options="{debounce:300}" ng-pattern='$ctrl.unitIdFormat' ng-change="$ctrl.searchUnits()">
+    </md-input-container>
+  </div>
+  <div>
+    <md-button class="md-primary md-raised" ng-click="$ctrl.searchUnits()">Search</md-button>
+  </div>
 </div>
+
+<md-list class="scrollList">
+  <md-subheader class="md-sticky">Units</md-subheader>
+  <md-virtual-repeat-container class="infiniteScroll">
+    <md-list-item md-virtual-repeat="unit in $ctrl.units" md-on-demand ng-click="$ctrl.activeUnit = unit" class="repeated-item" flex>
+      {{unit.unitId}}
+    </md-list-item>
+  </md-virtual-repeat-container>
+</md-list>
+
+<md-content class="scrollList smallScrollList">
+  <md-list>
+    <md-subheader class="md-sticky">Versions</md-subheader>
+    <md-list-item ng-repeat="version in $ctrl.activeUnit.versions" ng-click="$ctrl.getRepositoriesForVersion($ctrl.activeUnit.unitId, version)" ng-init="version.repositoriesLoaded=false; version.showRepositories=false">
+      {{version.version}}
+      <md-button class="md-icon-button md-primary md-secondary" ng-if="!$ctrl.shoppingCart.isInCart($ctrl.activeUnit.unitId, version.version)" ng-click="$ctrl.shoppingCart.addUnit($ctrl.activeUnit.unitId, version.version)"><i class="material-icons">shopping_cart</i></md-button>
+      <md-button class="md-icon-button md-warn md-secondary" ng-if="$ctrl.shoppingCart.isInCart($ctrl.activeUnit.unitId, version.version)" ng-click="$ctrl.shoppingCart.removeUnit($ctrl.activeUnit.unitId, version.version)"><md-icon>remove_shopping_cart</md-icon></md-button>
+      <ul class="list-group" ng-if="version.showRepositories">
+        <li class="list-group-item" ng-repeat="repository in version.repositoriesWithVersion">
+          <span class="angularButton" ng-click="$ctrl.filterUnitsByRepo(repository)">{{repository.uri}}</span>
+        </li>
+      </ul>
+    </md-list-item>
+  </md-list> 
+</md-content>

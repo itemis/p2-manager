@@ -1,4 +1,8 @@
-<span class="angularButton" ng-click="$ctrl.getChildrenOfRepo(repository); $ctrl.filterUnitsByRepo(repository)" ng-init="repository.showChildren=false; repository.childrenLoaded=false">{{repository.uri}}</span>
-<ul class="list-group" ng-if="repository.showChildren && (repository.children.length > 0)">
-  <li class="list-group-item" ng-repeat="repository in repository.children" ng-include="'app/repository-list/repository-list-children.template.html'"></li>
-</ul>
+<md-list ng-if="repository.showChildren && (repository.children.length > 0)">  
+  <md-list-item ng-repeat="repository in repository.children" ng-click="$ctrl.getChildrenOfRepo(repository); $ctrl.filterUnitsByRepo(repository)">
+    <div>
+      {{repository.uri}}
+      <div ng-include="'app/repository-list/repository-list-children.template.html'"></div>
+    </div>
+  </md-list-item>
+</md-list>
