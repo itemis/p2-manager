@@ -1,1 +1,1 @@
-angular.module('admin', ['constants']);
+angular.module('admin', ['constants', 'ngMaterial']);

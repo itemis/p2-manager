@@ -110,6 +110,8 @@ public class RepositoryController {
 		
 		createRepoNeo.thenAcceptBothAsync(createRepoQueryService, (neoId, repoQueryLocation) -> handler.postUnitsNeoDB(neo4jUrl, neoId, repoQueryLocation), executor);
 		loadChildren.thenAcceptBothAsync(createRepoNeo, (childQueryLocations, parentNeoId) -> handler.addChildrenRepositories(neo4jUrl, childQueryLocations, parentNeoId), executor);
+		
+		//TODO: return error if no repository can be found under the URL
 	}
 	
 	@ApiOperation(value = "Get the uri of a repository")
