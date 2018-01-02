@@ -1,6 +1,6 @@
 "use strict";
 
-angular.module('p2-manager-frontend', ['ngRoute', 'repositoryList', 'unitList', 'ngMaterial', 'ngMessages', 'ngAria', 'ngAnimate'])
+angular.module('p2-manager-frontend', ['ngRoute', 'repositoryList', 'unitList', 'admin', 'ngMaterial', 'ngMessages', 'ngAria', 'ngAnimate'])
        .config(['$routeProvider', '$mdThemingProvider', ($routeProvider, $mdThemingProvider) => {
     $routeProvider
     .when('/browse', {
@@ -12,7 +12,9 @@ angular.module('p2-manager-frontend', ['ngRoute', 'repositoryList', 'unitList', 
         controllerAs: '$ctrl'
     })
     .when('/admin', {
-        templateUrl: 'app/admin/admin-view.template.html'
+        templateUrl: 'app/admin/admin-view.template.html',
+        controller: 'adminController',
+        controllerAs: '$ctrl'
     })
     .otherwise({
        redirectTo: '/browse'

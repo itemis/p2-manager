@@ -1,1 +1,1 @@
-angular.module('admin');
+angular.module('admin', ['constants']);

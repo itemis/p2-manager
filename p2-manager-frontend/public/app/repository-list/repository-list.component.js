@@ -4,6 +4,8 @@ angular
     templateUrl: 'app/repository-list/repository-list.template.html',
     controller: function RepositoryListController($http, $q, $timeout, unitSearch, constants) {
         
+        //TODO: Refactoring - maybe split this component up further (search bar & actual list)
+
         this.backend = constants.backend;
         this.repoSearch={"keywords":""};
         this.unitSearch = unitSearch;

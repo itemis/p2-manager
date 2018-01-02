@@ -4,6 +4,8 @@ angular
     templateUrl: 'app/unit-list/unit-list.template.html',
     controller: ['$http', '$q', 'unitSearch', 'shoppingCart', '$timeout', 'constants', function UnitListController($http, $q, unitSearch, shoppingCart, $timeout, constants) {
         
+        //TODO: Refactoring - maybe split this component up further (search bar & actual list)
+
         this.backend = constants.backend;
 		this.unitSearchField={"keywords":""};
         unitSearch.onSearchTextChange((keywords) => {
