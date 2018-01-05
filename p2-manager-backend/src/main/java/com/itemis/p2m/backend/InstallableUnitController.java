@@ -6,7 +6,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,14 +34,11 @@ public class InstallableUnitController {
 	@Value("${url.neo4j.cypher}")
 	private String neo4jUrl;
 	
-	private QueryServiceHandler handler;
-	
 	@Qualifier("neoRestTemplateBean")
 	private RestTemplate neoRestTemplate;
 	
 	
-	public InstallableUnitController(QueryServiceHandler handler, @Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
-		this.handler = handler;
+	public InstallableUnitController(@Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
 		this.neoRestTemplate = neoRestTemplate;
 	}
 

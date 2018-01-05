@@ -1,8 +1,5 @@
 package com.itemis.p2m.backend;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -24,9 +21,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.itemis.p2m.backend.model.InstallableUnit;
-import com.itemis.p2m.backend.model.Repository;
-import com.itemis.p2m.backend.model.RepositoryProvidesVersion;
 
 @Component
 public class QueryServiceHandler {
