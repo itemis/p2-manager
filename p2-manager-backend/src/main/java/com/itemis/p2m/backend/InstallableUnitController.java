@@ -29,8 +29,6 @@ import io.swagger.annotations.ApiOperation;
 @RestController
 @RequestMapping("/units")
 public class InstallableUnitController {
-	@Value("${url.queryservice}")
-	private String queryserviceUrl;	
 	@Value("${url.neo4j.cypher}")
 	private String neo4jUrl;
 	

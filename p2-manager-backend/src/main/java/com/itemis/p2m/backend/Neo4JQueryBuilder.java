@@ -9,6 +9,7 @@ public class Neo4JQueryBuilder {
 	class QueryParts {
 		private StringJoiner filters = new StringJoiner(" AND ");
 		private String matchPattern = "";
+		private String createPattern = "";
 		private String returnPattern = "";
 		private String orderByProperty = "";
 		private String limit = "";
@@ -29,6 +30,11 @@ public class Neo4JQueryBuilder {
 	
 	public Neo4JQueryBuilder match(String pattern) {
 		parts.matchPattern = pattern;
+		return this;
+	}
+	
+	public Neo4JQueryBuilder create(String pattern) {
+		parts.createPattern = pattern;
 		return this;
 	}
 	
@@ -57,6 +63,7 @@ public class Neo4JQueryBuilder {
 	public String toString() {		
 		return this.matchClause()
 			 + this.whereClause()
+			 + this.createClause()
 			 + this.returnClause();
 	}
 	
@@ -78,6 +85,13 @@ public class Neo4JQueryBuilder {
 			return "";
 		}
 		return "MATCH "+parts.matchPattern;
+	}
+	
+	private String createClause() {
+		if (parts.createPattern == null || parts.createPattern.equals("")) {
+			return "";
+		}
+		return " CREATE "+parts.createPattern;
 	}
 	
 	private String whereClause() {

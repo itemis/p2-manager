@@ -22,8 +22,6 @@ import com.itemis.p2m.backend.model.Repository;
 
 @Component
 public class ShoppingCartOptimizer {
-	@Value("${url.queryservice}")
-	private String queryserviceUrl;	
 	@Value("${url.neo4j.cypher}")
 	private String neo4jUrl;	
 	

@@ -28,5 +28,9 @@ public class Neo4JQueryBuilderTest {
 		expectation = "MATCH (x) WHERE x.y = 'a' AND x.z = 'b' RETURN DISTINCT x ORDER BY x.y SKIP 3 LIMIT 6";
 		query.reset().match("(x)").filter("x.y = 'a'").filter("x.z = 'b'").result("x").orderBy("x.y").limit("6", "3").distinct();
 		assertEquals(expectation, query.toString());
+		
+		expectation = "MATCH (x),(y) WHERE x.z = y.z CREATE (x)-[:ABC]->(y) RETURN x,y,z";
+		query.reset().match("(x),(y)").filter("x.z = y.z").create("(x)-[:ABC]->(y)").result("x,y,z");
+		assertEquals(expectation, query.toString());
 	}
 }
