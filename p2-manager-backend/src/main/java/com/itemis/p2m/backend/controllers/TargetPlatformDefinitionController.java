@@ -1,10 +1,8 @@
-package com.itemis.p2m.backend;
+package com.itemis.p2m.backend.controllers;
 
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.fromMethodName;
 
 import java.io.IOException;
-import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,17 +13,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-import org.springframework.web.util.UriComponents;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.itemis.p2m.backend.Neo4JQueryBuilder;
 import com.itemis.p2m.backend.model.TargetPlatformDefinition;
 import com.itemis.p2m.backend.targetplatform.TargetPlatformDefinitionGenerator;
 
@@ -70,7 +64,7 @@ public class TargetPlatformDefinitionController {
 			neoRestTemplate.postForObject(neo4jUrl, query.buildMap(), ObjectNode.class);
 		}
 		
-		String tpdAddress = MvcUriComponentsBuilder.fromMethodName(TargetPlatformDefinitionController.class, "getTargetPlatformDefinition", id, null)
+		String tpdAddress = fromMethodName(TargetPlatformDefinitionController.class, "getTargetPlatformDefinition", id, null)
 													.build().toUriString();
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("location", tpdAddress);

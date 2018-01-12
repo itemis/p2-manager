@@ -7,8 +7,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.itemis.p2m.backend.QueryServiceHandler;
-import com.itemis.p2m.backend.RepositoryController;
 import com.itemis.p2m.backend.ShoppingCartOptimizer;
+import com.itemis.p2m.backend.controllers.RepositoryController;
 
 /**
  * Unit tests for the RepositoryController class.

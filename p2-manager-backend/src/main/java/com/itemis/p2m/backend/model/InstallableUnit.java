@@ -8,7 +8,7 @@ import java.util.Objects;
 import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.itemis.p2m.backend.InstallableUnitController;
+import com.itemis.p2m.backend.controllers.InstallableUnitController;
 
 public class InstallableUnit extends ResourceSupport {
 	

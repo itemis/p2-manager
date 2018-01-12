@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.itemis.p2m.backend.InstallableUnitController;
-import com.itemis.p2m.backend.RepositoryController;
+import com.itemis.p2m.backend.controllers.InstallableUnitController;
+import com.itemis.p2m.backend.controllers.RepositoryController;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

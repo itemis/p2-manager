@@ -8,7 +8,7 @@ import java.util.Objects;
 import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.itemis.p2m.backend.RepositoryController;
+import com.itemis.p2m.backend.controllers.RepositoryController;
 
 public class Repository extends ResourceSupport {
 

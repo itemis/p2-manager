@@ -1,4 +1,4 @@
-package com.itemis.p2m.backend;
+package com.itemis.p2m.backend.controllers;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -21,6 +21,9 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.itemis.p2m.backend.Neo4JQueryBuilder;
+import com.itemis.p2m.backend.QueryServiceHandler;
+import com.itemis.p2m.backend.ShoppingCartOptimizer;
 import com.itemis.p2m.backend.exceptions.NothingToLoadException;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
