@@ -1,33 +1,35 @@
-package com.itemis.p2m.backend;
+package com.itemis.p2m.backend.services;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.itemis.p2m.backend.Neo4JQueryBuilder;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
 
-//TODO: write tests for this class
-
-@Component
-public class ShoppingCartOptimizer {
+@Service
+public class ShoppingCartOptimizerService {
 	@Value("${url.neo4j.cypher}")
 	private String neo4jUrl;	
 	
 	private RestTemplate neoRestTemplate;
 	
-	public ShoppingCartOptimizer(@Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
+	public ShoppingCartOptimizerService(@Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
 		this.neoRestTemplate = neoRestTemplate;
 	}
 	
@@ -39,8 +41,11 @@ public class ShoppingCartOptimizer {
 	 * @return The list of repositories from which all units can be retrieved.
 	 */
 	public List<Repository> getRepositoryList(List<InstallableUnit> units) {
-		return new ArrayList<>(this.greedilyApproximatedOptimization(units));
-//		return this.simpleOptimization(units);
+		return new ArrayList<>(this.optimize(units));
+	}
+
+	public Set<Repository> optimize(List<InstallableUnit> units) {
+		return new HashSet<Repository>(getOptimizedRepositoryMap(units).values());
 	}
 	
 	public List<Repository> simpleOptimization(List<InstallableUnit> units) {
@@ -74,10 +79,10 @@ public class ShoppingCartOptimizer {
 	}
 
 	//TODO: write tests for this method (!!!)
-	public Set<Repository> greedilyApproximatedOptimization(List<InstallableUnit> units) {
+	public Map<InstallableUnit, Repository> getOptimizedRepositoryMap(List<InstallableUnit> units) {
 		//approximation: greedy, take whatever repo covers most units, iterate until all units are covered
 		
-		Set<Repository> result = new HashSet<>();
+		Map<InstallableUnit, Repository> result = new HashMap<>();
 		Map<Repository, List<InstallableUnit>> unitsInRepository = new HashMap<>();
 		Set<Repository> allRepositories = new HashSet<>();
 		calculateUnitsInRepository(units, unitsInRepository, allRepositories);
@@ -86,8 +91,10 @@ public class ShoppingCartOptimizer {
 		int repositoryCount = allRepositories.size();
 		for (int i = 0; i < repositoryCount; i++) {
 			Repository greedyChoice = chooseRepoWithHighestCoverage(unitsInRepository);
-			result.add(greedyChoice);
-
+			
+			for (InstallableUnit unit : unitsInRepository.get(greedyChoice)) {
+				result.put(unit, greedyChoice);
+			}
 			cleanupForNextIteration(units, unitsInRepository, greedyChoice);
 			
 			// stop early if all units are covered
@@ -102,7 +109,6 @@ public class ShoppingCartOptimizer {
 		
 		return result;
 	}
-	
 	
 	protected void calculateUnitsInRepository(List<InstallableUnit> units, Map<Repository, List<InstallableUnit>> unitsInRepository, Set<Repository> allRepositories) {
 		units.forEach(u -> {

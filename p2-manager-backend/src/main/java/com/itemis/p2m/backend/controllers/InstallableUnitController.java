@@ -1,4 +1,4 @@
-package com.itemis.p2m.backend;
+package com.itemis.p2m.backend.controllers;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.itemis.p2m.backend.Neo4JQueryBuilder;
 import com.itemis.p2m.backend.exceptions.NothingToLoadException;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;

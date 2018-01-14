@@ -23,10 +23,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.itemis.p2m.backend.Neo4JQueryBuilder;
 import com.itemis.p2m.backend.QueryServiceHandler;
-import com.itemis.p2m.backend.ShoppingCartOptimizer;
 import com.itemis.p2m.backend.exceptions.NothingToLoadException;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
+import com.itemis.p2m.backend.services.ShoppingCartOptimizerService;
 
 import io.swagger.annotations.ApiOperation;
 
@@ -40,11 +40,11 @@ public class RepositoryController {
 	
 	private QueryServiceHandler handler;
 
-	private ShoppingCartOptimizer optimizer;
+	private ShoppingCartOptimizerService optimizer;
 
 	private RestTemplate neoRestTemplate;	
 	
-	public RepositoryController(QueryServiceHandler handler, ShoppingCartOptimizer optimizer, @Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
+	public RepositoryController(QueryServiceHandler handler, ShoppingCartOptimizerService optimizer, @Qualifier("neoRestTemplateBean") RestTemplate neoRestTemplate) {
 		this.handler = handler;
 		this.optimizer = optimizer;
 		this.neoRestTemplate = neoRestTemplate;

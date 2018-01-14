@@ -7,8 +7,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.itemis.p2m.backend.QueryServiceHandler;
-import com.itemis.p2m.backend.ShoppingCartOptimizer;
 import com.itemis.p2m.backend.controllers.RepositoryController;
+import com.itemis.p2m.backend.services.ShoppingCartOptimizerService;
 
 /**
  * Unit tests for the RepositoryController class.
@@ -24,7 +24,7 @@ public class RepositoryControllerTest {
 	private QueryServiceHandler handler;
 	
 	@MockBean
-	private ShoppingCartOptimizer optimizer;
+	private ShoppingCartOptimizerService optimizer;
 	
 	@Test
 	public void someTestForRepoController() {
