@@ -22,7 +22,11 @@
 
   <md-content flex="50" layout-align="space-between center" id="fullPageList">
     <md-list>
-      <md-subheader class="md-no-sticky">Required repositories</md-subheader>
+
+      <div layout="row" layout-align="space-between center">
+        <md-subheader class="md-no-sticky">Required repositories</md-subheader>
+        <md-button class="md-raised md-primary" ng-click="$ctrl.shoppingCart.getTargetPlatform()">Export Target Platform</md-button>
+      </div>
       
       <md-list-item ng-repeat="repository in $ctrl.shoppingCart.getRepositories() | orderBy:'uri'">
         <div class="md-list-item-text" layout="column">

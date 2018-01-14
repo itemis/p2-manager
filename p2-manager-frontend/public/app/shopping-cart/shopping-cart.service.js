@@ -1,5 +1,5 @@
 angular.module('shoppingCart')
-.factory('shoppingCart', ($cookies, $http, constants) => {
+.factory('shoppingCart', ($cookies, $http, $window, constants) => {
     let units = [];
     let repositories = [];
 
@@ -19,7 +19,8 @@ angular.module('shoppingCart')
         empty: empty,
         isInCart: isInCart,
         getUnits: getUnits,
-        getRepositories: getRepositories
+        getRepositories: getRepositories,
+        getTargetPlatform: getTargetPlatform
     };
 
     
@@ -78,6 +79,19 @@ angular.module('shoppingCart')
                 $cookies.putObject("unitsInCart", units);
             });
         }
+    }
+
+    function getTargetPlatform() {
+        $http.post(backend+'/tpd?tpdInfo='+encodeURIComponent(JSON.stringify(units)))
+            .then(response => {
+                $window.location.href = response.headers("Location");
+        });
+    }
+
+    function serializeTPDParams() {
+        let serialization = "";
+
+        return serialization;
     }
     
     //TODO: Refactoring - move this method to a more sensible location
