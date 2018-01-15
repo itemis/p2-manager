@@ -8,16 +8,16 @@ class TargetPlatformDefinitionGenerator {
 		return '''
 			<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 			<?pde?>
-			<target name="«IF name !== null»«name»«ELSE»«tpd.tpdId»«ENDIF»" sequenceNumber="«tpd.hashCode»">
+			<target name="Â«IF name !== nullÂ»Â«nameÂ»Â«ELSEÂ»Â«tpd.tpdIdÂ»Â«ENDIFÂ»" sequenceNumber="Â«tpd.hashCodeÂ»â€š">
 				<locations>
-					«FOR repository : tpd.repositories»
+					Â«FOR repository : tpd.repositoriesÂ»
 						<location includeMode="slicer" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
-							«FOR unitVersion : tpd.getUnitVersionsForRepository(repository)»
-								<unit id="«unitVersion.first»" version="«unitVersion.second»"/>
-							«ENDFOR»
-							<repository location="«repository»"/>
+							Â«FOR unitVersion : tpd.getUnitVersionsForRepository(repository)Â»
+								<unit id="Â«unitVersion.firstÂ»" version="Â«unitVersion.secondÂ»"/>
+							Â«ENDFORÂ»
+							<repository location="Â«repositoryÂ»"/>
 						</location>
-					«ENDFOR»
+					Â«ENDFORÂ»
 				</locations>
 				<environment>
 					<!-- Environment information has to be added manually! -->
