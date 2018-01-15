@@ -10,6 +10,7 @@ buildscript {
 
 plugins {
     id 'org.springframework.boot' version '1.5.4.RELEASE'
+    id "org.xtext.xtend" version "1.0.0"
 }
 
 
@@ -38,10 +39,17 @@ dependencies {
     
     compile('io.springfox:springfox-swagger2:2.7.0')
     compile('io.springfox:springfox-swagger-ui:2.7.0')
+    
+	compile ('org.eclipse.xtend:org.eclipse.xtend.lib:2.13.0')
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+sourceSets {
+  main.xtendOutputDir = 'build/xtend/main'
+  test.xtendOutputDir = 'build/xtend/main'
 }
 
 group = "itemis"
@@ -53,7 +61,7 @@ docker {
     maintainer 'Karsten Thoms <karsten.thoms@itemis.de>'
 }
 
-task docker(type: Docker) {
+task buildDocker(type: Docker) {
     // The default image tag contains the applicationName
     applicationName = 'p2-manager-backend'
 	entryPoint = ["java", "-jar", "/usr/share/p2m/p2-manager-backend-${version}.jar"]
@@ -64,3 +72,4 @@ task docker(type: Docker) {
 	exposePort 8080
 }
 
+build.dependsOn(buildDocker)

@@ -42,9 +42,10 @@ processResources {
 docker {
     baseImage "openjdk:8-jre"
     maintainer 'Karsten Thoms <karsten.thoms@itemis.de>'
+    useApi = false
 }
 
-task docker(type: Docker) {
+task buildDocker(type: Docker) {
     // The default image tag contains the applicationName
     applicationName = 'p2-manager-frontend'
 	entryPoint = ["java", "-jar", "/usr/share/p2m/p2-manager-frontend-${version}.jar"]
@@ -54,3 +55,5 @@ task docker(type: Docker) {
 	}
 	exposePort 2357
 }
+
+build.dependsOn(buildDocker)
