@@ -1,6 +1,9 @@
 language: java
 jdk: oraclejdk8
 sudo: required
+branches:
+  except:
+    - fspiekermann/restructure
 services:
   - docker
 script: mvn clean verify -B -f pom.xml
