@@ -1,0 +1,9 @@
+language: java
+jdk: oraclejdk8
+sudo: required
+services:
+  - docker
+env:
+  - buildCMD=cd p2-brocker && gradle build
+  - buildCMD=cd p2-query-service && mvn clean verify -B -f pom.xml
+script: $buildCMD
