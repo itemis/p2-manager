@@ -1,0 +1,75 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'se.transmode.gradle:gradle-docker:1.2'
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '1.5.4.RELEASE'
+    id "org.xtext.xtend" version "1.0.0"
+}
+
+
+apply plugin: 'java'
+// Apply the java-library plugin to add support for Java Library
+apply plugin: 'java-library'
+apply plugin: 'docker'
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+    // Use jcenter for resolving your dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+}
+
+dependencies {
+    compile('org.apache.commons:commons-math3:3.6.1')
+
+    compile('com.google.guava:guava:21.0')
+
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile('org.springframework.hateoas:spring-hateoas')
+    
+    compile('org.thymeleaf:thymeleaf-spring4')
+    compile('nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect')
+    
+    compile('io.springfox:springfox-swagger2:2.7.0')
+    compile('io.springfox:springfox-swagger-ui:2.7.0')
+    
+	compile ('org.eclipse.xtend:org.eclipse.xtend.lib:2.13.0')
+
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+sourceSets {
+  main.xtendOutputDir = 'build/xtend/main'
+  test.xtendOutputDir = 'build/xtend/main'
+}
+
+group = "itemis"
+sourceCompatibility = 1.8
+version = '1.0-SNAPSHOT'
+
+docker {
+    baseImage "openjdk:8-jre"
+    maintainer 'Karsten Thoms <karsten.thoms@itemis.de>'
+}
+
+task buildDocker(type: Docker) {
+    // The default image tag contains the applicationName
+    applicationName = 'p2-manager-backend'
+	entryPoint = ["java", "-jar", "/usr/share/p2m/p2-manager-backend-${version}.jar"]
+	addFile {
+        from 'build/libs'
+        into '/usr/share/p2m'
+	}
+	exposePort 8080
+}
+
+build.dependsOn(buildDocker)

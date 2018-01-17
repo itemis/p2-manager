@@ -4,6 +4,6 @@ sudo: required
 services:
   - docker
 env:
-  - subProject=p2-brocker
+  - subProject=p2-broker
   - subProject=p2-query-service
 script: cd $subProject && ./travisBuild.sh
