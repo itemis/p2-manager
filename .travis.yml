@@ -6,4 +6,4 @@ services:
 env:
   - subProject=p2-brocker
   - subProject=p2-query-service
-script: ./$subProject/travisBuild.sh
+script: cd $subProject && pwd && ./travisBuild.sh
