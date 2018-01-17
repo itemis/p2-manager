@@ -4,6 +4,6 @@ sudo: required
 services:
   - docker
 env:
-  - buildCMD="p2-brocker && gradle build"
-  - buildCMD="p2-query-service && mvn clean verify -B -f pom.xml"
-script: cd $buildCMD
+  - subProject=p2-brocker
+  - subProject=p2-query-service
+script: ./$subProject/travisBuild.sh
