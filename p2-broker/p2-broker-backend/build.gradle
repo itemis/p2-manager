@@ -1,0 +1,43 @@
+plugins {
+	id 'org.springframework.boot' version '1.5.4.RELEASE'
+    id "org.xtext.xtend" version "1.0.0"
+}
+
+apply plugin: 'docker'
+
+dependencies {
+    compile('org.springframework.hateoas:spring-hateoas')
+    
+    compile('org.thymeleaf:thymeleaf-spring4')
+    compile('nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect')
+    
+    compile('io.springfox:springfox-swagger2:2.7.0')
+    compile('io.springfox:springfox-swagger-ui:2.7.0')
+    
+	compile ('org.eclipse.xtend:org.eclipse.xtend.lib:2.13.0')
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+sourceSets {
+  main.xtendOutputDir = 'build/xtend/main'
+  test.xtendOutputDir = 'build/xtend/main'
+}
+
+docker {
+    baseImage "openjdk:8-jre"
+    maintainer 'Karsten Thoms <karsten.thoms@itemis.de>'
+}
+
+task buildDocker(type: Docker) {
+    // The default image tag contains the applicationName
+    applicationName = 'p2-manager-backend'
+	entryPoint = ["java", "-jar", "/usr/share/p2m/p2-manager-backend-${version}.jar"]
+	addFile {
+        from 'build/libs'
+        into '/usr/share/p2m'
+	}
+	exposePort 8080
+}
+
+build.dependsOn(buildDocker)

@@ -1,0 +1,31 @@
+plugins {
+    id 'org.springframework.boot' version '1.5.4.RELEASE'
+}
+
+apply plugin: 'docker'
+
+
+
+processResources {
+    from ('public/') {
+        into 'public'
+    }
+}
+
+docker {
+    baseImage "openjdk:8-jre"
+    maintainer 'Karsten Thoms <karsten.thoms@itemis.de>'
+}
+
+task buildDocker(type: Docker) {
+    // The default image tag contains the applicationName
+    applicationName = 'p2-manager-frontend'
+	entryPoint = ["java", "-jar", "/usr/share/p2m/p2-manager-frontend-${version}.jar"]
+	addFile {
+        from 'build/libs'
+        into '/usr/share/p2m'
+	}
+	exposePort 2357
+}
+
+build.dependsOn(buildDocker)

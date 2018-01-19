@@ -3,4 +3,7 @@ jdk: oraclejdk8
 sudo: required
 services:
   - docker
-script: mvn clean verify -B -f pom.xml
+env:
+  - subProject=p2-broker
+  - subProject=p2-query-service
+script: cd $subProject && ./travisBuild.sh
