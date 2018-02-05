@@ -17,31 +17,46 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 
     <!-- AngularJS -->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.js"></script>
+    <!-- PRODUCTION
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-route.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-cookies.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-route.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular-cookies.min.js"></script>
+    -->
+    <!-- DEVELOPMENT -->
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.js"></script>
+    <script src="bower_components/angular-aria/angular-aria.js"></script>
+    <script src="bower_components/angular-messages/angular-messages.js"></script>
+    <script src="bower_components/angular-route/angular-route.js"></script>
+    <script src="bower_components/angular-cookies/angular-cookies.js"></script>
+
+
 
     <!-- AngularJS Material -->
+    <!-- PRODUCTION
     <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+    -->
+    <!-- DEVELOPMENT -->
+    <script src="bower_components/angular-material/angular-material.js"></script>
     
     <!-- P2-Manager Frontend -->
-    <script src="app/p2-manager-frontend.module.js"></script>
-    <script src="app/p2-manager-frontend.controller.js"></script>
-    <script src="app/admin/admin.module.js"></script>
-    <script src="app/admin/admin-view.controller.js"></script>
     <script src="app/core/constants.module.js"></script>
     <script src="app/core/constants.service.js"></script>
-    <script src="app/repository-list/repository-list.module.js"></script>
-    <script src="app/repository-list/repository-list.component.js"></script>
     <script src="app/shopping-cart/shopping-cart.module.js"></script>
     <script src="app/shopping-cart/shopping-cart.service.js"></script>
     <script src="app/shopping-cart/shopping-cart-view.controller.js"></script>
+    <script src="app/repository-list/repository-list.module.js"></script>
+    <script src="app/repository-list/repository-list.component.js"></script>
     <script src="app/unit-list/unit-list.module.js"></script>
     <script src="app/unit-list/unit-list.component.js"></script>
-    <script src="app/unit-list/unit-search.service.js"></script>    
+    <script src="app/unit-list/unit-search.service.js"></script>
+    <script src="app/admin/admin.module.js"></script>
+    <script src="app/admin/admin-view.controller.js"></script>
+    <script src="app/p2-manager-frontend.module.js"></script>
+    <script src="app/p2-manager-frontend.controller.js"></script>
   </head>
 
   <body class="background" layout="column" layout-align="space-around center">
