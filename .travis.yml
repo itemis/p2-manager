@@ -6,4 +6,7 @@ services:
 env:
   - subProject=p2-broker
   - subProject=p2-query-service
+before_script:
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
 script: cd $subProject && ./travisBuild.sh

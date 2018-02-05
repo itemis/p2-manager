@@ -28,4 +28,15 @@ task buildDocker(type: Docker) {
 	exposePort 2357
 }
 
+import org.gradle.internal.os.OperatingSystem;
+
+task testJS(type: Exec, overwrite: true) {
+    if (OperatingSystem.current().isWindows()) {
+        commandLine 'cmd', '/c', 'npm', 'test'
+    } else {
+        commandLine 'npm', 'test'
+    }
+}
+
 build.dependsOn(buildDocker)
+test.dependsOn(testJS)

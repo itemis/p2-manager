@@ -14,17 +14,18 @@ module.exports = function(config) {
       'bower_components/angular-mocks/angular-mocks.js',
 	  
       'app/**/*.module.js',
-      'app/**/*.js'
+      'app/**/*.js',
+	  'test/**/*.js'
     ],
 
-    autoWatch: true,
+    autoWatch: false,
+	singleRun: true,
 
     frameworks: ['jasmine'],
 
-    browsers: ['Chrome'],
+    browsers: ['Firefox'],
 
     plugins: [
-      'karma-chrome-launcher',
       'karma-firefox-launcher',
       'karma-jasmine',
       'karma-junit-reporter'
