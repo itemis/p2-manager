@@ -30,10 +30,14 @@ module.exports = function(config) {
       'karma-jasmine',
       'karma-junit-reporter'
     ],
+	
+	reporters: 'junit',
 
     junitReporter: {
-      outputFile: 'test_out/unit.xml',
-      suite: 'unit'
+      outputDir: '../build/test-results',
+      outputFile: 'karma-test.xml',
+      suite: 'unit',
+	  useBrowserName: false
     }
 
   });
