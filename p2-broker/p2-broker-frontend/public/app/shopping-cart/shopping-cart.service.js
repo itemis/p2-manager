@@ -82,7 +82,7 @@ angular.module('shoppingCart')
     }
 
     function getTargetPlatform() {
-        $http.post(backend+'/tpd?tpdInfo='+encodeURIComponent(JSON.stringify(units)))
+        return $http.post(backend+'/tpd?tpdInfo='+encodeURIComponent(JSON.stringify(units)))
             .then(response => {
                 $window.location.href = response.headers("Location");
         });
