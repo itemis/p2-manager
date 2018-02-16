@@ -9,9 +9,11 @@ Current functionality:
 - show the installable units available in a repository
 - show the available versions of an installable unit
 
+- compile a list of necessary repositories from a list of installable units
+- generate a target platform definition for a list of installable units
+
 - add a new repository to the p2-manager
 
 Planned features:
 
-- compile a list of necessary repositories from a list of installable units
 - require authorization through google for adding new repositories to the p2-manager

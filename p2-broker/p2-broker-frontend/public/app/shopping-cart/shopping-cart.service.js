@@ -87,12 +87,6 @@ angular.module('shoppingCart')
                 $window.location.href = response.headers("Location");
         });
     }
-
-    function serializeTPDParams() {
-        let serialization = "";
-
-        return serialization;
-    }
     
     //TODO: Refactoring - move this method to a more sensible location
     function unitEquals(unit1, unit2) {

@@ -10,6 +10,8 @@ describe('shopping cart service', function() {
     let unitId;
     let version;
 
+    const cookieName = "unitsInCart";
+
     beforeEach(module('shoppingCart'));
 
     beforeEach(module(function($provide) {
@@ -39,6 +41,7 @@ describe('shopping cart service', function() {
         version = "someVersion";
     }));
 
+
     describe('getters', function() {
         it('return empty lists after the shopping cart has been emptied', function() {
             shoppingCart.empty();
@@ -64,7 +67,6 @@ describe('shopping cart service', function() {
     });
 
     describe('getTargetPlatform', function() {
-        // still not working, find out why
         it('sets the $window.location to the address given in the response header', function() {
             httpBackend.expectPOST((url) => {return true}).respond("", {
                 "Location": "setCorrectly/testShouldPass"
@@ -74,27 +76,52 @@ describe('shopping cart service', function() {
             });
             httpBackend.flush();
         });
-
-        it('encodes the unit list correctly', function() {
-            // TODO
-        });
     });
 
-/*
     describe('shopping cart', function() {
-        it('has the contents of the cookie in the beginning', function() {
-            // TODO
+        const unitList = [
+            {
+                "unitId" : "foo",
+                "version" : "bar"
+            }, {
+                "unitId" : "foo",
+                "version" : "baz"
+            }
+        ];
+        const unitList2 = [
+            {
+                "unitId" : "foo",
+                "version" : "1"
+            }, {
+                "unitId" : "bar",
+                "version" : "2"
+            }
+        ];
+
+        it('creates an empty cookie if there is none', function() {
+            expect(mockCookies.getObject(cookieName)).toEqual([]);
         });
-        it('has the contents of the cookie in the beginning', function() {
-            // TODO
+
+        it('saves its contents to the cookie', function() {
+            shoppingCart.addUnit("foo", "1");
+            shoppingCart.addUnit("bar", "2");
+            expect(mockCookies.getObject(cookieName)).toEqual(unitList2);
+        });
+
+        mockCookies.putObject(unitList);
+        inject(function(_shoppingCart_){
+            shoppingCart = _shoppingCart_;
+        }
+        xit('has the contents of the cookie in the beginning', function() {
+            // mockCookies needs to be initialized with content before shoppingCart is injected
+            expect(shoppingCart.getUnits()).toEqual(unitList);
         });
     });
 
 
-    describe('stub', function() {
+    xdescribe('stub', function() {
         it('is a stub', function() {
-
+            // copy and rename from "xdescribe" to "describe" to create a new test
         });
     });
-*/
 });
