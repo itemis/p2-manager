@@ -107,17 +107,12 @@ describe('shopping cart service', function() {
             shoppingCart.addUnit("bar", "2");
             expect(mockCookies.getObject(cookieName)).toEqual(unitList2);
         });
-
-        mockCookies.putObject(unitList);
-        inject(function(_shoppingCart_){
-            shoppingCart = _shoppingCart_;
-        }
+        
         xit('has the contents of the cookie in the beginning', function() {
             // mockCookies needs to be initialized with content before shoppingCart is injected
             expect(shoppingCart.getUnits()).toEqual(unitList);
         });
     });
-
 
     xdescribe('stub', function() {
         it('is a stub', function() {
