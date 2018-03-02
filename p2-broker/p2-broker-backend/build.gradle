@@ -31,8 +31,8 @@ docker {
 
 task buildDocker(type: Docker) {
     // The default image tag contains the applicationName
-    applicationName = 'p2-manager-backend'
-	entryPoint = ["java", "-jar", "/usr/share/p2m/p2-manager-backend-${version}.jar"]
+    applicationName = 'p2-broker-backend'
+	entryPoint = ["java", "-jar", "/usr/share/p2m/p2-broker-backend-${version}.jar"]
 	addFile {
         from 'build/libs'
         into '/usr/share/p2m'

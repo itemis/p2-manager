@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.itemis.p2m.backend.Neo4JQueryBuilder;
+import com.itemis.p2m.backend.exceptions.TargetPlatformException;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
 
@@ -101,7 +102,7 @@ public class ShoppingCartOptimizerService {
 		}
 		
 		if (units.size() != 0) {
-			throw new RuntimeException(String.format("Unit %s in version %s is not contained in any known repository.", units.get(0).getUnitId(), units.get(0).getVersion()));
+			throw new TargetPlatformException(String.format("Unit %s in version %s is not contained in any known repository.", units.get(0).getUnitId(), units.get(0).getVersion()));
 		}
 		
 		return result;
