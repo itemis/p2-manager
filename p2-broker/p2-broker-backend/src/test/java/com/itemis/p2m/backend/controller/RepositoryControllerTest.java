@@ -1,4 +1,4 @@
-package com.itemis.p2m.backend.tests;
+package com.itemis.p2m.backend.controller;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,4 +1,4 @@
-package com.itemis.p2m.backend.tests;
+package com.itemis.p2m.backend.integration.tests;
 
 import static org.junit.Assert.assertNotNull;
 

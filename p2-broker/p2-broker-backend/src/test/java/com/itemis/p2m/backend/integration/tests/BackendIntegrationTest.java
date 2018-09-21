@@ -1,4 +1,4 @@
-package com.itemis.p2m.backend.tests;
+package com.itemis.p2m.backend.integration.tests;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-public class BackendMockTest {
+public class BackendIntegrationTest {
 	@Value("${url.queryservice}")
 	private String queryserviceUrl;	
 	@Value("${url.neo4j.cypher}")
