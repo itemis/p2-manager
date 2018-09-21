@@ -1,3 +1,3 @@
 #! /bin/bash
 
-gradle build
+gradle clean build
