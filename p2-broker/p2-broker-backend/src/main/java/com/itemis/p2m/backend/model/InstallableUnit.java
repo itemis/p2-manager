@@ -37,9 +37,11 @@ public class InstallableUnit extends ResourceSupport {
 	public InstallableUnit(ArrayNode unitData) {
 		this.setUnitId(unitData.get(0).asText());
 		this.setVersion(unitData.get(1).asText());
-		
-		// HATEOAS links
-		this.add(linkTo(methodOn(InstallableUnitController.class).listRepositoriesForUnitVersion(unitId, version)).withRel("repositories"));
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("%s %s", unitId, version);
 	}
 	
 	@Override

@@ -83,6 +83,9 @@ public class BackendIntegrationTest {
         			.andExpect(content().string(containsString("http://www.justOneRepository.org")));
     }
     
+    // TODO: check with limits
+    // TODO: check shopping cart
+    
     @Test
     public void returnTheQueriedRepository() throws Exception {
     	this.setupResponse("{\"data\":[[16, \"http://www.allTheRepositories.com/theBestRepository\"],[42, \"http://www.justOneRepository.org\"]]}");

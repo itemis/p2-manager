@@ -6,7 +6,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.itemis.p2m.backend.controllers.RepositoryController;
+import com.itemis.p2m.backend.rest.repository.RepositoryController;
 
 public class RepositoryProvidesVersion extends ResourceSupport {
 

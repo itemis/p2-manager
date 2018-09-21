@@ -1,30 +1,41 @@
 package com.itemis.p2m.backend.controller;
 
+import static org.mockito.Mockito.mock;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
 
 import com.itemis.p2m.backend.QueryServiceHandler;
-import com.itemis.p2m.backend.controllers.RepositoryController;
+import com.itemis.p2m.backend.rest.repository.RepositoryController;
+import com.itemis.p2m.backend.rest.repository.RepositoryHandler;
 import com.itemis.p2m.backend.services.ShoppingCartOptimizerService;
 
 /**
  * Unit tests for the RepositoryController class.
  */
-@RunWith(SpringRunner.class)
-@WebMvcTest(RepositoryController.class)
 public class RepositoryControllerTest {
 	
-//	@Autowired
-//	private MockMvc mockMvc;
+	RepositoryController repositoryController;
+			
+	@Before
+	public void setup() {
+		RepositoryHandler repoHandler = new RepositoryHandler();
+		QueryServiceHandler handler = mock(QueryServiceHandler.class);
+		ShoppingCartOptimizerService optimizer = mock(ShoppingCartOptimizerService.class);
+		RestTemplate neoRestTemplate = mock(RestTemplate.class);
+		
+		repositoryController = new RepositoryController(repoHandler, handler, optimizer, neoRestTemplate);
+	}
 	
-	@MockBean
-	private QueryServiceHandler handler;
-	
-	@MockBean
-	private ShoppingCartOptimizerService optimizer;
+	@Test
+	public void bla() {
+		
+	}
 	
 	@Test
 	public void someTestForRepoController() {

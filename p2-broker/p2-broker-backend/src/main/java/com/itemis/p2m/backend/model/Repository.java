@@ -8,7 +8,7 @@ import java.util.Objects;
 import org.springframework.hateoas.ResourceSupport;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.itemis.p2m.backend.controllers.RepositoryController;
+import com.itemis.p2m.backend.rest.repository.RepositoryController;
 
 public class Repository extends ResourceSupport {
 
@@ -25,10 +25,6 @@ public class Repository extends ResourceSupport {
 	public Repository(ArrayNode repoData) {
 		this.setRepoId(repoData.get(0).asInt());
 		this.setUri(repoData.get(1).asText());
-		
-		// HATEOAS links
-		this.add(linkTo(methodOn(RepositoryController.class).getRepositoryURI(this.getRepoId())).withSelfRel());
-		this.add(linkTo(methodOn(RepositoryController.class).listUnitsInRepository(this.getRepoId())).withRel("installableUnits"));
 	}
 	
 	public Repository() {
