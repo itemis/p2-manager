@@ -7,7 +7,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.itemis.p2m.backend.Neo4JQueryBuilder;
+import com.itemis.p2m.backend.util.Neo4JQueryBuilder;
 
 public class Neo4JQueryBuilderTest {
 	

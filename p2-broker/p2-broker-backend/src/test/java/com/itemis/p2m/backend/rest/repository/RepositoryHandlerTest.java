@@ -13,11 +13,14 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.itemis.p2m.backend.Neo4JQueryBuilder;
 import com.itemis.p2m.backend.exceptions.NothingToLoadException;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
+import com.itemis.p2m.backend.util.Neo4JQueryBuilder;
 
+/**
+ * Unit tests for the QueryServiceHandler class.
+ */
 public class RepositoryHandlerTest {
 	
 	public RepositoryHandler repositoryHandler = new RepositoryHandler();

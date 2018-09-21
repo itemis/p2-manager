@@ -1,4 +1,4 @@
-package com.itemis.p2m.backend.targetplatform
+package com.itemis.p2m.backend.rest.targetplatform
 
 import com.itemis.p2m.backend.model.TargetPlatformDefinition
 

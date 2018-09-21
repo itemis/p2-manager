@@ -1,4 +1,4 @@
-package com.itemis.p2m.backend;
+package com.itemis.p2m.backend.util;
 
 import java.util.Collections;
 import java.util.Map;

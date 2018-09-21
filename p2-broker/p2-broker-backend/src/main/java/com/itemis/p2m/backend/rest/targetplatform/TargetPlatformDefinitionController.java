@@ -1,4 +1,4 @@
-package com.itemis.p2m.backend.controllers;
+package com.itemis.p2m.backend.rest.targetplatform;
 
 import static org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder.fromMethodName;
 
@@ -23,12 +23,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.itemis.p2m.backend.Neo4JQueryBuilder;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
 import com.itemis.p2m.backend.model.TargetPlatformDefinition;
 import com.itemis.p2m.backend.services.ShoppingCartOptimizerService;
-import com.itemis.p2m.backend.targetplatform.TargetPlatformDefinitionGenerator;
+import com.itemis.p2m.backend.rest.targetplatform.TargetPlatformDefinitionGenerator;
+import com.itemis.p2m.backend.util.Neo4JQueryBuilder;
 
 import io.swagger.annotations.ApiOperation;
 

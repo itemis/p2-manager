@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.itemis.p2m.backend.Neo4JQueryBuilder;
 import com.itemis.p2m.backend.exceptions.NothingToLoadException;
 import com.itemis.p2m.backend.model.InstallableUnit;
 import com.itemis.p2m.backend.model.Repository;
+import com.itemis.p2m.backend.util.Neo4JQueryBuilder;
 
 import io.swagger.annotations.ApiOperation;
 

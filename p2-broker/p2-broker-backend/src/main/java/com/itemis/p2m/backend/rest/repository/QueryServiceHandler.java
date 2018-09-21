@@ -1,4 +1,4 @@
-package com.itemis.p2m.backend;
+package com.itemis.p2m.backend.rest.repository;
 
 import java.net.URI;
 import java.net.URISyntaxException;
